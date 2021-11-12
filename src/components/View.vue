@@ -2,13 +2,16 @@
     <k-inside>
         <k-view class="k-webmentions-view">
             <k-header>Webmentions</k-header>
+
             <DetailsByMonth :summary="summary" />
             <Targets :targets="targets" />
             <Sources :sources="sources" />
 
             <k-grid>
                 <k-column width="1/4">
-                    <Version :version="version" />
+                    <div class="spacer">
+                        <Version :version="version" />
+                    </div>
                 </k-column>
             </k-grid>
         </k-view>
@@ -28,11 +31,15 @@ export default {
 
 <style lang="scss">
 .k-webmentions-view {
+    .spacer {
+        margin-top: var(--spacing-6);
+    }
+
     .wrapper {
         background: #fff;
         box-shadow: var(--box-shadow-item);
         padding: 10px 20px;
-        margin-top: 20px;
+        margin-top: var(--spacing-6);
     }
 
     .k-icon {

@@ -2,21 +2,23 @@
 
 namespace mauricerenck\IndieConnector;
 
-use Kirby\Http\Url;
-use Kirby\Http\Server;
-use Kirby\Toolkit\V;
-use Kirby\Toolkit\Str;
-use json_decode;
-use json_encode;
-use is_null;
-use preg_split;
-use str_replace;
-use date;
 use c;
+use f;
+use Db;
+use date;
+use is_null;
 use database;
 use DateTime;
-use Db;
-use f;
+use Exception;
+use preg_split;
+use json_decode;
+use json_encode;
+use str_replace;
+use Kirby\Http\Url;
+use Kirby\Toolkit\V;
+use Kirby\Http\Remote;
+use Kirby\Http\Server;
+use Kirby\Toolkit\Str;
 
 class WebmentionStats
 {
@@ -209,37 +211,28 @@ class WebmentionStats
 
     public function getPluginVersion()
     {
-        return [
-            'local' => '',
-            'latest' => '',
-            'updateAvailable' => false,
-            'error' => true
-        ];
+        try {
+            $composerString = f::read(__DIR__ . '/../composer.json');
+            $composerJson = json_decode($composerString);
 
-        // FIXME
-        // try {
-        //     $composerString = f::read(__DIR__ . '/../composer.json');
-        //     $composerJson = json_decode($composerString);
+            $packagistResult = Remote::get('https://repo.packagist.org/p2/mauricerenck/indieconnector.json');
+            $packagistJson = json_decode($packagistResult->content());
+            $latestVersion = $packagistJson->packages->{'mauricerenck/indieconnector'}[0]->version;
 
-        //     $packagistResult = Remote::get('https://repo.packagist.org/p2/mauricerenck/indieConnector.json');
-        //     $packagistJson = json_decode($packagistResult->content());
-        //     $latestVersion = $packagistJson->packages->{'mauricerenck/indieConnector'}[0]->version;
-
-        //     return [
-        //         'local' => $composerJson->version,
-        //         'latest' => $latestVersion,
-        //         'updateAvailable' => $composerJson->version !== $latestVersion,
-        //         'error' => false
-        //     ];
-        // } catch (\Throwable $th) {
-        //     throw 'Could not get package information';
-        //     return[
-        //         'local' => '',
-        //         'latest' => '',
-        //         'updateAvailable' => false,
-        //         'error' => true
-        //     ];
-        // }
+            return [
+                'local' => $composerJson->version,
+                'latest' => $latestVersion,
+                'updateAvailable' => $composerJson->version !== $latestVersion,
+                'error' => false
+            ];
+        } catch (Exception $e) {
+            return [
+                'local' => $composerJson->version,
+                'latest' => 'unkown',
+                'updateAvailable' => false,
+                'error' => true
+            ];
+        }
     }
 
     private function connect()
