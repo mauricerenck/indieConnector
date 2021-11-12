@@ -1,0 +1,41 @@
+{
+    "name": "mauricerenck/indieconnector",
+    "version": "1.0.5",
+    "description": "Kirby Webmentions your plugins can subscribe to",
+    "type": "kirby-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Maurice Renck",
+            "email": "hello@maurice-renck.de"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "mauricerenck\\IndieConnector\\": "utils/"
+        },
+        "classmap": [
+            "utils"
+        ]
+    },
+    "require": {
+        "getkirby/composer-installer": "^1.1",
+        "php": ">=7.3.0 <8.1.0"
+    },
+    "require-dev": {
+        "getkirby/cms": "^3.6",
+        "phpunit/phpunit": "9.5"
+    },
+    "replace": {
+        "mauricerenck/tratschtante": "*"
+    },
+    "config": {
+        "optimize-autoloader": true
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit --testdox tests",
+        "build-test-package": "git archive HEAD -o indieConnector.zip --worktree-attributes",
+        "build-composer": "composer install --no-dev --optimize-autoloader"
+    },
+    "minimum-stability": "dev"
+}

@@ -1,0 +1,26 @@
+{
+    "name": "mauricerenck/hooklogger",
+    "version": "1.0.2",
+    "description": "A helper for debugging",
+    "type": "kirby-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Maurice Renck",
+            "email": "hello@maurice-renck.de"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "utils/receiver.php",
+            "utils/hookHelper.php"
+        ]
+    },
+    "require": {
+        "getkirby/composer-installer": "^1.1",
+        "getkirby/cms": "^3"
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

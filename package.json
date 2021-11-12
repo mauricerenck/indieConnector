@@ -1,0 +1,30 @@
+{
+    "name": "indieconnector",
+    "version": "1.0.5",
+    "description": "A webmention plugin for Kirby 3",
+    "main": "index.js",
+    "author": "Maurice Renck",
+    "private": true,
+    "scripts": {
+        "dev": "npx -y kirbyup src/index.js --watch",
+        "build": "npx -y kirbyup src/index.js"
+    },
+    "posthtml": {
+        "recognizeSelfClosing": true
+    },
+    "dependencies": {
+        "date-fns": "2.11.0",
+        "vue": "^2.6.14",
+        "vue-hot-reload-api": "^2.3.4"
+    },
+    "devDependencies": {
+        "@ambimax/semantic-release-composer": "github:ambimax/semantic-release-composer",
+        "@semantic-release/changelog": "^6.0.1",
+        "@semantic-release/git": "^10.0.1",
+        "@vue/component-compiler-utils": "^3.2.2",
+        "cssnano": "^5.0.6",
+        "postcss": "^8.3.5",
+        "sass": "^1.43.4",
+        "vue-template-compiler": "^2.6.14"
+    }
+}
