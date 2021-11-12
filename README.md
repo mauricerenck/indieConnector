@@ -24,8 +24,8 @@ Use one of these three methods to install the plugin:
 - unzip [master.zip](https://github.com/mauricerenck/indieConnector/releases/latest) to `site/plugins/indieConnector`
 - `git submodule add https://github.com/mauricerenck/indieConnector.git site/plugins/indieConnector`
 
-[Setup the plugin](docs/setup.md)
-[Subscribe to the hook](docs/hook.md)
+* [Setup the plugin](docs/setup.md)
+* [Subscribe to the hook](docs/hook.md)
 
 ---
 
