@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/mauricerenck/indieConnector/compare/v1.0.0...v1.1.0) (2021-11-12)
+
+
+### Features
+
+* README ([5a5d281](https://github.com/mauricerenck/indieConnector/commit/5a5d281415cff8fa02231779064d8d4e81b4d92e))
+
 # 1.0.0 (2021-11-12)
 
 
