@@ -14,6 +14,14 @@ To "connect" this plugin to webmention.io you have to set a callback secret in y
 - Enter the IndieConnector endpoint: `https://your-url.tld/indieConnector/webhook/webmentionio`
 - Enter the callback secret you set in your config.php
 
+## Add webmention.io Endpoints to your HTML `<head></head>`. Those will look like this and you will get them from webmention.io:
+
+```
+<!-- webmention -->
+<link rel="pingback" href="https://webmention.io/YOUR-ACCOUNT/xmlrpc" />
+<link rel="webmention" href="https://webmention.io/YOUR-ACCOUNT/webmention" />
+```
+
 ## Enable panel overview
 
 *This feature required sqlite to be available by your hoster. Most hosters support this by default, but you might want to make sure it's enabled.*
