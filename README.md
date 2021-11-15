@@ -24,6 +24,7 @@ Use one of these three methods to install the plugin:
 - unzip [master.zip](https://github.com/mauricerenck/indieConnector/releases/latest) to `site/plugins/indieConnector`
 - `git submodule add https://github.com/mauricerenck/indieConnector.git site/plugins/indieConnector`
 
+* [Switch from Tratschtante to IndieConnector](docs/switch.md)
 * [Setup the plugin](docs/setup.md)
 * [Subscribe to the hook](docs/hook.md)
 
@@ -33,7 +34,7 @@ Use one of these three methods to install the plugin:
 
 - Receive Webmentions on your site
 - Shows a Webmention overview in the panel
-- Sends out Webmentions via Hook so other plugins can subscribe and use them
+- Propagates Webmentions via Hook so other plugins can subscribe and use them
 
 ---
 
