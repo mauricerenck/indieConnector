@@ -1,6 +1,6 @@
 {
     "name": "mauricerenck/indieconnector",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Kirby Webmentions your plugins can subscribe to",
     "type": "kirby-plugin",
     "license": "MIT",

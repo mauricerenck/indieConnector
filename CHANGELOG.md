@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/mauricerenck/indieConnector/compare/v1.1.0...v1.2.0) (2021-11-15)
+
+
+### Features
+
+* breaking changes! New hook name ([dc240a3](https://github.com/mauricerenck/indieConnector/commit/dc240a3594ba374fd785ae89d6d5886dc9587ea7))
+
 # [1.1.0](https://github.com/mauricerenck/indieConnector/compare/v1.0.0...v1.1.0) (2021-11-12)
 
 
