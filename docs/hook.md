@@ -12,7 +12,7 @@ Whenever a webmention ins received, IndieConnector will trigger a Kirby hook you
 
 ```
 'hooks' => [
-    'indieConnector.webhook.received' => function ($webmention, $targetPage) {
+    'indieConnector.webmention.received' => function ($webmention, $targetPage) {
         // $webmention: webmention data, see below
         // $targetPage: a kirby page object
 

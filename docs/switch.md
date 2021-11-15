@@ -8,7 +8,7 @@ That's it. Everything should work fine.
 
 ## Subscribing to the hook
 
-Change `'tratschtante.webhook.received'` to `'indieConnector.webhook.received'`.
+Change `'tratschtante.webhook.received'` to `'indieConnector.webmention.received'`.
 
 For example:
 
@@ -24,7 +24,7 @@ must be changed to:
 
 ```
 'hooks' => [
-    'indieConnector.webhook.received' => function ($webmention, $targetPage) {
+    'indieConnector.webmention.received' => function ($webmention, $targetPage) {
         // YOUR CODE
     }
 ],

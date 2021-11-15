@@ -45,7 +45,7 @@ Kirby::plugin('mauricerenck/indieConnector', [
                     }
                 }
 
-                $hookHelper->triggerHook('indieConnector.webhook.received', ['webmention' => $webmention, 'targetPage' => $targetPage]);
+                $hookHelper->triggerHook('indieConnector.webmention.received', ['webmention' => $webmention, 'targetPage' => $targetPage]);
 
                 if (option('mauricerenck.indieConnector.stats', false)) {
                     $stats = new WebmentionStats();
