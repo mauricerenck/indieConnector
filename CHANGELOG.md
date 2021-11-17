@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/mauricerenck/indieConnector/compare/v1.2.0...v1.2.1) (2021-11-17)
+
+
+### Bug Fixes
+
+* stability level for k3.6 dependency ([6cf1ecd](https://github.com/mauricerenck/indieConnector/commit/6cf1ecd2842314500271906492f81f19a8e6931f))
+
 # [1.2.0](https://github.com/mauricerenck/indieConnector/compare/v1.1.0...v1.2.0) (2021-11-15)
 
 
