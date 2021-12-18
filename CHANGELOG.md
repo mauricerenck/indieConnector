@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/mauricerenck/indieConnector/compare/v1.2.1...v1.2.2) (2021-12-18)
+
+
+### Bug Fixes
+
+* wrong retun signature in known networks ([60d47ab](https://github.com/mauricerenck/indieConnector/commit/60d47ab9fcdc560d49b9be42891dfef872d3c5b7))
+
 ## [1.2.1](https://github.com/mauricerenck/indieConnector/compare/v1.2.0...v1.2.1) (2021-11-17)
 
 
