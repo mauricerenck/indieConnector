@@ -21,12 +21,12 @@ Kirby::plugin('mauricerenck/indieConnector', [
                 $webmention = [];
 
                 if ($response->secret !== option('mauricerenck.indieConnector.secret')) {
-                    return 'PAGE NOT FOUND'; // FIXME forbidden, use kirby return status
+                    return new Response('Not found', 'text/plain', 404);
                 }
 
                 $targetPage = $receiver->getPageFromUrl($response->post->{'wm-target'});
                 if (is_null($targetPage)) {
-                    return 'PAGE NOT FOUND'; // FIXME use kirby return status
+                    return new Response('Not found', 'text/plain', 404);
                 }
 
                 $webmention['type'] = $receiver->getWebmentionType($response->post->{'wm-property'});
