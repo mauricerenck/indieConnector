@@ -98,7 +98,7 @@ class WebmentionReceiver
         ];
     }
 
-    private function isKnownNetwork(string $authorUrl): boolean
+    private function isKnownNetwork(string $authorUrl)
     {
         $networkHosts = [
             'twitter.com',
