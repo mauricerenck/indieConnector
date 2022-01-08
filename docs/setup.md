@@ -10,7 +10,7 @@ To "connect" this plugin to webmention.io you have to set a callback secret in y
 ]
 ```
 
-- Go to your webemention.io account -> Webhooks.
+- Go to your webmention.io account -> Webhooks.
 - Enter the IndieConnector endpoint: `https://your-url.tld/indieConnector/webhook/webmentionio`
 - Enter the callback secret you set in your config.php
 
