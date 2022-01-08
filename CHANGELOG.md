@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/mauricerenck/indieConnector/compare/v1.2.2...v1.2.3) (2022-01-08)
+
+
+### Bug Fixes
+
+* Minor typo ([#4](https://github.com/mauricerenck/indieConnector/issues/4)) ([b645e2e](https://github.com/mauricerenck/indieConnector/commit/b645e2e28a94850a5dd53c903b426ad274b7a0a3))
+
 ## [1.2.2](https://github.com/mauricerenck/indieConnector/compare/v1.2.1...v1.2.2) (2021-12-18)
 
 
