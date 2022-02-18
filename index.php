@@ -3,6 +3,7 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby;
+use \Response;
 
 @require_once __DIR__ . '/lib/indieweb-comments.php';
 @include_once __DIR__ . '/vendor/autoload.php';
