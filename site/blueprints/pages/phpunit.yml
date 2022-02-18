@@ -1,0 +1,7 @@
+sections:
+  phpunit:
+    type: fields
+    fields:
+      textfield:
+        type: textarea
+        label: Text

@@ -9,7 +9,7 @@ use \Response;
 @include_once __DIR__ . '/vendor/autoload.php';
 
 Kirby::plugin('mauricerenck/indieConnector', [
-    'options' => require_once(__DIR__ . '/config/options.php'),
+    'options' => require_once(__DIR__ . '/internal/options.php'),
     'areas' => require_once(__DIR__ . '/components/areas.php'),
     'routes' => [
         [
