@@ -1,3 +1,10 @@
+## [1.2.4](https://github.com/mauricerenck/indieConnector/compare/v1.2.3...v1.2.4) (2022-02-18)
+
+
+### Bug Fixes
+
+* missing respone class ([1a2c2d9](https://github.com/mauricerenck/indieConnector/commit/1a2c2d982dec29d74ffd323bfb318e51416d0ac1))
+
 ## [1.2.3](https://github.com/mauricerenck/indieConnector/compare/v1.2.2...v1.2.3) (2022-01-08)
 
 
