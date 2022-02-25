@@ -16,29 +16,65 @@ use Mf2;
 
 class WebmentionReceiver
 {
-    public function getPageFromUrl(string $url)
+    public function hasValidSecret($response)
     {
-        if (V::url($url)) {
-            $path = Url::path($url);
-            $languages = kirby()->languages();
+        return (isset($response->secret) && $response->secret === option('mauricerenck.indieConnector.secret', ''));
+    }
 
-            if ($languages->count() > 0) {
-                foreach ($languages as $language) {
-                    $languagePattern = '/^' . $language . '\//';
-                    $path = preg_replace($languagePattern, '', $path);
-                }
-            }
-
-            $targetPage = page($path);
-
-            if (is_null($targetPage)) {
-                return null;
-            }
-
-            return $targetPage;
+    public function responseHasPostBody($response)
+    {
+        if (!isset($response->post)) {
+            return false;
         }
 
-        return null;
+        return true;
+    }
+
+    public function getTargetUrl($response)
+    {
+        if (!isset($response->post->{'wm-target'})) {
+            return false;
+        }
+
+        if (!V::url($response->post->{'wm-target'})) {
+            return false;
+        }
+
+        return $response->post->{'wm-target'};
+    }
+
+    public function getSourceUrl($response)
+    {
+        if (!isset($response->post->{'wm-source'})) {
+            return false;
+        }
+
+        if (!V::url($response->post->{'wm-source'})) {
+            return false;
+        }
+
+        if (strpos($response->post->{'wm-source'}, '//localhost') === true || strpos($response->post->{'wm-source'}, '//127.0.0') === true) {
+            return false;
+        }
+
+        return $response->post->{'wm-source'};
+    }
+
+    public function getPageFromUrl(string $url)
+    {
+        $path = Url::path($url);
+
+        if ($path == '') {
+            $page = page(site()->homePageId());
+        } elseif (!$page = page($path)) {
+            $page = page(kirby()->router()->call($path));
+        }
+
+        if (is_null($page)) {
+            return false;
+        }
+
+        return $page;
     }
 
     public function createWebmention()
@@ -66,39 +102,56 @@ class WebmentionReceiver
         return '';
     }
 
-    // TODO move to webmention.io specific class
-    public function getWebmentionType(string $wmProperty)
+    public function getWebmentionType($response)
     {
-        /*
-            in-reply-to
-            like-of
-            repost-of
-            bookmark-of
-            mention-of
-            rsvp
-        */
-        switch ($wmProperty) {
+        if (!isset($response->post->{'wm-property'})) {
+            return 'MENTION';
+        }
+
+        switch ($response->post->{'wm-property'}) {
             case 'like-of': return 'LIKE';
             case 'in-reply-to': return 'REPLY';
             case 'repost-of': return 'REPOST'; // retweet z.b.
             case 'mention-of': return 'MENTION'; // classic webmention z.b.
+            case 'bookmark-of': return 'MENTION'; // classic webmention z.b.
+            case 'rsvp': return 'MENTION'; // classic webmention z.b.
             default: return 'REPLY';
         }
     }
 
-    public function getAuthor($webmention)
+    public function getAuthor($response)
     {
-        $authorInfo = $webmention->post->author;
-
-        return [
+        $authorInfo = $response->post->author;
+        $author = [
             'type' => (isset($authorInfo->type) && !empty($authorInfo->type)) ? $authorInfo->type : null,
             'name' => (isset($authorInfo->name) && !empty($authorInfo->name)) ? $authorInfo->name : null,
             'avatar' => (isset($authorInfo->photo) && !empty($authorInfo->photo)) ? $authorInfo->photo : null,
             'url' => (isset($authorInfo->url) && !empty($authorInfo->url)) ? $authorInfo->url : null,
         ];
+
+        if ($this->getWebmentionType($response) === 'MENTION') {
+            if (is_null($author['name'])) {
+                $author['name'] = $this->getSourceUrl($response);
+            }
+            if (is_null($author['url'])) {
+                $author['url'] = $this->getSourceUrl($response);
+            }
+        }
+
+        return $author;
     }
 
-    private function isKnownNetwork(string $authorUrl)
+    public function getContent($response)
+    {
+        return (isset($response->post->content) && isset($response->post->content->text)) ? $response->post->content->text : '';
+    }
+
+    public function getPubDate($response)
+    {
+        return (!is_null($response->post->published)) ? $response->post->published : $response->post->{'wm-received'};
+    }
+
+    public function isKnownNetwork(string $authorUrl)
     {
         $networkHosts = [
             'twitter.com',

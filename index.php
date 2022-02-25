@@ -18,34 +18,40 @@ Kirby::plugin('mauricerenck/indieConnector', [
             'action' => function () {
                 $response = json_decode(file_get_contents('php://input'));
                 $receiver = new WebmentionReceiver();
+
+                if (!$receiver->hasValidSecret($response)) {
+                    return new Response('Authentication failed', 'text/plain', 401);
+                }
+
+                if (!$receiver->responseHasPostBody($response)) {
+                    return new Response('Webmention body not found', 'text/plain', 406); // Not Acceptable
+                }
+
+                $targetUrl = $receiver->getTargetUrl($response);
+                if (!targetUrl) {
+                    return new Response('No Target Url Given', 'text/plain', 406); // Not Acceptable
+                }
+
+                $sourceUrl = $receiver->getSourceUrl($response);
+                if (!sourceUrl) {
+                    return new Response('No Source Url Given', 'text/plain', 406); // Not Acceptable
+                }
+
+                $targetPage = $receiver->getPageFromUrl($targetUrl);
+                if (!$targetPage) {
+                    return new Response('Target Page Not Found', 'text/plain', 404);
+                }
+
+                $webmention = [
+                    'type' => $receiver->getWebmentionType($response),
+                    'target' => $targetPage->id(),
+                    'source' => $receiver->getTransformedSourceUrl($sourceUrl),
+                    'author' => $receiver->getAuthor($response),
+                    'content' => $receiver->getContent($response),
+                    'published' => $receiver->getPubDate($response),
+                ];
+
                 $hookHelper = new HookHelper();
-                $webmention = [];
-
-                if ($response->secret !== option('mauricerenck.indieConnector.secret')) {
-                    return new Response('Not found', 'text/plain', 404);
-                }
-
-                $targetPage = $receiver->getPageFromUrl($response->post->{'wm-target'});
-                if (is_null($targetPage)) {
-                    return new Response('Not found', 'text/plain', 404);
-                }
-
-                $webmention['type'] = $receiver->getWebmentionType($response->post->{'wm-property'});
-                $webmention['target'] = $targetPage->id();
-                $webmention['source'] = $receiver->getTransformedSourceUrl($response->post->{'wm-source'});
-                $webmention['published'] = (!is_null($response->post->published)) ? $response->post->published : $response->post->{'wm-received'};
-                $webmention['content'] = (isset($response->post->content) && isset($response->post->content->text)) ? $response->post->content->text : '';
-                $webmention['author'] = $receiver->getAuthor($response);
-
-                if ($webmention['type'] === 'MENTION') {
-                    if (is_null($webmention['author']['name'])) {
-                        $webmention['author']['name'] = $webmention['source'];
-                    }
-                    if (is_null($webmention['author']['url'])) {
-                        $webmention['author']['url'] = $webmention['source'];
-                    }
-                }
-
                 $hookHelper->triggerHook('indieConnector.webmention.received', ['webmention' => $webmention, 'targetPage' => $targetPage]);
 
                 if (option('mauricerenck.indieConnector.stats', false)) {
