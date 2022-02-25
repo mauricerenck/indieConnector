@@ -2,18 +2,11 @@
     <k-inside>
         <k-view class="k-webmentions-view">
             <k-header>Webmentions</k-header>
+            <Version :version="version" />
 
             <DetailsByMonth :summary="summary" />
             <Targets :targets="targets" />
             <Sources :sources="sources" />
-
-            <k-grid>
-                <k-column width="1/4">
-                    <div class="spacer">
-                        <Version :version="version" />
-                    </div>
-                </k-column>
-            </k-grid>
         </k-view>
     </k-inside>
 </template>
