@@ -62,5 +62,22 @@ Kirby::plugin('mauricerenck/indieConnector', [
                 return $webmention;
             }
         ],
+        [
+            'pattern' => 'indieConnector/send-test-mention/(:any)',
+            'action' => function ($secret) {
+                if ($secret !== option('mauricerenck.indieConnector.secret', '')) {
+                    return new Response('Authentication failed', 'text/plain', 401);
+                }
+
+                $webmentionSender = new WebmentionSender();
+                $result = $webmentionSender->send(site()->homePage()->url(), site()->homePage()->url());
+
+                if (!$result) {
+                    return 'Could not sent webmention';
+                }
+
+                return 'Sent! You should be able to configure your webmention.io hook now.';
+            }
+        ],
     ]
 ]);
