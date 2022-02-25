@@ -40,6 +40,11 @@
     "scripts": {
         "test": "vendor/bin/phpunit --testdox tests",
         "build-test-package": "git archive HEAD -o indieConnector.zip --worktree-attributes",
-        "build-composer": "composer install --no-dev --optimize-autoloader"
+        "build-composer": "composer install --no-dev --optimize-autoloader",
+        "build-release": [
+            "composer test",
+            "composer install --no-dev --optimize-autoloader",
+            "npm run build"
+        ]
     }
 }
