@@ -28,12 +28,12 @@ Kirby::plugin('mauricerenck/indieConnector', [
                 }
 
                 $targetUrl = $receiver->getTargetUrl($response);
-                if (!targetUrl) {
+                if (!$targetUrl) {
                     return new Response('No Target Url Given', 'text/plain', 406); // Not Acceptable
                 }
 
                 $sourceUrl = $receiver->getSourceUrl($response);
-                if (!sourceUrl) {
+                if (!$sourceUrl) {
                     return new Response('No Source Url Given', 'text/plain', 406); // Not Acceptable
                 }
 
