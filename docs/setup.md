@@ -1,5 +1,7 @@
 # Setup
 
+
+FIXME: in order to be able to use webmention.io hooks, you have to receive at least one webmention, explain how!
 ## Receiving Webmentions
 
 To "connect" this plugin to webmention.io you have to set a callback secret in your config.php
