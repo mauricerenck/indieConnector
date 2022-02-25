@@ -51,11 +51,11 @@ class ComposerStaticInitd2f181dd341adfd58b96ccab3bed9890
         'Kirby\\ComposerInstaller\\Plugin' => __DIR__ . '/..' . '/getkirby/composer-installer/src/ComposerInstaller/Plugin.php',
         'Kirby\\ComposerInstaller\\PluginInstaller' => __DIR__ . '/..' . '/getkirby/composer-installer/src/ComposerInstaller/PluginInstaller.php',
         'mauricerenck\\IndieConnector\\HookHelper' => __DIR__ . '/../..' . '/utils/hookHelper.php',
+        'mauricerenck\\IndieConnector\\MastodonSender' => __DIR__ . '/../..' . '/utils/sendMastodon.php',
         'mauricerenck\\IndieConnector\\SenderUtils' => __DIR__ . '/../..' . '/utils/sender.php',
         'mauricerenck\\IndieConnector\\WebmentionReceiver' => __DIR__ . '/../..' . '/utils/receiver.php',
         'mauricerenck\\IndieConnector\\WebmentionSender' => __DIR__ . '/../..' . '/utils/sendWebmention.php',
         'mauricerenck\\IndieConnector\\WebmentionStats' => __DIR__ . '/../..' . '/utils/stats.php',
-        'mauricerenck\\Komments\\MastodonSender' => __DIR__ . '/../..' . '/utils/sendMastodon.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
