@@ -1,3 +1,7 @@
+options:
+  changeSlug: false
+  update: false
+
 sections:
   phpunit:
     type: fields
@@ -5,3 +9,9 @@ sections:
       textfield:
         type: textarea
         label: Text
+      layouteditor:
+        type: layout
+        label: Layout
+      blockeditor:
+        type: blocks
+        label: Blocks
