@@ -13,7 +13,7 @@ final class receiverTest extends TestCase
         $this->responseMock = json_decode('{
             "secret": "my-secret",
             "source": "https://brid-gy.appspot.com/like/twitter/mauricerenck/DUMMY/DUMMY",
-            "target": "https://dummy-url.tld/en/phpunit",
+            "target": "https://indie-connector.test:8890/en/phpunit",
             "private": false,
             "post": {
                 "type": "entry",
@@ -28,8 +28,8 @@ final class receiverTest extends TestCase
                 "wm-received": "2022-22-02T22:22:22Z",
                 "wm-id": 777837,
                 "wm-source": "https://brid-gy.appspot.com/like/twitter/mauricerenck/DUMMY/DUMMY",
-                "wm-target": "https://dummy-url.tld/en/phpunit",
-                "like-of": "https://dummy-url.tld/en/phpunit",
+                "wm-target": "https://indie-connector.test:8890/en/phpunit",
+                "like-of": "https://indie-connector.test:8890/en/phpunit",
                 "wm-property": "like-of",
                 "wm-private": false,
                 "content": {
@@ -95,7 +95,7 @@ final class receiverTest extends TestCase
         $senderUtils = new WebmentionReceiver();
         $result = $senderUtils->getTargetUrl($this->responseMock);
 
-        $this->assertEquals('https://dummy-url.tld/en/phpunit', $result);
+        $this->assertEquals('https://indie-connector.test:8890/en/phpunit', $result);
     }
 
     public function testHandleInvalidTargetUrl()

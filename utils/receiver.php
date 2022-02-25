@@ -6,6 +6,7 @@ use Kirby\Http\Url;
 use Kirby\Toolkit\V;
 use Kirby\Toolkit\Str;
 use Kirby\Http\Remote;
+use Kirby\Http\Server;
 use json_decode;
 use json_encode;
 use is_null;
@@ -125,7 +126,7 @@ class WebmentionReceiver
         $author = [
             'type' => (isset($authorInfo->type) && !empty($authorInfo->type)) ? $authorInfo->type : null,
             'name' => (isset($authorInfo->name) && !empty($authorInfo->name)) ? $authorInfo->name : null,
-            'avatar' => (isset($authorInfo->photo) && !empty($authorInfo->photo)) ? $authorInfo->photo : null,
+            'avatar' => (isset($authorInfo->photo) && !empty($authorInfo->photo)) ? $authorInfo->photo : '',
             'url' => (isset($authorInfo->url) && !empty($authorInfo->url)) ? $authorInfo->url : null,
         ];
 
