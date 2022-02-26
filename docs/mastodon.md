@@ -5,7 +5,7 @@ If you want to post a toot when a new page is published, you can do so:
 ```
 'mauricerenck.indieConnector.sendMastodon' => true,
 'mauricerenck.indieConnector.mastodon-bearer' => 'my-secret-token',
-'mauricerenck.indieConnector.mastodon-instance-url' => 'https://mastodon.online',
+'mauricerenck.indieConnector.mastodon-instance-url' => 'https://mastodon.online/api/v1/statuses',
 'mauricerenck.indieConnector.mastodon-text-field' => 'description',
 ```
 
