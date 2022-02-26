@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/mauricerenck/indieConnector/compare/v1.3.0...v1.3.1) (2022-02-26)
+
+
+### Bug Fixes
+
+* enable hooks ([7265757](https://github.com/mauricerenck/indieConnector/commit/726575793e86a2076d37ddf63c1b6945cde9af7d))
+
 # [1.3.0](https://github.com/mauricerenck/indieConnector/compare/v1.2.4...v1.3.0) (2022-02-26)
 
 
