@@ -101,7 +101,7 @@ final class receiverTest extends TestCase
     public function testHandleInvalidTargetUrl()
     {
         $invalidMock = $this->responseMock;
-        $invalidMock->post->{'wm-target'} = 'INVALID';
+        $invalidMock->target = 'INVALID';
         $senderUtils = new WebmentionReceiver();
         $result = $senderUtils->getTargetUrl($invalidMock);
 
@@ -119,7 +119,7 @@ final class receiverTest extends TestCase
     public function testHandleInvalidSourceUrl()
     {
         $invalidMock = $this->responseMock;
-        $invalidMock->post->{'wm-source'} = 'INVALID';
+        $invalidMock->source = 'INVALID';
 
         $senderUtils = new WebmentionReceiver();
         $result = $senderUtils->getSourceUrl($invalidMock);

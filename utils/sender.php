@@ -44,7 +44,7 @@ class SenderUtils
 
     public function shouldSendWebmention()
     {
-        option('mauricerenck.indieConnector.sendWebmention', true);
+        return option('mauricerenck.indieConnector.sendWebmention', true);
     }
 
     public function pageHasNeededStatus($page)

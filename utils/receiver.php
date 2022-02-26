@@ -33,32 +33,32 @@ class WebmentionReceiver
 
     public function getTargetUrl($response)
     {
-        if (!isset($response->post->{'wm-target'})) {
+        if (!isset($response->target)) {
             return false;
         }
 
-        if (!V::url($response->post->{'wm-target'})) {
+        if (!V::url($response->target)) {
             return false;
         }
 
-        return $response->post->{'wm-target'};
+        return $response->target;
     }
 
     public function getSourceUrl($response)
     {
-        if (!isset($response->post->{'wm-source'})) {
+        if (!isset($response->source)) {
             return false;
         }
 
-        if (!V::url($response->post->{'wm-source'})) {
+        if (!V::url($response->source)) {
             return false;
         }
 
-        if (strpos($response->post->{'wm-source'}, '//localhost') === true || strpos($response->post->{'wm-source'}, '//127.0.0') === true) {
+        if (strpos($response->source, '//localhost') === true || strpos($response->source, '//127.0.0') === true) {
             return false;
         }
 
-        return $response->post->{'wm-source'};
+        return $response->source;
     }
 
     public function getPageFromUrl(string $url)

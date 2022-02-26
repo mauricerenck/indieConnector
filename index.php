@@ -13,7 +13,7 @@ Kirby::plugin('mauricerenck/indieConnector', [
     'areas' => require_once(__DIR__ . '/components/areas.php'),
     'routes' => [
         [
-            'pattern' => 'indieConnector/webhook/webmentionio',
+            'pattern' => '(indieConnector|indieconnector)/webhook/webmentionio',
             'method' => 'POST',
             'action' => function () {
                 $response = json_decode(file_get_contents('php://input'));
@@ -63,7 +63,7 @@ Kirby::plugin('mauricerenck/indieConnector', [
             }
         ],
         [
-            'pattern' => 'indieConnector/send-test-mention/(:any)',
+            'pattern' => 'indieconnector/send-test-mention/(:any)',
             'action' => function ($secret) {
                 if ($secret !== option('mauricerenck.indieConnector.secret', '')) {
                     return new Response('Authentication failed', 'text/plain', 401);
