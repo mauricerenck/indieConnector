@@ -7,7 +7,7 @@ use Kirby\Data\yaml;
 
 return [
     'page.update:after' => function ($newPage, $oldPage) {
-        if (!option('mauricerenck.indieConnector.sendWebmention', false)) {
+        if (!option('mauricerenck.indieConnector.sendWebmention', true)) {
             return;
         }
 
