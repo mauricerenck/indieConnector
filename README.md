@@ -20,10 +20,12 @@ Use one of these three methods to install the plugin:
 - unzip [master.zip](https://github.com/mauricerenck/indieConnector/releases/latest) to `site/plugins/indieConnector`
 - `git submodule add https://github.com/mauricerenck/indieConnector.git site/plugins/indieConnector`
 
-* [Switch from Tratschtante to IndieConnector](docs/switch.md)
-* [Receiving Webmentions](docs/setup.md)
+* [Receiving Webmentions](docs/receiving.md)
+* [Sending Webmentions](docs/sending.md)
+* [Post to Mastodon](docs/mastodon.md)
 * [Subscribe to the hook](docs/hook.md)
-
+* [All options](docs/options.md)
+* [Switch from Tratschtante to IndieConnector](docs/switch.md)
 ---
 
 ## Features

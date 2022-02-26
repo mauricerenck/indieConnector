@@ -24,7 +24,9 @@ Add webmention.io endpoints to your HTML `<head></head>`. Those will look like t
 ```
 
 In order to be allowed to use webmention hooks, you have to receive at least one webmention on your site before. So after adding those headers to your site, you have to send a webmention to yourself.
-To do so, IndieConnector has an endpoint ready for you: `https://YOUR-DOMAIN.TLD/indieConnector/send-test-mention/YOUR-SECRET`
+To do so, IndieConnector has an endpoint ready for you: 
+
+`https://YOUR-DOMAIN.TLD/indieconnector/send-test-mention/YOUR-SECRET`
 
 Replace the domain with yours and `YOUR-SECRET` with the secret you defined in your config.php. This way nobody else can use this endpoint. The result should be a sent webmention. You should be able to see it on your webmention.io dashboard. This should also enable the webhook functionality of webmention.io.
 
@@ -33,7 +35,7 @@ Please make sure not to share this url! Everybody knowing your secret would be a
 ## Enable Webmention.io Hook
 
 - Go to your webmention.io account -> Webhooks.
-- Enter the IndieConnector endpoint: `https://your-url.tld/indieConnector/webhook/webmentionio`
+- Enter the IndieConnector endpoint: `https://your-url.tld/indieconnector/webhook/webmentionio`
 - Enter the callback secret you set in your config.php
 
 ## Enable panel overview
