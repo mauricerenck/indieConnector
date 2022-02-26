@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/mauricerenck/indieConnector/compare/v1.2.4...v1.3.0) (2022-02-26)
+
+
+### Features
+
+* sending webmentions ([f89bb54](https://github.com/mauricerenck/indieConnector/commit/f89bb5433cfbef01b94764d55638adb02e3c0e3a))
+
 ## [1.2.4](https://github.com/mauricerenck/indieConnector/compare/v1.2.3...v1.2.4) (2022-02-18)
 
 
