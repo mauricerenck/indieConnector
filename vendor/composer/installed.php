@@ -1,7 +1,7 @@
 <?php return array(
     'root' => array(
-        'pretty_version' => '1.2.1',
-        'version' => '1.2.1.0',
+        'pretty_version' => '1.2.4',
+        'version' => '1.2.4.0',
         'type' => 'kirby-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -19,9 +19,18 @@
             'reference' => 'c98ece30bfba45be7ce457e1102d1b169d922f3d',
             'dev_requirement' => false,
         ),
-        'mauricerenck/indieconnector' => array(
+        'indieweb/mention-client' => array(
             'pretty_version' => '1.2.1',
             'version' => '1.2.1.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../indieweb/mention-client',
+            'aliases' => array(),
+            'reference' => '6807f4b1b96df7f47ea425eebfc7c032768652cf',
+            'dev_requirement' => false,
+        ),
+        'mauricerenck/indieconnector' => array(
+            'pretty_version' => '1.2.4',
+            'version' => '1.2.4.0',
             'type' => 'kirby-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -33,6 +42,15 @@
             'replaced' => array(
                 0 => '*',
             ),
+        ),
+        'mf2/mf2' => array(
+            'pretty_version' => 'v0.5.0',
+            'version' => '0.5.0.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../mf2/mf2',
+            'aliases' => array(),
+            'reference' => 'ddc56de6be62ed4a21f569de9b80e17af678ca50',
+            'dev_requirement' => false,
         ),
     ),
 );

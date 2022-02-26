@@ -7,13 +7,9 @@
 
 This plugin currently works only with webmention.io and is a replacement for the old "Tratschtante" plugin.
 
-**Be aware:**
+IndieConnector receives and sends Webmentions. But it doesn't "do" anything with received Webmentions. It's function is to handle all the stuff around Webmentions and then normalize the format and trigger a hook. Other plugins can then subscribe to this hook and use the data.
 
-The panel view of this plugin only works with the upcomming Kirby 3.6 release! Beside that, receiving Webmentions with older Kirby version will work.
-
-IndieConnector receives (and soon sends) Webmentions. But it doesn't "do" anything with it. It's function is to handle all the stuff around Webmentions and then normalize the format and trigger a hook. Other plugins can then subscribe to this hook and use the data.
-
-If you want Webmentions to be shown on your pages, you have to use additional plugins (or write your own) which use IndieConnector to handle Webmentions. For example the [Komments plugin]() which will then show received webmentions as a comment (or in any other way you wish).
+If you want Webmentions to be shown on your pages, you have to use additional plugins (or write your own) which use IndieConnector to handle Webmentions. For example the [Komments plugin](https://github.com/mauricerenck/komments) which will then show received webmentions as a comment (or in any other way you wish).
 
 ---
 ## Installation
@@ -24,17 +20,25 @@ Use one of these three methods to install the plugin:
 - unzip [master.zip](https://github.com/mauricerenck/indieConnector/releases/latest) to `site/plugins/indieConnector`
 - `git submodule add https://github.com/mauricerenck/indieConnector.git site/plugins/indieConnector`
 
-* [Switch from Tratschtante to IndieConnector](docs/switch.md)
-* [Setup the plugin](docs/setup.md)
-* [Subscribe to the hook](docs/hook.md)
+---
 
+## Docs
+
+* [Receiving Webmentions](docs/receiving.md)
+* [Sending Webmentions](docs/sending.md)
+* [Post to Mastodon](docs/mastodon.md)
+* [Subscribe to the hook](docs/hook.md)
+* [All options](docs/options.md)
+* [Switch from Tratschtante to IndieConnector](docs/switch.md)
 ---
 
 ## Features
 
 - Receive Webmentions on your site
+- Send Webmentions from your site
 - Shows a Webmention overview in the panel
 - Propagates Webmentions via Hook so other plugins can subscribe and use them
+- Send updates to mastodon (toot)
 
 ---
 
@@ -42,7 +46,6 @@ Use one of these three methods to install the plugin:
 
 - [x] Kirby 3.6 ready
 - [x] View Webmention stats in the panel
-- [ ] Send webmentions
-- [ ] Notify on Mastodon
-- [ ] Ping Archive.org
+- [x] Send webmentions
+- [x] Notify on Mastodon
 - [ ] Implement Webmentions without webmention.io
