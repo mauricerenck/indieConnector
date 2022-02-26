@@ -20,6 +20,10 @@ Use one of these three methods to install the plugin:
 - unzip [master.zip](https://github.com/mauricerenck/indieConnector/releases/latest) to `site/plugins/indieConnector`
 - `git submodule add https://github.com/mauricerenck/indieConnector.git site/plugins/indieConnector`
 
+---
+
+## Docs
+
 * [Receiving Webmentions](docs/receiving.md)
 * [Sending Webmentions](docs/sending.md)
 * [Post to Mastodon](docs/mastodon.md)
