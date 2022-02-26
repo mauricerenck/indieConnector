@@ -10,6 +10,7 @@ use \Response;
 
 Kirby::plugin('mauricerenck/indieConnector', [
     'options' => require_once(__DIR__ . '/internal/options.php'),
+    'hooks' => require_once(__DIR__ . '/internal/hooks.php'),
     'areas' => require_once(__DIR__ . '/components/areas.php'),
     'routes' => [
         [
