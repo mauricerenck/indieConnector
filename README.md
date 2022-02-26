@@ -5,7 +5,7 @@
 
 ---
 
-This plugin currently works only with webmention.io and is a replacement for the old "Tratschtante" plugin.
+This plugin currently works only with webmention.io.
 
 IndieConnector receives and sends Webmentions. But it doesn't "do" anything with received Webmentions. It's function is to handle all the stuff around Webmentions and then normalize the format and trigger a hook. Other plugins can then subscribe to this hook and use the data.
 
