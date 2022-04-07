@@ -11,37 +11,50 @@ return [
             'link' => 'webmentions',
             'views' => [
                 [
-                    'pattern' => 'webmentions',
-                    'action' => function () {
+                    'pattern' => ['webmentions', 'webmentions/(:any)/(:any)'],
+                    'action' => function ($year = null, $month = null) {
+                        if (is_null($year) || is_null($month)) {
+                            $timestamp = time();
+                            $year = date('Y', $timestamp);
+                            $month = date('m', $timestamp);
+                        }
+
+                        if ($month < 12) {
+                            $nextMonth = $month + 1;
+                            $nextYear = $year;
+                        } else {
+                            $nextMonth = 1;
+                            $nextYear = $year + 1;
+                        }
+
+                        if ($month > 1) {
+                            $prevMonth = $month - 1;
+                            $prevYear = $year;
+                        } else {
+                            $prevMonth = 12;
+                            $prevYear = $year - 1;
+                        }
+
+                        $stats = new WebmentionStats();
+                        $summary = $stats->getSummaryByMonth($year, $month);
+                        $targets = $stats->getTargets($year, $month);
+                        $sources = $stats->getSources($year, $month);
+                        $version = $stats->getPluginVersion();
+
                         return [
                             'component' => 'k-webmentions-view',
                             'title' => 'Webmentions',
                             'props' => [
-                                'summary' => function () {
-                                    $stats = new WebmentionStats();
-                                    $timestamp = time();
-                                    $summary = $stats->getSummaryByMonth($timestamp);
-
-                                    return $summary;
-                                },
-                                'targets' => function () {
-                                    $stats = new WebmentionStats();
-                                    $timestamp = time();
-                                    $summary = $stats->getTargets($timestamp);
-
-                                    return $summary;
-                                },
-                                'sources' => function () {
-                                    $stats = new WebmentionStats();
-                                    $timestamp = time();
-                                    $summary = $stats->getSources($timestamp);
-
-                                    return $summary;
-                                },
-                                'version' => function () {
-                                    $stats = new WebmentionStats();
-                                    return $stats->getPluginVersion();
-                                }
+                                'year' => $year,
+                                'month' => $month,
+                                'nextYear' => $nextYear,
+                                'nextMonth' => $nextMonth,
+                                'prevYear' => $prevYear,
+                                'prevMonth' => $prevMonth,
+                                'summary' => $summary,
+                                'targets' => $targets,
+                                'sources' => $sources,
+                                'version' => $version
                             ],
                         ];
                     }

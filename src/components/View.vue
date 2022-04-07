@@ -2,6 +2,11 @@
     <k-inside>
         <k-view class="k-webmentions-view">
             <k-header>Webmentions</k-header>
+            <div class="prev-next">
+                <button class="k-link k-button" v-on:click="goToPrevMonth"><k-icon type="angle-left" /></button>
+                {{ month }} / {{ year }}
+                <button class="k-link k-button" v-on:click="goToNextMonth"><k-icon type="angle-right" /></button>
+            </div>
             <Version :version="version" />
 
             <DetailsByMonth :summary="summary" />
@@ -14,10 +19,27 @@
 <script>
 export default {
     props: {
+        year: Number,
+        month: Number,
+        nextYear: Number,
+        nextMonth: Number,
+        prevYear: Number,
+        prevMonth: Number,
         summary: Object,
         targets: Array,
         sources: Array,
         version: Object,
+    },
+
+    methods: {
+        goToPrevMonth() {
+            const panelPath = window.location.pathname.split('webmentions')
+            window.location.pathname = `${panelPath[0]}webmentions/${this.prevYear}/${this.prevMonth}`
+        },
+        goToNextMonth() {
+            const panelPath = window.location.pathname.split('webmentions')
+            window.location.pathname = `${panelPath[0]}webmentions/${this.nextYear}/${this.nextMonth}`
+        },
     },
 }
 </script>
