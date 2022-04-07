@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/mauricerenck/indieConnector/compare/v1.4.1...v1.4.2) (2022-04-07)
+
+
+### Bug Fixes
+
+* javascript php mixup ([82ea703](https://github.com/mauricerenck/indieConnector/commit/82ea7032771beac91e7f3b973bb098ff01d800e0))
+
 ## [1.4.1](https://github.com/mauricerenck/indieConnector/compare/v1.4.0...v1.4.1) (2022-04-07)
 
 
