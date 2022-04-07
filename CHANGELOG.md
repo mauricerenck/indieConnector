@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/mauricerenck/indieConnector/compare/v1.3.1...v1.4.0) (2022-04-07)
+
+
+### Features
+
+* cycle through months ([cbf6f09](https://github.com/mauricerenck/indieConnector/commit/cbf6f09d2ce034baebeccade03a220413d32820a))
+
 ## [1.3.1](https://github.com/mauricerenck/indieConnector/compare/v1.3.0...v1.3.1) (2022-02-26)
 
 
