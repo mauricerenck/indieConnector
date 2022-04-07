@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/mauricerenck/indieConnector/compare/v1.4.0...v1.4.1) (2022-04-07)
+
+
+### Bug Fixes
+
+* sqlite queries need a leading zero ([50240a0](https://github.com/mauricerenck/indieConnector/commit/50240a07b036c165a0784c80b0e0c6bd299f25d3))
+
 # [1.4.0](https://github.com/mauricerenck/indieConnector/compare/v1.3.1...v1.4.0) (2022-04-07)
 
 
