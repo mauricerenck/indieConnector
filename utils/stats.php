@@ -51,6 +51,9 @@ class WebmentionStats
     public function getSummaryByMonth(int $year, int $month)
     {
         try {
+            $month = parseInt($month);
+            $month = $month < 10 ? '0' . $month : $month;
+
             $result = $this->db->query('SELECT COUNT(id) as summary, * FROM webmentions WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_type;');
             $summary = [
                 'summary' => 0,
@@ -111,6 +114,9 @@ class WebmentionStats
     public function getTargets(int $year, int $month)
     {
         try {
+            $month = parseInt($month);
+            $month = $month < 10 ? '0' . $month : $month;
+
             $result = $this->db->query('SELECT mention_target, mention_type, COUNT(mention_type) as mentions FROM webmentions WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_target, mention_type;');
             $targets = [];
 
@@ -149,6 +155,9 @@ class WebmentionStats
     public function getSources(int $year, int $month)
     {
         try {
+            $month = parseInt($month);
+            $month = $month < 10 ? '0' . $month : $month;
+
             $result = $this->db->query('SELECT mention_source, mention_type, mention_image, COUNT(mention_type) as mentions FROM webmentions WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_source, mention_type;');
             $sources = [];
 
@@ -194,8 +203,11 @@ class WebmentionStats
         }
 
         $timestamp = time();
+        $year = date('Y', $timestamp);
+        $month = date('m', $timestamp);
+
         $stats = new WebmentionStats();
-        $summary = $stats->getSummaryByMonth($timestamp);
+        $summary = $stats->getSummaryByMonth($year, $month);
 
         return $summary;
     }
