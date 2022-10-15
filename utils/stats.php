@@ -17,7 +17,6 @@ use str_replace;
 use Kirby\Http\Url;
 use Kirby\Toolkit\V;
 use Kirby\Http\Remote;
-use Kirby\Http\Server;
 use Kirby\Toolkit\Str;
 
 class WebmentionStats

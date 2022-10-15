@@ -2,7 +2,6 @@
 
 namespace mauricerenck\IndieConnector;
 
-use Kirby\Http\Server;
 use Kirby\Data\yaml;
 
 return [

@@ -11,7 +11,7 @@ final class sendWebmentionTest extends TestCase
         $page = page('phpunit');
 
         $sendWebmention = new WebmentionSender();
-        $result = $sendWebmention->send('https://maurice-renck.de/de/blog/internet-helden-karl-boris-und-kimble', $page->url());
+        $result = $sendWebmention->send('https://maurice-renck.de/de/blog/2003/internet-helden-karl-boris-und-kimble', $page->url()); // FIXME
         $this->assertTrue($result);
     }
 

@@ -6,7 +6,6 @@ use Kirby\Http\Url;
 use Kirby\Toolkit\V;
 use Kirby\Toolkit\Str;
 use Kirby\Http\Remote;
-use Kirby\Http\Server;
 use json_decode;
 use json_encode;
 use is_null;
