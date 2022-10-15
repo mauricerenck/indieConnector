@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/mauricerenck/indieConnector/compare/v1.4.2...v1.5.0) (2022-10-15)
+
+
+### Features
+
+* kirby 3.8 deprectations removed ([6ec930f](https://github.com/mauricerenck/indieConnector/commit/6ec930f7caf0158b6e7b9a71c69f6aba4ffaf979))
+
 ## [1.4.2](https://github.com/mauricerenck/indieConnector/compare/v1.4.1...v1.4.2) (2022-04-07)
 
 
