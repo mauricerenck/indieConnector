@@ -44,8 +44,12 @@ Use one of these three methods to install the plugin:
 
 ## Roadmap 
 
+- [ ] Connect to Mastodon (first step via https://fed.brid.gy/)
+- [ ] Nested indieweb replies
+- [ ] Blocklist for domains
+- [ ] Blocklist for users
+- [ ] Implement receiving webmentions without webmention.io
 - [x] Kirby 3.6 ready
 - [x] View Webmention stats in the panel
 - [x] Send webmentions
 - [x] Notify on Mastodon
-- [ ] Implement Webmentions without webmention.io
