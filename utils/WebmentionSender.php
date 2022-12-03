@@ -4,20 +4,19 @@ namespace mauricerenck\IndieConnector;
 
 use \IndieWeb\MentionClient;
 
-class WebmentionSender
+class WebmentionSender extends Sender
 {
     private $mentionClient;
 
     public function __construct()
     {
+        parent::__construct();
         $this->mentionClient = new MentionClient();
     }
 
     public function send(string $targetUrl, string $sourceUrl)
     {
-
-        $senderUtils = new Sender();
-        if (!$senderUtils->urlExists($targetUrl)) {
+        if (!$this->urlExists($targetUrl)) {
             return false;
         }
 

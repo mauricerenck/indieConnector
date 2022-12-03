@@ -90,8 +90,6 @@ class Sender
         } catch (Exception $e) {
             return [];
         }
-
-        return [];
     }
 
     public function storeProcessedUrls($urls, $page)
@@ -109,7 +107,6 @@ class Sender
 
     public function findUrls($page)
     {
-        $detectedUrls = [];
         $htmlParts = [];
 
         foreach ($this->fieldsToParseUrls as $field) {

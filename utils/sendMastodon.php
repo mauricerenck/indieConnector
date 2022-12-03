@@ -4,7 +4,7 @@ namespace mauricerenck\IndieConnector;
 
 use Kirby\Toolkit\Str;
 
-class MastodonSender
+class MastodonSender extends Sender
 {
     public function sendToot($page)
     {
