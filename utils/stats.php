@@ -129,7 +129,7 @@ class WebmentionStats
                         'slug' => '/' . $webmention->mention_target,
                         'title' => $page->title()->value(),
                         'pageUrl' => $page->url(),
-                        'panelUrl' => $page->panelUrl(),
+                        'panelUrl' => $page->panel()->url(),
                         'likes' => 0,
                         'replies' => 0,
                         'reposts' => 0,
