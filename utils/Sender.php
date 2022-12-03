@@ -10,7 +10,7 @@ use in_array;
 use array_merge;
 use Exception;
 
-class SenderUtils
+class Sender
 {
     private $processed;
     private $mentionClient;

@@ -16,7 +16,7 @@ class WebmentionSender
     public function send(string $targetUrl, string $sourceUrl)
     {
 
-        $senderUtils = new SenderUtils();
+        $senderUtils = new Sender();
         if (!$senderUtils->urlExists($targetUrl)) {
             return false;
         }

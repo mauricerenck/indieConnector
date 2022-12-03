@@ -1,6 +1,6 @@
 <?php
 
-use mauricerenck\IndieConnector\SenderUtils;
+use mauricerenck\IndieConnector\Sender;
 use PHPUnit\Framework\TestCase;
 use Kirby\Cms;
 
@@ -10,7 +10,7 @@ final class senderTest extends TestCase
     {
         $page = page('phpunit');
 
-        $senderUtils = new SenderUtils();
+        $senderUtils = new Sender();
         $result = $senderUtils->pageHasNeededStatus($page);
 
         $this->assertTrue($result);
@@ -23,7 +23,7 @@ final class senderTest extends TestCase
         $unpublishedPage = $page->duplicate('phpunit-unpublished');
         $unpublishedPage->unpublish();
 
-        $senderUtils = new SenderUtils();
+        $senderUtils = new Sender();
         $result = $senderUtils->pageHasNeededStatus($unpublishedPage);
 
         $this->assertFalse($result);
@@ -36,7 +36,7 @@ final class senderTest extends TestCase
     {
         $page = page('phpunit');
 
-        $senderUtils = new SenderUtils();
+        $senderUtils = new Sender();
         $result = $senderUtils->templateIsAllowed('phpunit');
 
         $this->assertTrue($result);
@@ -46,7 +46,7 @@ final class senderTest extends TestCase
     {
         $page = page('phpunit');
 
-        $senderUtils = new SenderUtils();
+        $senderUtils = new Sender();
         $result = $senderUtils->templateIsAllowed('nope');
 
         $this->assertFalse($result);
@@ -56,7 +56,7 @@ final class senderTest extends TestCase
     {
         $page = page('phpunit');
 
-        $senderUtils = new SenderUtils();
+        $senderUtils = new Sender();
         $result = $senderUtils->templateIsBlocked('blocked-template');
 
         $this->assertTrue($result);
@@ -66,7 +66,7 @@ final class senderTest extends TestCase
     {
         $page = page('phpunit');
 
-        $senderUtils = new SenderUtils();
+        $senderUtils = new Sender();
         $result = $senderUtils->templateIsBlocked('phpunit');
 
         $this->assertFalse($result);
@@ -85,7 +85,7 @@ final class senderTest extends TestCase
             'www.block-url.tld'
         ];
 
-        $senderUtils = new SenderUtils();
+        $senderUtils = new Sender();
         $urls = $senderUtils->findUrls($page);
 
         $this->assertCount(count($expectedUrls), $urls);
@@ -99,7 +99,7 @@ final class senderTest extends TestCase
     {
         $page = page('phpunit');
 
-        $senderUtils = new SenderUtils();
+        $senderUtils = new Sender();
         $urls = $senderUtils->getProcessedUrls($page);
 
         $this->assertCount(1, $urls);
@@ -115,7 +115,7 @@ final class senderTest extends TestCase
             'https://processed-url.tld'
         ];
 
-        $senderUtils = new SenderUtils();
+        $senderUtils = new Sender();
         $urls = $senderUtils->cleanupUrls($sampleUrls, $page);
 
         $this->assertCount(1, $urls);
@@ -132,7 +132,7 @@ final class senderTest extends TestCase
             'https://processed-url.tld'
         ];
 
-        $senderUtils = new SenderUtils();
+        $senderUtils = new Sender();
         $result = $senderUtils->storeProcessedUrls($sampleUrls, $page);
         $this->assertTrue($result);
 

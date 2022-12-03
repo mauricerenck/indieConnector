@@ -10,7 +10,7 @@ return [
             return;
         }
 
-        $senderUtils = new SenderUtils();
+        $senderUtils = new Sender();
 
         if (!$senderUtils->pageFullfillsCriteria($newPage)) {
             return;

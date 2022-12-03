@@ -36,3 +36,4 @@
 /.vscode
 /kirby
 /.sqlite
+/site/cache
