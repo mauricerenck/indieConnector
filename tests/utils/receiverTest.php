@@ -129,8 +129,8 @@ final class receiverTest extends TestCase
 
     public function testGetPageFromUrl()
     {
-        $senderUtils = new WebmentionReceiver();
-        $result = $senderUtils->getPageFromUrl($this->responseMock->target);
+        $receiverUtils = new WebmentionReceiver();
+        $result = $receiverUtils->getPageFromUrl($this->responseMock->target);
 
         $this->assertEquals('phpunit', $result->slug());
     }
@@ -153,8 +153,8 @@ final class receiverTest extends TestCase
 
     public function testHandleUnkownPage()
     {
-        $senderUtils = new WebmentionReceiver();
-        $result = $senderUtils->getPageFromUrl('https://dummy-url.tld/invalid');
+        $receiverUtils = new WebmentionReceiver();
+        $result = $receiverUtils->getPageFromUrl('https://dummy-url.tld/invalid');
 
         $this->assertFalse($result);
     }
