@@ -68,6 +68,10 @@ class WebmentionReceiver
             $page = page(site()->homePageId());
         } elseif (!$page = page($path)) {
             $page = page(kirby()->router()->call($path));
+
+            if ($page->isHomeOrErrorPage()) {
+                return false;
+            }
         }
 
         if (is_null($page)) {
@@ -109,13 +113,20 @@ class WebmentionReceiver
         }
 
         switch ($response->post->{'wm-property'}) {
-            case 'like-of': return 'LIKE';
-            case 'in-reply-to': return 'REPLY';
-            case 'repost-of': return 'REPOST'; // retweet z.b.
-            case 'mention-of': return 'MENTION'; // classic webmention z.b.
-            case 'bookmark-of': return 'MENTION'; // classic webmention z.b.
-            case 'rsvp': return 'MENTION'; // classic webmention z.b.
-            default: return 'REPLY';
+            case 'like-of':
+                return 'LIKE';
+            case 'in-reply-to':
+                return 'REPLY';
+            case 'repost-of':
+                return 'REPOST'; // retweet z.b.
+            case 'mention-of':
+                return 'MENTION'; // classic webmention z.b.
+            case 'bookmark-of':
+                return 'MENTION'; // classic webmention z.b.
+            case 'rsvp':
+                return 'MENTION'; // classic webmention z.b.
+            default:
+                return 'REPLY';
         }
     }
 

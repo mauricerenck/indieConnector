@@ -15,6 +15,12 @@ class WebmentionSender
 
     public function send(string $targetUrl, string $sourceUrl)
     {
+
+        $senderUtils = new SenderUtils();
+        if (!$senderUtils->urlExists($targetUrl)) {
+            return false;
+        }
+
         $endpoint = $this->mentionClient->discoverWebmentionEndpoint($targetUrl);
 
         if (strpos($endpoint, '//localhost') === true || strpos($endpoint, '//127.0.0') === true) {
@@ -37,6 +43,7 @@ class WebmentionSender
                 return true;
             }
         }
+
 
         return false;
     }
