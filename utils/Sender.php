@@ -13,12 +13,10 @@ use Exception;
 class Sender
 {
     private $processed;
-    private $mentionClient;
     private $fieldsToParseUrls;
 
     public function __construct()
     {
-        $this->mentionClient = new MentionClient();
         $this->fieldsToParseUrls = option('mauricerenck.indieConnector.send-mention-url-fields', ['text:text', 'description:text', 'intro:text']);
     }
 

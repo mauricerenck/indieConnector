@@ -3,7 +3,7 @@
 use mauricerenck\IndieConnector\WebmentionSender;
 use PHPUnit\Framework\TestCase;
 
-final class sendWebmentionTest extends TestCase
+final class WebmentionSenderTest extends TestCase
 {
     public function testShouldSendWebmention()
     {
