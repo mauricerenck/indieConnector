@@ -15,8 +15,8 @@ return array(
     'Kirby\\ComposerInstaller\\PluginInstaller' => $vendorDir . '/getkirby/composer-installer/src/ComposerInstaller/PluginInstaller.php',
     'mauricerenck\\IndieConnector\\HookHelper' => $baseDir . '/utils/hookHelper.php',
     'mauricerenck\\IndieConnector\\MastodonSender' => $baseDir . '/utils/sendMastodon.php',
-    'mauricerenck\\IndieConnector\\SenderUtils' => $baseDir . '/utils/sender.php',
+    'mauricerenck\\IndieConnector\\Sender' => $baseDir . '/utils/Sender.php',
     'mauricerenck\\IndieConnector\\WebmentionReceiver' => $baseDir . '/utils/receiver.php',
-    'mauricerenck\\IndieConnector\\WebmentionSender' => $baseDir . '/utils/sendWebmention.php',
+    'mauricerenck\\IndieConnector\\WebmentionSender' => $baseDir . '/utils/WebmentionSender.php',
     'mauricerenck\\IndieConnector\\WebmentionStats' => $baseDir . '/utils/stats.php',
 );
