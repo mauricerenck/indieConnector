@@ -1,6 +1,6 @@
 # Hooks
 
-IndieConnector receives (and soon sends) Webmentions. But it doesn't "do" anything with it. It's function is to handle all the stuff around Webmentions and then normalize the format and trigger a hook. Other plugins can then subscribe to this hook and use the data.
+IndieConnector receives and Webmentions. But it doesn't "do" anything with it. It's function is to handle all the stuff around Webmentions and then normalize the format and trigger a hook. Other plugins can then subscribe to this hook and use the data.
 
 The [Komments plugin]() does this, for example.
 
