@@ -81,5 +81,25 @@ Kirby::plugin('mauricerenck/indieConnector', [
                 return 'Sent! You should be able to configure your webmention.io hook now.';
             }
         ],
+        [
+            'pattern' => '^.well-known/((host-meta|webfinger).(:any)|(host-meta|webfinger))',
+            'method' => 'OPTIONS|GET|POST|PUT',
+            'action' => function($file) {
+                if(!option('mauricerenck.indieConnector.activityPubBridge', false)) {
+                    return false;
+                }
+
+                $query = kirby()->request()->query()->toArray();
+
+                $queryString = [];
+                foreach ($query as $key => $value) {
+                    $queryString[] = $key . '=' . $value;
+                }
+
+                $redirectUrl = 'https://fed.brid.gy/.well-known/' . $file . '?' . implode('&', $queryString);
+
+                die(header('Location: ' . $redirectUrl));
+            }
+        ]
     ]
 ]);

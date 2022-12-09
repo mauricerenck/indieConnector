@@ -26,6 +26,7 @@ Use one of these three methods to install the plugin:
 
 * [Receiving Webmentions](docs/receiving.md)
 * [Sending Webmentions](docs/sending.md)
+* [Be a Mastodon Instance](docs/activitypub.md) (ActivityPub)
 * [Post to Mastodon](docs/mastodon.md)
 * [Subscribe to the hook](docs/hook.md)
 * [All options](docs/options.md)
@@ -44,11 +45,11 @@ Use one of these three methods to install the plugin:
 
 ## Roadmap 
 
-- [ ] Connect to Mastodon (first step via https://fed.brid.gy/)
 - [ ] Nested indieweb replies
 - [ ] Blocklist for domains
 - [ ] Blocklist for users
 - [ ] Implement receiving webmentions without webmention.io
+- [x] Connect to Mastodon (first step via https://fed.brid.gy/)
 - [x] Kirby 3.6 ready
 - [x] View Webmention stats in the panel
 - [x] Send webmentions

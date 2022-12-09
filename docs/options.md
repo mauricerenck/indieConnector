@@ -28,3 +28,10 @@
 | `mastodon-instance-url` | `‘‘`            | Your mastodon instance url      |
 | `mastodon-text-field`   | `‘description‘` | Source field for toot text      |
 
+
+## ActivityPub beta ([details](activitiypub.md))
+
+| Option                  | Default         | Description                     |
+| ----------------------- | --------------- | ------------------------------- |
+| `activityPubBridge`     | `false`         | Enable activityPub (beta)  |
+

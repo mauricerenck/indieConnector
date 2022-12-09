@@ -24,6 +24,10 @@ return [
 
         $cleanedUrls = $senderUtils->cleanupUrls($urls, $newPage);
 
+        if(option('mauricerenck.indieConnector.activityPubBridge', false)) {
+            $cleanedUrls[] = 'https://fed.brid.gy/';
+        }
+
         if (count($cleanedUrls) === 0) {
             return;
         }
