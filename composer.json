@@ -1,54 +1,54 @@
 {
-  "name": "mauricerenck/indieconnector",
-  "version": "1.5.0",
-  "description": "Kirby Webmentions your plugins can subscribe to",
-  "type": "kirby-plugin",
-  "license": "MIT",
-  "homepage": "https://github.com/mauricerenck/indieConnector",
-  "authors": [
-    {
-      "name": "Maurice Renck",
-      "email": "hello@maurice-renck.de"
-    }
-  ],
-  "autoload": {
-    "psr-4": {
-      "mauricerenck\\IndieConnector\\": "utils/"
+    "name": "mauricerenck/indieconnector",
+    "version": "1.6.0",
+    "description": "Kirby Webmentions your plugins can subscribe to",
+    "type": "kirby-plugin",
+    "license": "MIT",
+    "homepage": "https://github.com/mauricerenck/indieConnector",
+    "authors": [
+        {
+            "name": "Maurice Renck",
+            "email": "hello@maurice-renck.de"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "mauricerenck\\IndieConnector\\": "utils/"
+        },
+        "classmap": [
+            "utils"
+        ]
     },
-    "classmap": [
-      "utils"
-    ]
-  },
-  "require": {
-    "getkirby/composer-installer": "^1.2",
-    "php": ">=8.0.0",
-    "indieweb/mention-client": "^1.2",
-    "ext-curl": "*"
-  },
-  "require-dev": {
-    "getkirby/cms": "^3.8",
-    "phpunit/phpunit": "^9.5"
-  },
-  "replace": {
-    "mauricerenck/tratschtante": "*"
-  },
-  "suggests": {
-    "mauricerenck/komments": "1.3"
-  },
-  "config": {
-    "optimize-autoloader": true,
-    "allow-plugins": {
-      "getkirby/composer-installer": true
+    "require": {
+        "getkirby/composer-installer": "^1.2",
+        "php": ">=8.0.0",
+        "indieweb/mention-client": "^1.2",
+        "ext-curl": "*"
+    },
+    "require-dev": {
+        "getkirby/cms": "^3.8",
+        "phpunit/phpunit": "^9.5"
+    },
+    "replace": {
+        "mauricerenck/tratschtante": "*"
+    },
+    "suggests": {
+        "mauricerenck/komments": "1.3"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "getkirby/composer-installer": true
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit --testdox tests",
+        "build-test-package": "git archive HEAD -o indieConnector.zip --worktree-attributes",
+        "build-composer": "composer install --no-dev --optimize-autoloader",
+        "build-release": [
+            "composer test",
+            "composer install --no-dev --optimize-autoloader",
+            "npm run build"
+        ]
     }
-  },
-  "scripts": {
-    "test": "vendor/bin/phpunit --testdox tests",
-    "build-test-package": "git archive HEAD -o indieConnector.zip --worktree-attributes",
-    "build-composer": "composer install --no-dev --optimize-autoloader",
-    "build-release": [
-      "composer test",
-      "composer install --no-dev --optimize-autoloader",
-      "npm run build"
-    ]
-  }
 }

@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/mauricerenck/indieConnector/compare/v1.5.0...v1.6.0) (2022-12-09)
+
+
+### Features
+
+* activityPub integration ([#6](https://github.com/mauricerenck/indieConnector/issues/6)) ([f7e66a2](https://github.com/mauricerenck/indieConnector/commit/f7e66a21772ffc5566407b973c79a64964ecfb3f))
+
 # [1.5.0](https://github.com/mauricerenck/indieConnector/compare/v1.4.2...v1.5.0) (2022-10-15)
 
 
