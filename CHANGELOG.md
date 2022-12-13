@@ -1,3 +1,10 @@
+## [1.6.3](https://github.com/mauricerenck/indieConnector/compare/v1.6.2...v1.6.3) (2022-12-13)
+
+
+### Bug Fixes
+
+* add activity pub snippet for more reliable webmention ([66fa078](https://github.com/mauricerenck/indieConnector/commit/66fa078f2a93cb3300d9ef8e4bffe52079908628))
+
 ## [1.6.2](https://github.com/mauricerenck/indieConnector/compare/v1.6.1...v1.6.2) (2022-12-13)
 
 
