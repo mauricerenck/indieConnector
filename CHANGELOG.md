@@ -1,3 +1,10 @@
+## [1.6.2](https://github.com/mauricerenck/indieConnector/compare/v1.6.1...v1.6.2) (2022-12-13)
+
+
+### Bug Fixes
+
+* set activitypub webmention url earlier ([76d8076](https://github.com/mauricerenck/indieConnector/commit/76d80764a439680b0c2ed6eebb981823a8795287))
+
 ## [1.6.1](https://github.com/mauricerenck/indieConnector/compare/v1.6.0...v1.6.1) (2022-12-13)
 
 
