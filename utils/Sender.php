@@ -146,6 +146,10 @@ class Sender
         $client = new MentionClient();
         $detectedUrls = $client->findOutgoingLinks($html);
 
+        if (option('mauricerenck.indieConnector.activityPubBridge', false)) {
+            $detectedUrls[] = 'https://fed.brid.gy/';
+        }
+
         return $detectedUrls;
     }
 

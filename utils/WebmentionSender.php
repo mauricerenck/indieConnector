@@ -27,10 +27,6 @@ class WebmentionSender extends Sender
         $urls = $this->findUrls($updatedPage);
         $cleanedUrls = $this->cleanupUrls($urls, $updatedPage);
 
-        if (option('mauricerenck.indieConnector.activityPubBridge', false)) {
-            $cleanedUrls[] = 'https://fed.brid.gy/';
-        }
-
         if (count($cleanedUrls) === 0) {
             return;
         }
