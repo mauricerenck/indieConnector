@@ -54,3 +54,4 @@ Use one of these three methods to install the plugin:
 - [x] View Webmention stats in the panel
 - [x] Send webmentions
 - [x] Notify on Mastodon
+- [x] ActivityPub
