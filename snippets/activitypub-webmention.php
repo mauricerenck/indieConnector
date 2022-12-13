@@ -1,0 +1,1 @@
+<a class="u-bridgy-fed" href="https://fed.brid.gy/"></a>

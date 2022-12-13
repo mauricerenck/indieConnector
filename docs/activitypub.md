@@ -23,6 +23,8 @@ You can add a lot more information if you want to. [Have a read here](https://mi
 
 ## Setup
 
+### Plugin
+
 IndieConnector currently uses [brid.gy](https://fed.brid.gy/) to provide this functionality. 
 
 Go to [brid.gy](https://fed.brid.gy/) and select the option "**Connect directly to the fediverse**".
@@ -33,6 +35,10 @@ Enter your website url and brid.gy will peform some tests. It should prompt you 
 ```
 
 After setting this, go to brid.gy and click on check now. This should now work and the prompt should disappear. 
+
+### Template
+
+In your template add this snippet `<?php snippet('activitypub-wm'); ?>`. This will add the nessesary markup to your template. The best way to do so, is to add it into your post content within a `.h-entry` microformat. 
 
 ## Publishing posts
 
