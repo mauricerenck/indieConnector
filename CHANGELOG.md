@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/mauricerenck/indieConnector/compare/v1.6.0...v1.6.1) (2022-12-13)
+
+
+### Bug Fixes
+
+* bump version ([da2bf23](https://github.com/mauricerenck/indieConnector/commit/da2bf231c0d8d5fb3d7f76691322ab943b2c968f))
+
 # [1.6.0](https://github.com/mauricerenck/indieConnector/compare/v1.5.0...v1.6.0) (2022-12-09)
 
 
