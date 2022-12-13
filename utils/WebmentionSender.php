@@ -14,6 +14,42 @@ class WebmentionSender extends Sender
         $this->mentionClient = new MentionClient();
     }
 
+    public function sendWebmentions($updatedPage)
+    {
+        if (!option('mauricerenck.indieConnector.sendWebmention', true)) {
+            return;
+        }
+
+        if (!$this->pageFullfillsCriteria($updatedPage)) {
+            return;
+        }
+
+        $urls = $this->findUrls($updatedPage);
+        $cleanedUrls = $this->cleanupUrls($urls, $updatedPage);
+
+        if (option('mauricerenck.indieConnector.activityPubBridge', false)) {
+            $cleanedUrls[] = 'https://fed.brid.gy/';
+        }
+
+        if (count($cleanedUrls) === 0) {
+            return;
+        }
+
+        $processedUrls = [];
+        if ($this->shouldSendWebmention()) {
+
+            foreach ($cleanedUrls as $url) {
+                $sent = $this->send($url, $updatedPage->url());
+
+                if ($sent) {
+                    $processedUrls[] = $url;
+                }
+            }
+        }
+
+        $this->storeProcessedUrls($urls, $updatedPage);
+    }
+
     public function send(string $targetUrl, string $sourceUrl)
     {
         if (!$this->urlExists($targetUrl)) {

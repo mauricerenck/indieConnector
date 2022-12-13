@@ -64,6 +64,11 @@ class Sender
 
     public function cleanupUrls($urls, $page)
     {
+
+        if (count($urls) === 0) {
+            return [];
+        }
+
         $processedUrls = $this->getProcessedUrls($page);
         $cleanedUrls = [];
 
@@ -125,9 +130,15 @@ class Sender
 
             // get content of different field types
             switch ($fieldInfo[1]) {
-                case 'block': $htmlParts[] = $content->toBlocks(); break;
-                case 'layout': $htmlParts[] = $this->parseLayoutFields($content); break;
-                default: $htmlParts[] = $content->kirbytext(); break;
+                case 'block':
+                    $htmlParts[] = $content->toBlocks();
+                    break;
+                case 'layout':
+                    $htmlParts[] = $this->parseLayoutFields($content);
+                    break;
+                default:
+                    $htmlParts[] = $content->kirbytext();
+                    break;
             }
         }
 
