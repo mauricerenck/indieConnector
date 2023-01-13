@@ -16,6 +16,9 @@ Kirby::plugin('mauricerenck/indieConnector', [
     'snippets' => [
         'activitypub-wm' => __DIR__ . '/snippets/activitypub-webmention.php',
     ],
+    'blueprints' => [
+        'indieconnector/fields/webmentions' => __DIR__ . '/blueprints/fields/block-webmentions.yml',
+    ],
     'routes' => [
         [
             'pattern' => '(indieConnector|indieconnector)/webhook/webmentionio',
@@ -87,8 +90,8 @@ Kirby::plugin('mauricerenck/indieConnector', [
         [
             'pattern' => '^.well-known/((host-meta|webfinger).(:any)|(host-meta|webfinger))',
             'method' => 'OPTIONS|GET|POST|PUT',
-            'action' => function($file) {
-                if(!option('mauricerenck.indieConnector.activityPubBridge', false)) {
+            'action' => function ($file) {
+                if (!option('mauricerenck.indieConnector.activityPubBridge', false)) {
                     return false;
                 }
 

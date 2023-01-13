@@ -2,6 +2,7 @@
 
 namespace mauricerenck\IndieConnector;
 
+use Kirby\Cms\File;
 use Kirby\Data\Data;
 use \IndieWeb\MentionClient;
 use file_exists;
@@ -12,7 +13,6 @@ use Exception;
 
 class Sender
 {
-    private $processed;
     private $fieldsToParseUrls;
 
     public function __construct()
@@ -35,7 +35,9 @@ class Sender
             return false;
         }
 
-        // TODO make turning on/off sendmention from the panel page possible
+        if ($page->webmentionsStatus()->isFalse()) {
+            return false;
+        }
 
         return true;
     }
@@ -62,16 +64,14 @@ class Sender
         return (in_array($template, $blockList));
     }
 
-    public function cleanupUrls($urls, $page)
+    public function cleanupUrls($urls, $processedUrls)
     {
 
         if (count($urls) === 0) {
             return [];
         }
 
-        $processedUrls = $this->getProcessedUrls($page);
         $cleanedUrls = [];
-
         foreach ($urls as $url) {
             if (!in_array($url, $processedUrls)) {
                 $cleanedUrls[] = $url;
@@ -83,22 +83,22 @@ class Sender
 
     public function getProcessedUrls($page)
     {
-        $outboxFilePath = $page->root() . '/' . option('mauricerenck.indieConnector.outboxFilename', 'indieConnector.json');
-        if (!file_exists($outboxFilePath)) {
+        $outboxFile = $this->readOutbox($page);
+
+        if (is_null($outboxFile)) {
             return [];
         }
 
         try {
-            return Data::read($outboxFilePath);
+            return json_decode($outboxFile->content()->toArray()[0]);
         } catch (Exception $e) {
             return [];
         }
     }
 
-    public function storeProcessedUrls($urls, $page)
+    public function storeProcessedUrls($urls, $processedUrls, $page)
     {
         try {
-            $processedUrls = $this->getProcessedUrls($page);
             $combinedUrls = array_merge($processedUrls, $urls);
 
             $this->writeOutbox($combinedUrls, $page);
@@ -185,9 +185,25 @@ class Sender
         return join('', $htmlParts);
     }
 
-    private function writeOutbox($urls, $page)
+    public function readOutbox($page): File|null
+    {
+        $outboxFile = $page->file(option('mauricerenck.indieConnector.outboxFilename', 'indieConnector.json'));
+
+        if (is_null($outboxFile)) {
+            return null;
+        }
+
+        if (!$outboxFile->exists()) {
+            return null;
+        }
+
+        return $outboxFile;
+    }
+
+    public function writeOutbox($urls, $page)
     {
         $outboxFilePath = $page->root() . '/' . option('mauricerenck.indieConnector.outboxFilename', 'indieConnector.json');
         Data::write($outboxFilePath, $urls);
     }
+
 }

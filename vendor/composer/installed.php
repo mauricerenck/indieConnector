@@ -1,8 +1,8 @@
 <?php return array(
     'root' => array(
         'name' => 'mauricerenck/indieconnector',
-        'pretty_version' => '1.6.0',
-        'version' => '1.6.0.0',
+        'pretty_version' => '1.6.3',
+        'version' => '1.6.3.0',
         'reference' => NULL,
         'type' => 'kirby-plugin',
         'install_path' => __DIR__ . '/../../',
@@ -29,8 +29,8 @@
             'dev_requirement' => false,
         ),
         'mauricerenck/indieconnector' => array(
-            'pretty_version' => '1.6.0',
-            'version' => '1.6.0.0',
+            'pretty_version' => '1.6.3',
+            'version' => '1.6.3.0',
             'reference' => NULL,
             'type' => 'kirby-plugin',
             'install_path' => __DIR__ . '/../../',

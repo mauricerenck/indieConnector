@@ -27,7 +27,8 @@
     },
     "require-dev": {
         "getkirby/cms": "^3.8",
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "mockery/mockery": "^1.5"
     },
     "replace": {
         "mauricerenck/tratschtante": "*"

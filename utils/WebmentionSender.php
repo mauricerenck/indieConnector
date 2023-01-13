@@ -25,7 +25,8 @@ class WebmentionSender extends Sender
         }
 
         $urls = $this->findUrls($updatedPage);
-        $cleanedUrls = $this->cleanupUrls($urls, $updatedPage);
+        $processedUrls = $this->getProcessedUrls($updatedPage);
+        $cleanedUrls = $this->cleanupUrls($urls, $processedUrls);
 
         if (count($cleanedUrls) === 0) {
             return;
@@ -43,7 +44,7 @@ class WebmentionSender extends Sender
             }
         }
 
-        $this->storeProcessedUrls($urls, $updatedPage);
+        $this->storeProcessedUrls($urls, $processedUrls, $updatedPage);
     }
 
     public function send(string $targetUrl, string $sourceUrl)

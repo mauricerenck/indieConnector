@@ -1,0 +1,11 @@
+type: group
+fields:
+  webmentionsStatus:
+    label: Webmentions
+    type: toggle
+    default: true
+    text:
+      - en: Webmentions deactivated
+        de: Webmentions deaktiviert
+      - en: Webmentions active
+        de: Webmentions aktiviert

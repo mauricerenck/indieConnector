@@ -1,15 +1,20 @@
 <?php
 
+use Kirby\Cms\File;
+use Kirby\Cms\Page;
+use Kirby\Data\Data;
 use mauricerenck\IndieConnector\Sender;
+use mauricerenck\IndieConnector\TestCaseMocked;
 use PHPUnit\Framework\TestCase;
 use Kirby\Cms;
 
-final class senderTest extends TestCase
+
+final class senderTest extends TestCaseMocked
 {
+
     public function testPageHasNeededStatus()
     {
-        $page = page('phpunit');
-
+        $page = $this->getPageMock();
         $senderUtils = new Sender();
         $result = $senderUtils->pageHasNeededStatus($page);
 
@@ -18,24 +23,16 @@ final class senderTest extends TestCase
 
     public function testStopsOnWrongNeededStatus()
     {
-        $page = page('phpunit');
-        kirby()->impersonate('kirby');
-        $unpublishedPage = $page->duplicate('phpunit-unpublished');
-        $unpublishedPage->unpublish();
+        $page = $this->getPageMock(true);
 
         $senderUtils = new Sender();
-        $result = $senderUtils->pageHasNeededStatus($unpublishedPage);
+        $result = $senderUtils->pageHasNeededStatus($page);
 
         $this->assertFalse($result);
-
-        kirby()->impersonate('kirby');
-        $unpublishedPage->delete();
     }
 
     public function testPageHasAllowedTemplate()
     {
-        $page = page('phpunit');
-
         $senderUtils = new Sender();
         $result = $senderUtils->templateIsAllowed('phpunit');
 
@@ -44,8 +41,6 @@ final class senderTest extends TestCase
 
     public function testPageHasNotAllowedTemplate()
     {
-        $page = page('phpunit');
-
         $senderUtils = new Sender();
         $result = $senderUtils->templateIsAllowed('nope');
 
@@ -54,8 +49,6 @@ final class senderTest extends TestCase
 
     public function testPageHasBlockedTemplate()
     {
-        $page = page('phpunit');
-
         $senderUtils = new Sender();
         $result = $senderUtils->templateIsBlocked('blocked-template');
 
@@ -64,17 +57,45 @@ final class senderTest extends TestCase
 
     public function testPageHasNotBlockedTemplate()
     {
-        $page = page('phpunit');
-
         $senderUtils = new Sender();
         $result = $senderUtils->templateIsBlocked('phpunit');
 
         $this->assertFalse($result);
     }
 
+    public function testPageDisabledWebmentions()
+    {
+        $page = $this->getPageMock(false, ['webmentionsstatus' => false]);
+
+        $senderUtils = new Sender();
+        $result = $senderUtils->pageFullfillsCriteria($page);
+
+        $this->assertFalse($result);
+    }
+
+    public function testPageEnabledWebmentions()
+    {
+        $page = $this->getPageMock(false, ['webmentionsstatus' => true]);
+
+        $senderUtils = new Sender();
+        $result = $senderUtils->pageFullfillsCriteria($page);
+
+        $this->assertTrue($result);
+    }
+
+    public function testPageNotSetWebmentions()
+    {
+        $page = $this->getPageMock();
+
+        $senderUtils = new Sender();
+        $result = $senderUtils->pageFullfillsCriteria($page);
+
+        $this->assertFalse($result);
+    }
+
     public function testShouldFindUrls()
     {
-        $page = page('phpunit');
+        $page = $this->getPageMock();
 
         $expectedUrls = [
             'https://text-field-url.tld',
@@ -97,10 +118,18 @@ final class senderTest extends TestCase
 
     public function testShouldReturnProcessedUrls()
     {
-        $page = page('phpunit');
+        $page = $this->getPageMock();
 
-        $senderUtils = new Sender();
-        $urls = $senderUtils->getProcessedUrls($page);
+        $fileMock = File::factory([
+            'parent' => $page,
+            'filename' => 'indieConnector.json',
+            'content' => ['["https://processed-url.tld"]']
+        ]);
+
+        $senderUtilsMock = Mockery::mock('mauricerenck\IndieConnector\Sender')->makePartial();
+        $senderUtilsMock->shouldReceive('readOutbox')->andReturn($fileMock);
+
+        $urls = $senderUtilsMock->getProcessedUrls($page);
 
         $this->assertCount(1, $urls);
         $this->assertEquals(['https://processed-url.tld'], $urls);
@@ -108,15 +137,14 @@ final class senderTest extends TestCase
 
     public function testShouldCleanupUrls()
     {
-        $page = page('phpunit');
-
         $sampleUrls = [
             'https://text-field-url.tld',
             'https://processed-url.tld'
         ];
 
         $senderUtils = new Sender();
-        $urls = $senderUtils->cleanupUrls($sampleUrls, $page);
+        $processedUrls = ["https://processed-url.tld"];
+        $urls = $senderUtils->cleanupUrls($sampleUrls, $processedUrls);
 
         $this->assertCount(1, $urls);
         $this->assertContains($sampleUrls[0], $urls);
@@ -125,19 +153,17 @@ final class senderTest extends TestCase
 
     public function testShouldStoreProcessedUrls()
     {
-        $page = page('phpunit');
+        $page = $this->getPageMock();
 
         $sampleUrls = [
             'https://text-field-url.tld',
             'https://processed-url.tld'
         ];
 
-        $senderUtils = new Sender();
-        $result = $senderUtils->storeProcessedUrls($sampleUrls, $page);
-        $this->assertTrue($result);
+        $senderUtilsMock = Mockery::mock('mauricerenck\IndieConnector\Sender')->makePartial();
+        $senderUtilsMock->shouldReceive('writeOutbox')->andReturn(true);
 
-        // restore original state of file
-        $outboxFilePath = $page->root() . '/' . option('mauricerenck.indieConnector.outboxFilename', 'indieConnector.json');
-        Data::write($outboxFilePath, ['https://processed-url.tld']);
+        $result = $senderUtilsMock->storeProcessedUrls($sampleUrls, $sampleUrls, $page);
+        $this->assertTrue($result);
     }
 }

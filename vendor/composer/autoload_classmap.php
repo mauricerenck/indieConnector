@@ -16,6 +16,7 @@ return array(
     'mauricerenck\\IndieConnector\\HookHelper' => $baseDir . '/utils/hookHelper.php',
     'mauricerenck\\IndieConnector\\MastodonSender' => $baseDir . '/utils/sendMastodon.php',
     'mauricerenck\\IndieConnector\\Sender' => $baseDir . '/utils/Sender.php',
+    'mauricerenck\\IndieConnector\\TestCaseMocked' => $baseDir . '/utils/TestCaseMocked.php',
     'mauricerenck\\IndieConnector\\WebmentionReceiver' => $baseDir . '/utils/receiver.php',
     'mauricerenck\\IndieConnector\\WebmentionSender' => $baseDir . '/utils/WebmentionSender.php',
     'mauricerenck\\IndieConnector\\WebmentionStats' => $baseDir . '/utils/stats.php',

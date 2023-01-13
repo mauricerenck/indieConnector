@@ -1,11 +1,13 @@
 options:
   changeSlug: false
-  update: false
+  update: true
 
 sections:
   phpunit:
     type: fields
     fields:
+      indieConnetor:
+        extends: indieconnector/fields/webmentions
       textfield:
         type: textarea
         label: Text
