@@ -2,33 +2,18 @@
 
 namespace mauricerenck\IndieConnector;
 
-use c;
-use f;
-use Db;
-use date;
-use is_null;
-use database;
-use DateTime;
 use Exception;
-use preg_split;
-use json_decode;
-use json_encode;
-use str_replace;
-use Kirby\Http\Url;
-use Kirby\Toolkit\V;
+use Kirby\Database\Database;
 use Kirby\Http\Remote;
-use Kirby\Toolkit\Str;
+use Kirby\Filesystem\F;
 
 class WebmentionStats
 {
     private $db;
-    private $pluginPath;
-    private $sqlitePath;
 
     public function __construct()
     {
         $this->connect();
-        $this->migrate();
     }
 
     public function trackMention(string $target, string $source, string $type, string $image)
@@ -206,15 +191,13 @@ class WebmentionStats
         $month = date('m', $timestamp);
 
         $stats = new WebmentionStats();
-        $summary = $stats->getSummaryByMonth($year, $month);
-
-        return $summary;
+        return $stats->getSummaryByMonth($year, $month);
     }
 
     public function getPluginVersion()
     {
         try {
-            $composerString = f::read(__DIR__ . '/../composer.json');
+            $composerString = F::read(__DIR__ . '/../composer.json');
             $composerJson = json_decode($composerString);
 
             $packagistResult = Remote::get('https://repo.packagist.org/p2/mauricerenck/indieconnector.json');
@@ -240,36 +223,17 @@ class WebmentionStats
     private function connect()
     {
         try {
-            $this->sqlitePath = option('mauricerenck.indieConnector.sqlitePath');
-            $this->pluginPath = str_replace('utils', '', __DIR__);
+            $sqlitePath = option('mauricerenck.indieConnector.sqlitePath');
 
             $this->db = new Database([
                 'type' => 'sqlite',
-                'database' => $this->sqlitePath . 'indieConnector.sqlite',
+                'database' => $sqlitePath . 'indieConnector.sqlite',
             ]);
 
             return true;
         } catch (Exception $e) {
             echo 'Could not connect to Database: ', $e->getMessage(), "\n";
             return false;
-        }
-    }
-
-    private function migrate()
-    {
-        if (option('mauricerenck.indieConnector.stats', false)) {
-            $composer = f::read(__DIR__ . '/../composer.json');
-            $package = json_decode($composer);
-
-            if (!$this->db->validateTable('settings')) {
-                $migrationStructures = explode(';', f::read($this->pluginPath . 'migrations/database_1-0-0.sql'));
-
-                foreach ($migrationStructures as $query) {
-                    $this->db->execute(trim($query));
-                }
-
-                $this->db->execute("INSERT INTO settings (version) VALUES ('" . $package->version . "')");
-            }
         }
     }
 
@@ -286,7 +250,7 @@ class WebmentionStats
             case 'REPOST': return 'reposts';
             case 'MENTION': return 'mentions';
             case 'BOOKMARK': return 'bookmarks';
-            default: 'mention';
+            default: return 'mention';
         }
     }
 }

@@ -2,8 +2,6 @@
 
 namespace mauricerenck\IndieConnector;
 
-use Kirby\Data\yaml;
-
 return [
     'page.update:after' => function ($newPage) {
         $webmentions = new WebmentionSender();
@@ -22,4 +20,10 @@ return [
             }
         }
     },
+
+    'system.loadPlugins:after' => function () {
+        $migrations = new Migrations();
+        $migrations->migrate();
+    }
+
 ];
