@@ -1,3 +1,13 @@
+# [1.7.0](https://github.com/mauricerenck/indieConnector/compare/v1.6.3...v1.7.0) (2023-01-20)
+
+
+### Features
+
+* added migrations ([e69f407](https://github.com/mauricerenck/indieConnector/commit/e69f407011ab8fa905ba6bab8504c8ef55e297ab))
+* controll webmention sending on page ([a4672a1](https://github.com/mauricerenck/indieConnector/commit/a4672a1fed2825665f3c9b7845c96d67308b0c4c))
+* page mock ([2b7aa1a](https://github.com/mauricerenck/indieConnector/commit/2b7aa1adea344176dc4b5827511f8f0278cc49b3))
+* webmention outbox stats ([ad6d6e1](https://github.com/mauricerenck/indieConnector/commit/ad6d6e19d08b5646348abc4f8f2e398b7da9d09b))
+
 ## [1.6.3](https://github.com/mauricerenck/indieConnector/compare/v1.6.2...v1.6.3) (2022-12-13)
 
 
