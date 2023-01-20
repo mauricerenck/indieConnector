@@ -32,10 +32,26 @@ class WebmentionStats
         }
     }
 
+    public function updateOutbox(string $pageUuid, string $target)
+    {
+        $trackingDate = time();
+        $mentionDate = $this->formatTrackingDate($trackingDate);
+
+        try {
+            $uniqueHash = md5($target . $pageUuid . $mentionDate);
+            $this->db->query('INSERT INTO webmention_outbox(id, page_uuid, sent_date, target) VALUES("' . $uniqueHash . '", "' . $pageUuid . '","' . $mentionDate . '", "' . $target . '")');
+
+            return true;
+        } catch (Exception $e) {
+            echo 'Could not connect to Database: ', $e->getMessage(), "\n";
+            return false;
+        }
+    }
+
     public function getSummaryByMonth(int $year, int $month)
     {
         try {
-            $month = (integer) $month;
+            $month = (integer)$month;
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->db->query('SELECT COUNT(id) as summary, * FROM webmentions WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_type;');
@@ -98,7 +114,7 @@ class WebmentionStats
     public function getTargets(int $year, int $month)
     {
         try {
-            $month = (integer) $month;
+            $month = (integer)$month;
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->db->query('SELECT mention_target, mention_type, COUNT(mention_type) as mentions FROM webmentions WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_target, mention_type;');
@@ -109,6 +125,10 @@ class WebmentionStats
 
                 if (!isset($targets[$targetHash])) {
                     $page = page($webmention->mention_target);
+
+                    if (is_null($page)) {
+                        continue;
+                    }
 
                     $targets[$targetHash] = [
                         'slug' => '/' . $webmention->mention_target,
@@ -139,7 +159,7 @@ class WebmentionStats
     public function getSources(int $year, int $month)
     {
         try {
-            $month = (integer) $month;
+            $month = (integer)$month;
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->db->query('SELECT mention_source, mention_type, mention_image, COUNT(mention_type) as mentions FROM webmentions WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_source, mention_type;');
@@ -174,6 +194,45 @@ class WebmentionStats
             return false;
         }
     }
+
+    public function getSentMentions(int $year, int $month)
+    {
+        try {
+            $month = (integer)$month;
+            $month = $month < 10 ? '0' . $month : $month;
+
+            $result = $this->db->query('SELECT page_uuid, target FROM webmention_outbox WHERE sent_date LIKE "' . $year . '-' . $month . '-%";');
+            $targets = [];
+
+            foreach ($result->data as $webmention) {
+                $page = page('page://' . $webmention->page_uuid);
+
+                if(is_null($page)) {
+                    $targets[] = [
+                    'target' => $webmention->target,
+                    'title' => $webmention->page_uuid,
+                    'pageUrl' => '#',
+                    'panelUrl' => '#',
+                ];
+                    continue;
+                }
+
+                $targets[] = [
+                    'target' => $webmention->target,
+                    'title' => $page->title()->value(),
+                    'pageUrl' => $page->url(),
+                    'panelUrl' => $page->panel()->url(),
+                ];
+
+            }
+
+            return $targets;
+        } catch (Exception $e) {
+            echo 'Could not connect to Database: ', $e->getMessage(), "\n";
+            return false;
+        }
+    }
+
 
     public function getStatSummary()
     {
@@ -245,12 +304,18 @@ class WebmentionStats
     private function mentionTypeToJsonType(string $type): string
     {
         switch ($type) {
-            case 'LIKE': return 'likes';
-            case 'REPLY': return 'replies';
-            case 'REPOST': return 'reposts';
-            case 'MENTION': return 'mentions';
-            case 'BOOKMARK': return 'bookmarks';
-            default: return 'mention';
+            case 'LIKE':
+                return 'likes';
+            case 'REPLY':
+                return 'replies';
+            case 'REPOST':
+                return 'reposts';
+            case 'MENTION':
+                return 'mentions';
+            case 'BOOKMARK':
+                return 'bookmarks';
+            default:
+                return 'mention';
         }
     }
 }

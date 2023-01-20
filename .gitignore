@@ -37,3 +37,4 @@
 /kirby
 /.sqlite
 /site/cache
+/content/phpunit-test

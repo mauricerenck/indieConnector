@@ -15,11 +15,9 @@ class Migrations
             $pluginPath = str_replace('utils', '', __DIR__);
             $migrationPath = $pluginPath . '/migrations/';
 
-            // step 1 connect to database
             $db = $this->connect();
             $versionResult = $db->query('SELECT version FROM migrations ORDER BY version DESC LIMIT 1');
 
-            // step 3 run through all files
             if (!Dir::exists($migrationPath)) {
                 return false;
             }
@@ -41,7 +39,9 @@ class Migrations
 
                 if ($lastMigration < $version) {
                     foreach ($migrationStructures as $query) {
-                        $db->execute(trim($query));
+                        if(!empty(trim($query))) {
+                            $db->execute(trim($query));
+                        }
                     }
                 }
 

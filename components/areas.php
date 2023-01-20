@@ -39,6 +39,7 @@ return [
                         $summary = $stats->getSummaryByMonth($year, $month);
                         $targets = $stats->getTargets($year, $month);
                         $sources = $stats->getSources($year, $month);
+                        $sent = $stats->getSentMentions($year, $month);
                         $version = $stats->getPluginVersion();
 
                         return [
@@ -54,6 +55,7 @@ return [
                                 'summary' => $summary,
                                 'targets' => $targets,
                                 'sources' => $sources,
+                                'sent' => $sent,
                                 'version' => $version
                             ],
                         ];

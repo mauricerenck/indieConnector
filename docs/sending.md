@@ -38,6 +38,18 @@ You can combine both options, but I recommend using the allow list *or* the bloc
 
 **If you want to send webmentions from everywhere, just leave both options away, you don't have to set them at all.**
 
+## Disable sending webmention per page
+
+You can prevent a page from sending webmention by adding the IndieConnector field to your page blueprint:
+
+```
+indieConnetor:
+    extends: indieconnector/fields/webmentions
+```
+
+This will show a new toggle (enabled by default). When disabling the toggle, no webmention will be sent after updating or publishing the page.
+This way you can decide for every page you publish if it should send webmentions or not.
+
 ## Setting fields to look for urls
 
 By default IndieConnector searches for urls in three fields: `text`, `description` and `intro`. To overwrite those fields you can use the `send-mention-url-fields` option. In order to parse the field correctly, you also have to set the field type. For example:

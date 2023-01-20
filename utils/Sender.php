@@ -98,14 +98,23 @@ class Sender
 
     public function storeProcessedUrls($urls, $processedUrls, $page)
     {
+
         try {
             $combinedUrls = array_merge($processedUrls, $urls);
-
             $this->writeOutbox($combinedUrls, $page);
-            return true;
         } catch (Exception $e) {
             return false;
         }
+
+        if (option('mauricerenck.indieConnector.stats', false)) {
+            $stats = new WebmentionStats();
+            foreach ($processedUrls as $url) {
+                $stats->updateOutbox($page->uuid()->id(), $url);
+            }
+
+        }
+
+        return true;
     }
 
     public function findUrls($page)

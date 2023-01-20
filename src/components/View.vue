@@ -12,6 +12,7 @@
             <DetailsByMonth :summary="summary" />
             <Targets :targets="targets" />
             <Sources :sources="sources" />
+            <Sent :outbox="sent" />
         </k-view>
     </k-inside>
 </template>
@@ -28,6 +29,7 @@ export default {
         summary: Object,
         targets: Array,
         sources: Array,
+        sent: Array,
         version: Object,
     },
 
