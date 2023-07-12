@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/mauricerenck/indieConnector/compare/v1.7.0...v1.8.0) (2023-07-12)
+
+
+### Features
+
+* skip sending mentions to own host ([252c7ba](https://github.com/mauricerenck/indieConnector/commit/252c7ba86588ee36c13405bbc958f8d013d52d78))
+
 # [1.7.0](https://github.com/mauricerenck/indieConnector/compare/v1.6.3...v1.7.0) (2023-01-20)
 
 
