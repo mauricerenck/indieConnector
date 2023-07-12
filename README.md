@@ -1,14 +1,12 @@
 # Kirby IndieConnector
-#### A Kirby Webmention plugin other plugins can subscribe to
+#### Send and receive Webmentions, send Mastodon posts or act like an ActivityPub instance
 
 ![GitHub release](https://img.shields.io/github/release/mauricerenck/indieConnector.svg?maxAge=1800) ![License](https://img.shields.io/github/license/mashape/apistatus.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-3%2B-black.svg)
 
 ---
+IndieConnector receives and sends Webmentions. It can also post to Mastodon when a new page is published and act like a ActivityPub Instance (using fed.bridby).
 
-This plugin currently works only with webmention.io.
-
-IndieConnector receives and sends Webmentions. But it doesn't "do" anything with received Webmentions. It's function is to handle all the stuff around Webmentions and then normalize the format and trigger a hook. Other plugins can then subscribe to this hook and use the data.
-
+This plugins handles all the stuff around Webmentions and then normalizes the format and triggers a hook. Other plugins can then subscribe to this hook and use the data.
 If you want Webmentions to be shown on your pages, you have to use additional plugins (or write your own) which use IndieConnector to handle Webmentions. For example the [Komments plugin](https://github.com/mauricerenck/komments) which will then show received webmentions as a comment (or in any other way you wish).
 
 ---
