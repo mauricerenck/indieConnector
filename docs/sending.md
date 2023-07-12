@@ -20,6 +20,14 @@ If you don't want to send webmentions or pingbacks. You can disable this feature
 'mauricerenck.indieConnector.sendWebmention' => false
 ```
 
+## Enable sending webmentions to yourself
+
+If you want to send webmentions to your own host, you can disable this option. By default skipping is enabled, but there might be some reasons you want to send webmention to yourself, for example if you want to link page references this way.
+
+```
+'mauricerenck.indieConnector.skipSameHost' => false
+```
+
 ## Restricting Webmentions to templates
 
 You can restrict sending webmention to certain templates, via allow or block list

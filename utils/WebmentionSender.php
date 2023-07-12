@@ -16,7 +16,7 @@ class WebmentionSender extends Sender
 
     public function sendWebmentions($updatedPage)
     {
-        if (!option('mauricerenck.indieConnector.sendWebmention', true)) {
+        if (!$this->shouldSendWebmention()) {
             return;
         }
 
@@ -33,16 +33,14 @@ class WebmentionSender extends Sender
         }
 
         $processedUrls = [];
-        if ($this->shouldSendWebmention()) {
+        foreach ($cleanedUrls as $url) {
+            $sent = $this->send($url, $updatedPage->url());
 
-            foreach ($cleanedUrls as $url) {
-                $sent = $this->send($url, $updatedPage->url());
-
-                if ($sent) {
-                    $processedUrls[] = $url;
-                }
+            if ($sent) {
+                $processedUrls[] = $url;
             }
         }
+
 
         $this->storeProcessedUrls($urls, $processedUrls, $updatedPage);
     }

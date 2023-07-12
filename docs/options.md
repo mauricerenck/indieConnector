@@ -5,6 +5,7 @@
 | Option                    | Default                                                        | Description                                    |
 | ------------------------- | -------------------------------------------------------------- | ---------------------------------------------- |
 | `sendWebmention`          | `true`                                                         | Enable sending webmentions on page save        |
+| `skipSameHost`            | `true`                                                         | Skip sending webmentions to yourself           |
 | `outboxFilename`          | `indieConnector.json`                                          | Change the filename of the processed urls file |
 | `allowedTemplates`        | `[]`                                                           | Set templates allowed to send webmentions      |
 | `blockedTemplates`        | `[]`                                                           | Block templates from sending webmentions       |

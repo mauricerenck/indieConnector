@@ -93,6 +93,15 @@ final class senderTest extends TestCaseMocked
         $this->assertFalse($result);
     }
 
+    public function testSkipOnOwnHost() {
+        $url = 'https://indie-connector.test/de/my-page';
+
+        $senderUtils = new Sender();
+        $result = $senderUtils->skipSameHost($url);
+
+        $this->assertTrue($result);
+    }
+
     public function testShouldFindUrls()
     {
         $page = $this->getPageMock();
@@ -139,7 +148,8 @@ final class senderTest extends TestCaseMocked
     {
         $sampleUrls = [
             'https://text-field-url.tld',
-            'https://processed-url.tld'
+            'https://processed-url.tld',
+            'https://indie-connector.test/de/my-page',
         ];
 
         $senderUtils = new Sender();

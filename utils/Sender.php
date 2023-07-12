@@ -64,6 +64,13 @@ class Sender
         return (in_array($template, $blockList));
     }
 
+    public function skipSameHost($url) {
+        $urlHost = parse_url($url, PHP_URL_HOST);
+        $host = kirby()->environment()->host();
+
+        return (option('mauricerenck.indieConnector.skipSameHost', true) && $urlHost === $host);
+    }
+
     public function cleanupUrls($urls, $processedUrls)
     {
 
@@ -73,6 +80,10 @@ class Sender
 
         $cleanedUrls = [];
         foreach ($urls as $url) {
+            if ($this->skipSameHost($url)) {
+                continue;
+            }
+
             if (!in_array($url, $processedUrls)) {
                 $cleanedUrls[] = $url;
             }
