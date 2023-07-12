@@ -40,6 +40,7 @@ Use one of these three methods to install the plugin:
 - Shows a Webmention overview in the panel
 - Propagates Webmentions via Hook so other plugins can subscribe and use them
 - Send updates to mastodon (toot)
+- Act as a ActivityPub Instance (via fed.bridgy)
 
 ---
 
