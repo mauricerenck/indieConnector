@@ -165,6 +165,7 @@ class WebmentionReceiver
     public function isKnownNetwork(string $authorUrl)
     {
         $networkHosts = [
+            'x.com',
             'twitter.com',
             'instagram.com',
             'mastodon.online',

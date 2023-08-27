@@ -53,6 +53,10 @@ class WebmentionSender extends Sender
 
         $endpoint = $this->mentionClient->discoverWebmentionEndpoint($targetUrl);
 
+        if (is_null($endpoint)) {
+            return false;
+        }
+        
         if (strpos($endpoint, '//localhost') === true || strpos($endpoint, '//127.0.0') === true) {
             return false;
         }
