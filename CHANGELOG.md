@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/mauricerenck/indieConnector/compare/v1.8.0...v1.8.1) (2023-08-27)
+
+
+### Bug Fixes
+
+* panel error on unknown webmention endpoint ([e05b3ca](https://github.com/mauricerenck/indieConnector/commit/e05b3ca58280b3dcc0b346c2bda58dea9556fd22))
+
 # [1.8.0](https://github.com/mauricerenck/indieConnector/compare/v1.7.0...v1.8.0) (2023-07-12)
 
 
