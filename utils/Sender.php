@@ -5,8 +5,6 @@ namespace mauricerenck\IndieConnector;
 use Kirby\Cms\File;
 use Kirby\Data\Data;
 use \IndieWeb\MentionClient;
-use file_exists;
-use implode;
 use in_array;
 use array_merge;
 use Exception;

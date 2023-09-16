@@ -4,15 +4,10 @@ namespace mauricerenck\IndieConnector;
 
 use Kirby\Http\Url;
 use Kirby\Toolkit\V;
-use Kirby\Toolkit\Str;
 use Kirby\Http\Remote;
 use json_decode;
-use json_encode;
 use is_null;
-use preg_split;
-use str_replace;
 use date;
-use Mf2;
 
 class WebmentionReceiver
 {

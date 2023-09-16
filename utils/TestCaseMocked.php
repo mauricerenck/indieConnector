@@ -4,7 +4,6 @@ namespace mauricerenck\IndieConnector;
 
 
 use Kirby\Cms\File;
-use Kirby\Cms\Files;
 use Kirby\Cms\Page;
 use PHPUnit\Framework\TestCase;
 

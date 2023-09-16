@@ -26,7 +26,7 @@
         "ext-curl": "*"
     },
     "require-dev": {
-        "getkirby/cms": "^3.8",
+        "getkirby/cms": "^3.9",
         "phpunit/phpunit": "^9.5",
         "mockery/mockery": "^1.5"
     },
@@ -34,7 +34,7 @@
         "mauricerenck/tratschtante": "*"
     },
     "suggests": {
-        "mauricerenck/komments": "1.3"
+        "mauricerenck/komments": "1.12"
     },
     "config": {
         "optimize-autoloader": true,
