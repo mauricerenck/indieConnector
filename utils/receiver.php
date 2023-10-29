@@ -83,18 +83,6 @@ class WebmentionReceiver
     public function getTransformedSourceUrl(string $url): string
     {
         if (V::url($url)) {
-            if (strpos($url, 'brid.gy') !== false) {
-                $bridyResult = Remote::get($url . '?format=json');
-                $bridyJson = json_decode($bridyResult->content());
-                $authorUrls = $bridyJson->properties->author[0]->properties->url;
-
-                foreach ($authorUrls as $authorUrl) {
-                    if ($this->isKnownNetwork($authorUrl)) {
-                        return $authorUrl;
-                    }
-                }
-            }
-
             return $url;
         }
 
