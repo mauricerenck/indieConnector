@@ -1,3 +1,10 @@
+## [1.8.2](https://github.com/mauricerenck/indieConnector/compare/v1.8.1...v1.8.2) (2023-10-29)
+
+
+### Bug Fixes
+
+* remove bridgy json request ([dbc7a5a](https://github.com/mauricerenck/indieConnector/commit/dbc7a5ab9ed985b9fbb2fd66436ba9eb4ff1a140)), closes [#8](https://github.com/mauricerenck/indieConnector/issues/8)
+
 ## [1.8.1](https://github.com/mauricerenck/indieConnector/compare/v1.8.0...v1.8.1) (2023-08-27)
 
 
