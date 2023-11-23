@@ -2,6 +2,10 @@
 
 namespace mauricerenck\IndieConnector;
 
+if (option('mauricerenck.indieConnector.stats', false) === false) {
+    return null;
+}
+
 return [
     'webmentions' => function ($kirby) {
         return [
@@ -36,6 +40,27 @@ return [
                         }
 
                         $stats = new WebmentionStats();
+
+                        if ($stats === false) {
+                            return [
+                                'component' => 'k-webmentions-view',
+                                'title' => 'Webmentions',
+                                'props' => [
+                                    'year' => $year,
+                                    'month' => $month,
+                                    'nextYear' => $nextYear,
+                                    'nextMonth' => $nextMonth,
+                                    'prevYear' => $prevYear,
+                                    'prevMonth' => $prevMonth,
+                                    'summary' => [],
+                                    'targets' => [],
+                                    'sources' => [],
+                                    'sent' => [],
+                                    'version' => 0
+                                ],
+                            ];
+                        }
+
                         $summary = $stats->getSummaryByMonth($year, $month);
                         $targets = $stats->getTargets($year, $month);
                         $sources = $stats->getSources($year, $month);
