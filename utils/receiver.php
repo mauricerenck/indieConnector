@@ -5,9 +5,7 @@ namespace mauricerenck\IndieConnector;
 use Kirby\Http\Url;
 use Kirby\Toolkit\V;
 use Kirby\Http\Remote;
-use json_decode;
 use is_null;
-use date;
 
 class WebmentionReceiver
 {
