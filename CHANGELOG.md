@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/mauricerenck/indieConnector/compare/v1.8.2...v1.9.0) (2023-11-23)
+
+
+### Features
+
+* handle db migrations if no path is given ([9a5d438](https://github.com/mauricerenck/indieConnector/commit/9a5d43881b91ddf5c10082de0a92422119ca83ca))
+
 ## [1.8.2](https://github.com/mauricerenck/indieConnector/compare/v1.8.1...v1.8.2) (2023-10-29)
 
 
