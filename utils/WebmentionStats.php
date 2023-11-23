@@ -51,7 +51,7 @@ class WebmentionStats
     public function getSummaryByMonth(int $year, int $month)
     {
         try {
-            $month = (integer)$month;
+            $month = (int)$month;
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->db->query('SELECT COUNT(id) as summary, * FROM webmentions WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_type;');
@@ -114,7 +114,7 @@ class WebmentionStats
     public function getTargets(int $year, int $month)
     {
         try {
-            $month = (integer)$month;
+            $month = (int)$month;
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->db->query('SELECT mention_target, mention_type, COUNT(mention_type) as mentions FROM webmentions WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_target, mention_type;');
@@ -159,7 +159,7 @@ class WebmentionStats
     public function getSources(int $year, int $month)
     {
         try {
-            $month = (integer)$month;
+            $month = (int)$month;
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->db->query('SELECT mention_source, mention_type, mention_image, COUNT(mention_type) as mentions FROM webmentions WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_source, mention_type;');
@@ -198,7 +198,7 @@ class WebmentionStats
     public function getSentMentions(int $year, int $month)
     {
         try {
-            $month = (integer)$month;
+            $month = (int)$month;
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->db->query('SELECT page_uuid, target FROM webmention_outbox WHERE sent_date LIKE "' . $year . '-' . $month . '-%";');
@@ -207,13 +207,13 @@ class WebmentionStats
             foreach ($result->data as $webmention) {
                 $page = page('page://' . $webmention->page_uuid);
 
-                if(is_null($page)) {
+                if (is_null($page)) {
                     $targets[] = [
-                    'target' => $webmention->target,
-                    'title' => $webmention->page_uuid,
-                    'pageUrl' => '#',
-                    'panelUrl' => '#',
-                ];
+                        'target' => $webmention->target,
+                        'title' => $webmention->page_uuid,
+                        'pageUrl' => '#',
+                        'panelUrl' => '#',
+                    ];
                     continue;
                 }
 
@@ -223,7 +223,6 @@ class WebmentionStats
                     'pageUrl' => $page->url(),
                     'panelUrl' => $page->panel()->url(),
                 ];
-
             }
 
             return $targets;
@@ -291,7 +290,6 @@ class WebmentionStats
 
             return true;
         } catch (Exception $e) {
-            echo 'Could not connect to Database: ', $e->getMessage(), "\n";
             return false;
         }
     }

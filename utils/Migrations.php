@@ -15,7 +15,16 @@ class Migrations
             $pluginPath = str_replace('utils', '', __DIR__);
             $migrationPath = $pluginPath . '/migrations/';
 
+            if(!file_exists(option('mauricerenck.indieConnector.sqlitePath', '.sqlite/'))) {
+                mkdir(option('mauricerenck.indieConnector.sqlitePath', '.sqlite/'));
+            }
+
             $db = $this->connect();
+
+            if ($db === null || $db === false) {
+                return false;
+            }
+
             $versionResult = $db->query('SELECT version FROM migrations ORDER BY version DESC LIMIT 1');
 
             if (!Dir::exists($migrationPath)) {
