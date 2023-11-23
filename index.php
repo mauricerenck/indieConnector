@@ -5,7 +5,6 @@ namespace mauricerenck\IndieConnector;
 use Kirby;
 use Kirby\Http\Response;
 
-
 @require_once __DIR__ . '/lib/indieweb-comments.php';
 @include_once __DIR__ . '/vendor/autoload.php';
 
@@ -59,8 +58,7 @@ Kirby::plugin('mauricerenck/indieConnector', [
                     'published' => $receiver->getPubDate($response),
                 ];
 
-                $hookHelper = new HookHelper();
-                $hookHelper->triggerHook('indieConnector.webmention.received', ['webmention' => $webmention, 'targetPage' => $targetPage]);
+                kirby()->trigger('indieConnector.webmention.received', ['webmention' => $webmention, 'targetPage' => $targetPage]);
 
                 if (option('mauricerenck.indieConnector.stats', false)) {
                     $stats = new WebmentionStats();
