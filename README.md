@@ -15,7 +15,7 @@ If you want Webmentions to be shown on your pages, you have to use additional pl
 Use one of these three methods to install the plugin:
 
 - `composer require mauricerenck/indieConnector`
-- unzip [master.zip](https://github.com/mauricerenck/indieConnector/releases/latest) to `site/plugins/indieConnector`
+- unzip [main.zip](https://github.com/mauricerenck/indieConnector/releases/latest) to `site/plugins/indieConnector`
 
 ---
 
