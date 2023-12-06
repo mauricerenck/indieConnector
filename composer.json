@@ -26,7 +26,7 @@
         "ext-curl": "*"
     },
     "require-dev": {
-        "getkirby/cms": "^3.9",
+        "getkirby/cms": "^4",
         "phpunit/phpunit": "^9.5",
         "mockery/mockery": "^1.5"
     },

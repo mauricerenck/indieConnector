@@ -50,7 +50,6 @@ class ComposerStaticInitd2f181dd341adfd58b96ccab3bed9890
         'Kirby\\ComposerInstaller\\Installer' => __DIR__ . '/..' . '/getkirby/composer-installer/src/ComposerInstaller/Installer.php',
         'Kirby\\ComposerInstaller\\Plugin' => __DIR__ . '/..' . '/getkirby/composer-installer/src/ComposerInstaller/Plugin.php',
         'Kirby\\ComposerInstaller\\PluginInstaller' => __DIR__ . '/..' . '/getkirby/composer-installer/src/ComposerInstaller/PluginInstaller.php',
-        'mauricerenck\\IndieConnector\\HookHelper' => __DIR__ . '/../..' . '/utils/hookHelper.php',
         'mauricerenck\\IndieConnector\\MastodonSender' => __DIR__ . '/../..' . '/utils/sendMastodon.php',
         'mauricerenck\\IndieConnector\\Migrations' => __DIR__ . '/../..' . '/utils/Migrations.php',
         'mauricerenck\\IndieConnector\\Sender' => __DIR__ . '/../..' . '/utils/Sender.php',

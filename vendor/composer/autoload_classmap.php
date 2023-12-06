@@ -13,7 +13,6 @@ return array(
     'Kirby\\ComposerInstaller\\Installer' => $vendorDir . '/getkirby/composer-installer/src/ComposerInstaller/Installer.php',
     'Kirby\\ComposerInstaller\\Plugin' => $vendorDir . '/getkirby/composer-installer/src/ComposerInstaller/Plugin.php',
     'Kirby\\ComposerInstaller\\PluginInstaller' => $vendorDir . '/getkirby/composer-installer/src/ComposerInstaller/PluginInstaller.php',
-    'mauricerenck\\IndieConnector\\HookHelper' => $baseDir . '/utils/hookHelper.php',
     'mauricerenck\\IndieConnector\\MastodonSender' => $baseDir . '/utils/sendMastodon.php',
     'mauricerenck\\IndieConnector\\Migrations' => $baseDir . '/utils/Migrations.php',
     'mauricerenck\\IndieConnector\\Sender' => $baseDir . '/utils/Sender.php',
