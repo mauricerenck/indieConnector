@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/mauricerenck/indieConnector/compare/v1.9.0...v1.9.1) (2023-12-06)
+
+
+### Bug Fixes
+
+* composer updates ([9f08816](https://github.com/mauricerenck/indieConnector/commit/9f088160dcc738d86da57121ca9a99f41b1b1aac))
+
 # [1.9.0](https://github.com/mauricerenck/indieConnector/compare/v1.8.2...v1.9.0) (2023-11-23)
 
 
