@@ -1,7 +1,7 @@
 # Kirby IndieConnector
 #### Send and receive Webmentions, send Mastodon posts or act like an ActivityPub instance
 
-![GitHub release](https://img.shields.io/github/release/mauricerenck/indieConnector.svg?maxAge=1800) ![License](https://img.shields.io/github/license/mashape/apistatus.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-3%2B-black.svg)
+![GitHub release](https://img.shields.io/github/release/mauricerenck/indieConnector.svg?maxAge=1800) ![License](https://img.shields.io/github/license/mashape/apistatus.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-4%2B-black.svg)
 
 ---
 IndieConnector receives and sends Webmentions. It can also post to Mastodon when a new page is published and act like a ActivityPub Instance (using fed.brid.gy).
@@ -16,7 +16,6 @@ Use one of these three methods to install the plugin:
 
 - `composer require mauricerenck/indieConnector`
 - unzip [master.zip](https://github.com/mauricerenck/indieConnector/releases/latest) to `site/plugins/indieConnector`
-- `git submodule add https://github.com/mauricerenck/indieConnector.git site/plugins/indieConnector`
 
 ---
 
@@ -44,13 +43,10 @@ Use one of these three methods to install the plugin:
 
 ## Roadmap 
 
+- [ ] Receive webmentions without webmention.io
+- [ ] React to webmention delete
+- [ ] Queue webmentions before processing
 - [ ] Nested indieweb replies
 - [ ] Blocklist for domains
 - [ ] Blocklist for users
-- [ ] Implement receiving webmentions without webmention.io
-- [x] Connect to Mastodon (first step via https://fed.brid.gy/)
-- [x] Kirby 3.6 ready
-- [x] View Webmention stats in the panel
-- [x] Send webmentions
-- [x] Notify on Mastodon
-- [x] ActivityPub
+
