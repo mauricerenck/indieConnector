@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/mauricerenck/indieConnector/compare/v1.9.1...v1.10.0) (2023-12-30)
+
+
+### Features
+
+* do not track host ([#10](https://github.com/mauricerenck/indieConnector/issues/10)) ([c054d21](https://github.com/mauricerenck/indieConnector/commit/c054d212fa27d607722fc377e8ad8c66d0ea3702))
+
 ## [1.9.1](https://github.com/mauricerenck/indieConnector/compare/v1.9.0...v1.9.1) (2023-12-06)
 
 
