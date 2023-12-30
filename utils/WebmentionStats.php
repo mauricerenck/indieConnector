@@ -4,20 +4,26 @@ namespace mauricerenck\IndieConnector;
 
 use Exception;
 use Kirby\Database\Database;
-use Kirby\Http\Remote;
-use Kirby\Filesystem\F;
+use Kirby\Http\Url;
 
 class WebmentionStats
 {
     private $db;
 
-    public function __construct()
-    {
+    public function __construct(
+        private ?array $doNotTrack = null
+    ) {
         $this->connect();
+        $this->doNotTrack = $doNotTrack ?? option('mauricerenck.indieConnector.stats.doNotTrack', ['fed.brid.gy']);
     }
 
     public function trackMention(string $target, string $source, string $type, string $image)
     {
+
+        if ($this->doNotTrackHost($source)) {
+            return false;
+        }
+
         $trackingDate = time();
         $mentionDate = $this->formatTrackingDate($trackingDate);
 
@@ -34,6 +40,10 @@ class WebmentionStats
 
     public function updateOutbox(string $pageUuid, string $target)
     {
+        if ($this->doNotTrackHost($target)) {
+            return false;
+        }
+
         $trackingDate = time();
         $mentionDate = $this->formatTrackingDate($trackingDate);
 
@@ -252,30 +262,20 @@ class WebmentionStats
         return $stats->getSummaryByMonth($year, $month);
     }
 
-    public function getPluginVersion()
+    public function doNotTrackHost(string $url)
     {
-        try {
-            $composerString = F::read(__DIR__ . '/../composer.json');
-            $composerJson = json_decode($composerString);
+        $urlData = Url::toObject($url);
+        $targetHost = $urlData->domain();
 
-            $packagistResult = Remote::get('https://repo.packagist.org/p2/mauricerenck/indieconnector.json');
-            $packagistJson = json_decode($packagistResult->content());
-            $latestVersion = $packagistJson->packages->{'mauricerenck/indieconnector'}[0]->version;
-
-            return [
-                'local' => $composerJson->version,
-                'latest' => $latestVersion,
-                'updateAvailable' => $composerJson->version !== $latestVersion,
-                'error' => false
-            ];
-        } catch (Exception $e) {
-            return [
-                'local' => $composerJson->version,
-                'latest' => 'unkown',
-                'updateAvailable' => false,
-                'error' => true
-            ];
+        if (!is_array($this->doNotTrack)) {
+            return false;
         }
+
+        if (count($this->doNotTrack) === 0) {
+            return false;
+        }
+
+        return in_array($targetHost, $this->doNotTrack);
     }
 
     private function connect()

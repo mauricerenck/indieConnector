@@ -7,7 +7,6 @@
                 {{ month }} / {{ year }}
                 <button class="k-link k-button" v-on:click="goToNextMonth"><k-icon type="angle-right" /></button>
             </div>
-            <Version :version="version" />
 
             <DetailsByMonth :summary="summary" />
             <Targets :targets="targets" />
@@ -30,7 +29,6 @@ export default {
         targets: Array,
         sources: Array,
         sent: Array,
-        version: Object,
     },
 
     methods: {
@@ -104,6 +102,14 @@ export default {
         display: flex;
         vertical-align: middle;
         align-items: center;
+    }
+
+    .shortened-link {
+        display: inline-block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 50%;
     }
 }
 </style>

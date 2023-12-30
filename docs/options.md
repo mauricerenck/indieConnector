@@ -13,11 +13,17 @@
 
 ## Settings for receiving webmentions ([details](receiving.md))
 
-| Option       | Default              | Description                                                                    |
-| ------------ | -------------------- | ------------------------------------------------------------------------------ |
-| `secret`     | `''`                 | Your webmention.io web hook secret                                             |
-| `stats`      | `false`              | Enable webmention stats in the panel                                           |
-| `sqlitePath` | `'content/.sqlite/'` | Relative path to where the sqlite file should be stored (directory must exist) |
+| Option   | Default | Description                        |
+| -------- | ------- | ---------------------------------- |
+| `secret` | `''`    | Your webmention.io web hook secret |
+
+## Settings for statistics in the panel
+
+| Option             | Default              | Description                                                                    |
+| ------------------ | -------------------- | ------------------------------------------------------------------------------ |
+| `stats`            | `false`              | Enable webmention stats in the panel                                           |
+| `sqlitePath`       | `'content/.sqlite/'` | Relative path to where the sqlite file should be stored (directory must exist) |
+| `stats.doNotTrack` | `['fed.brid.gy']`    | When sending webmentions, these hosts will not be tracked                      |
 
 
 ## Settings for posting on mastodon ([details](mastodon.md))
@@ -32,7 +38,7 @@
 
 ## ActivityPub beta ([details](activitiypub.md))
 
-| Option                  | Default         | Description                     |
-| ----------------------- | --------------- | ------------------------------- |
-| `activityPubBridge`     | `false`         | Enable activityPub (beta)  |
+| Option              | Default | Description               |
+| ------------------- | ------- | ------------------------- |
+| `activityPubBridge` | `false` | Enable activityPub (beta) |
 
