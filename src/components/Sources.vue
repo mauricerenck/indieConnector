@@ -8,7 +8,7 @@
                 <td>
                     <k-link :to="source.source" :title="source.source" class="k-link-centered">
                         <img :src="source.image" class="avatar" v-if="source.image !== null" />
-                        <span>{{ source.source }}</span>
+                        <span class="shortened-link">{{ source.source }}</span>
                     </k-link>
                 </td>
                 <td>

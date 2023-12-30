@@ -56,7 +56,6 @@ return [
                                     'targets' => [],
                                     'sources' => [],
                                     'sent' => [],
-                                    'version' => 0
                                 ],
                             ];
                         }
@@ -65,7 +64,6 @@ return [
                         $targets = $stats->getTargets($year, $month);
                         $sources = $stats->getSources($year, $month);
                         $sent = $stats->getSentMentions($year, $month);
-                        $version = $stats->getPluginVersion();
 
                         return [
                             'component' => 'k-webmentions-view',
@@ -81,7 +79,6 @@ return [
                                 'targets' => $targets,
                                 'sources' => $sources,
                                 'sent' => $sent,
-                                'version' => $version
                             ],
                         ];
                     }
