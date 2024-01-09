@@ -6,58 +6,84 @@ use \IndieWeb\MentionClient;
 
 class WebmentionSender extends Sender
 {
-    private $mentionClient;
+    
 
-    public function __construct()
-    {
+    public function __construct(
+        private ?bool $activeWebmentions = null,
+        private $mentionClient = null
+    ) {
         parent::__construct();
+
         $this->mentionClient = new MentionClient();
+        $this->activeWebmentions = $activeWebmentions ?? option('mauricerenck.indieConnector.sendWebmention', true);
     }
 
-    public function sendWebmentions($updatedPage)
+    public function sendWebmentions($page, array $urls)
     {
-        if (!$this->shouldSendWebmention()) {
-            return;
+        // global config
+        if (!$this->activeWebmentions) {
+            return false;
         }
 
-        if (!$this->pageFullfillsCriteria($updatedPage)) {
-            return;
+        // page level toggle
+        if ($page->webmentionsStatus()->isFalse()) {
+            return false;
         }
 
-        $urls = $this->findUrls($updatedPage);
-        $processedUrls = $this->getProcessedUrls($updatedPage);
-        $cleanedUrls = $this->cleanupUrls($urls, $processedUrls);
-
-        if (count($cleanedUrls) === 0) {
-            return;
+        if (!$this->pageFullfillsCriteria($page)) {
+            return false;
         }
 
         $processedUrls = [];
-        foreach ($cleanedUrls as $url) {
-            $sent = $this->send($url, $updatedPage->url());
+        foreach ($urls as $url) {
+            if (!$this->shouldSendWebmentionToTarget($url)) {
+                continue;
+            }
+
+            $sent = $this->send($url, $page->url());
 
             if ($sent) {
                 $processedUrls[] = $url;
             }
         }
 
+        $this->storeProcessedUrls($processedUrls, $page);
 
-        $this->storeProcessedUrls($urls, $processedUrls, $updatedPage);
+        // TODO Check if its better to move elsewhere
+        if (option('mauricerenck.indieConnector.stats', false)) {
+            $stats = new WebmentionStats();
+            $stats->trackOutgoingWebmentions($processedUrls, $page);
+        }
+
+        return $processedUrls;
+    }
+
+    public function shouldSendWebmentionToTarget(string $url): bool
+    {
+        if ($this->isLocalUrl($url)) {
+            return false;
+        }
+
+        if (!$this->urlExists($url)) {
+            // TODO Log this in new json format for error reporting in panel and retries
+            return false;
+        }
+
+
+        // TODO FEATURE: Check if url is blocked
+        // if (!$this->isBlocked($url)) {
+        //     // TODO Log this in new json format for error reporting in panel and retries
+        //     return false;
+        // }
+
+        return true;
     }
 
     public function send(string $targetUrl, string $sourceUrl)
     {
-        if (!$this->urlExists($targetUrl)) {
-            return false;
-        }
-
         $endpoint = $this->mentionClient->discoverWebmentionEndpoint($targetUrl);
 
         if (is_null($endpoint)) {
-            return false;
-        }
-        
-        if (strpos($endpoint, '//localhost') === true || strpos($endpoint, '//127.0.0') === true) {
             return false;
         }
 
