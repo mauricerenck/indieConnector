@@ -9,6 +9,28 @@ use PHPUnit\Framework\TestCase;
 
 class TestCaseMocked extends TestCase
 {
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $existingPage = page('phpunit-test');
+        if (!is_null($existingPage)) {
+            kirby()->impersonate('kirby');
+            $existingPage->delete(true);
+        }
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+
+        $existingPage = page('phpunit-test');
+        if (!is_null($existingPage)) {
+            kirby()->impersonate('kirby');
+            $existingPage->delete(true);
+        }
+    }
+
     function getPageMock($draft = false, $content = [])
     {
         $defaultContent = [
@@ -17,6 +39,7 @@ https://text-field-url.tld
 https://www.text-field-url.tld
 http://www.text-field-url.tld
 <https://www.text-field-url.tld>
+https://processed-url.tld
 
 [A linked text](https://text-field-url.tld/a-linked-text)
 
@@ -47,5 +70,4 @@ https://text-field-url.tld",
 
         return $pageMock;
     }
-
 }
