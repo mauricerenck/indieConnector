@@ -2,14 +2,15 @@
 
 ## Settings for sending webmentions ([details](sending.md))
 
-| Option                    | Default                                                        | Description                                    |
-| ------------------------- | -------------------------------------------------------------- | ---------------------------------------------- |
-| `sendWebmention`          | `true`                                                         | Enable sending webmentions on page save        |
-| `skipSameHost`            | `true`                                                         | Skip sending webmentions to yourself           |
-| `outboxFilename`          | `indieConnector.json`                                          | Change the filename of the processed urls file |
-| `allowedTemplates`        | `[]`                                                           | Set templates allowed to send webmentions      |
-| `blockedTemplates`        | `[]`                                                           | Block templates from sending webmentions       |
-| `send-mention-url-fields` | `['textfield:text','layouteditor:layout','blockeditor:block']` | Set fieldnames and types to look for urls in   |
+| Option                    | Default                                                        | Description                                                                              |
+| ------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `sendWebmention`          | `true`                                                         | Enable sending webmentions on page save                                                  |
+| `skipSameHost`            | `true`                                                         | Skip sending webmentions to yourself                                                     |
+| `outboxFilename`          | `indieConnector.json`                                          | Change the filename of the processed urls file                                           |
+| `allowedTemplates`        | `[]`                                                           | Set templates allowed to send webmentions                                                |
+| `blockedTemplates`        | `[]`                                                           | Block templates from sending webmentions                                                 |
+| `send-mention-url-fields` | `['textfield:text','layouteditor:layout','blockeditor:block']` | Set fieldnames and types to look for urls in                                             |
+| `debug.localHosts`        | `['//localhost','//127.0.0.1']`                                    | Set local hosts to prevent sending webmentions and posts when testing on a local machine |
 
 ## Settings for receiving webmentions ([details](receiving.md))
 
