@@ -3,6 +3,6 @@
 return [
     'secret' => null,
     'debug' => false,
-    'stats' => false,
+    'stats.enabled' => false,
     'sqlitePath' => null,
 ];

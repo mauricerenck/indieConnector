@@ -10,7 +10,7 @@ return [
     'mauricerenck.indieConnector.sendWebmention' => true,
     'mauricerenck.indieConnector.debug' => true,
     'mauricerenck.indieConnector.secret' => 'my-secret',
-    'mauricerenck.indieConnector.stats' => true,
+    'mauricerenck.indieConnector.stats.enabled' => true,
     'mauricerenck.indieConnector.sqlitePath' => '.sqlite/',
     'mauricerenck.indieConnector.allowedTemplates' => ['phpunit'],
     'mauricerenck.indieConnector.blockedTemplates' => ['blocked-template'],

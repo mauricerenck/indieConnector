@@ -10,7 +10,7 @@
 | `allowedTemplates`        | `[]`                                                           | Set templates allowed to send webmentions                                                |
 | `blockedTemplates`        | `[]`                                                           | Block templates from sending webmentions                                                 |
 | `send-mention-url-fields` | `['textfield:text','layouteditor:layout','blockeditor:block']` | Set fieldnames and types to look for urls in                                             |
-| `debug.localHosts`        | `['//localhost','//127.0.0.1']`                                    | Set local hosts to prevent sending webmentions and posts when testing on a local machine |
+| `debug.localHosts`        | `['//localhost','//127.0.0.1']`                                | Set local hosts to prevent sending webmentions and posts when testing on a local machine |
 
 ## Settings for receiving webmentions ([details](receiving.md))
 
@@ -22,9 +22,9 @@
 
 | Option             | Default              | Description                                                                    |
 | ------------------ | -------------------- | ------------------------------------------------------------------------------ |
-| `stats`            | `false`              | Enable webmention stats in the panel                                           |
-| `sqlitePath`       | `'content/.sqlite/'` | Relative path to where the sqlite file should be stored (directory must exist) |
+| `stats.enabled`    | `false`              | Enable webmention stats in the panel                                           |
 | `stats.doNotTrack` | `['fed.brid.gy']`    | When sending webmentions, these hosts will not be tracked                      |
+| `sqlitePath`       | `'content/.sqlite/'` | Relative path to where the sqlite file should be stored (directory must exist) |
 
 
 ## Settings for posting on mastodon ([details](mastodon.md))

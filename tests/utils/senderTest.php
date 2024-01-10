@@ -1,6 +1,5 @@
 <?php
 use Kirby\Cms\File;
-use Kirby\Cms\S;
 use mauricerenck\IndieConnector\Sender;
 use mauricerenck\IndieConnector\TestCaseMocked;
 
@@ -567,8 +566,6 @@ final class senderTest extends TestCaseMocked
 
         $this->assertCount(0, $result);
     }
-
-
 
     /**
      * @group urlHandling

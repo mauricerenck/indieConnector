@@ -27,7 +27,7 @@
     },
     "require-dev": {
         "getkirby/cms": "^4",
-        "phpunit/phpunit": "^9.5",
+        "phpunit/phpunit": "^10",
         "mockery/mockery": "^1.5"
     },
     "replace": {
@@ -43,6 +43,10 @@
         }
     },
     "scripts": {
+        "start": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php -S localhost:8000 kirby/router.php"
+        ],
         "test": "vendor/bin/phpunit --testdox tests",
         "build-test-package": "git archive HEAD -o indieConnector.zip --worktree-attributes",
         "build-composer": "composer install --no-dev --optimize-autoloader",
