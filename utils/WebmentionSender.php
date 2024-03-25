@@ -6,8 +6,6 @@ use \IndieWeb\MentionClient;
 
 class WebmentionSender extends Sender
 {
-    
-
     public function __construct(
         private ?bool $activeWebmentions = null,
         private $mentionClient = null

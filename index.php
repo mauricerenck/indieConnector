@@ -20,11 +20,27 @@ Kirby::plugin('mauricerenck/indieConnector', [
     ],
     'routes' => [
         [
+            'pattern' => '(indieConnector|indieconnector)/webmention',
+            'method' => 'GET',
+            'action' => function () {
+                // TODO show a form as a fallback
+            }
+        ],
+        [
+            'pattern' => '(indieConnector|indieconnector)/webmention',
+            'method' => 'POST',
+            'action' => function () {
+                // TODO handle incoming webmentions
+
+                // Step 1 - Queue webmention, if queue is enabled
+            }
+        ],
+        [
             'pattern' => '(indieConnector|indieconnector)/webhook/webmentionio',
             'method' => 'POST',
             'action' => function () {
                 $response = json_decode(file_get_contents('php://input'));
-                $receiver = new WebmentionReceiver();
+                $receiver = new Receiver();
 
                 if (!$receiver->hasValidSecret($response)) {
                     return new Response('Authentication failed', 'text/plain', 401);

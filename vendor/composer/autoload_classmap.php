@@ -14,10 +14,12 @@ return array(
     'Kirby\\ComposerInstaller\\Plugin' => $vendorDir . '/getkirby/composer-installer/src/ComposerInstaller/Plugin.php',
     'Kirby\\ComposerInstaller\\PluginInstaller' => $vendorDir . '/getkirby/composer-installer/src/ComposerInstaller/PluginInstaller.php',
     'mauricerenck\\IndieConnector\\MastodonSender' => $baseDir . '/utils/sendMastodon.php',
+    'mauricerenck\\IndieConnector\\Microformats' => $baseDir . '/utils/Microformats.php',
     'mauricerenck\\IndieConnector\\Migrations' => $baseDir . '/utils/Migrations.php',
+    'mauricerenck\\IndieConnector\\Receiver' => $baseDir . '/utils/receiver.php',
     'mauricerenck\\IndieConnector\\Sender' => $baseDir . '/utils/Sender.php',
     'mauricerenck\\IndieConnector\\TestCaseMocked' => $baseDir . '/utils/TestCaseMocked.php',
-    'mauricerenck\\IndieConnector\\WebmentionReceiver' => $baseDir . '/utils/receiver.php',
+    'mauricerenck\\IndieConnector\\WebmentionReceiver' => $baseDir . '/utils/WebmentionReceiver.php',
     'mauricerenck\\IndieConnector\\WebmentionSender' => $baseDir . '/utils/WebmentionSender.php',
     'mauricerenck\\IndieConnector\\WebmentionStats' => $baseDir . '/utils/WebmentionStats.php',
 );

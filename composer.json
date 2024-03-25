@@ -15,15 +15,14 @@
         "psr-4": {
             "mauricerenck\\IndieConnector\\": "utils/"
         },
-        "classmap": [
-            "utils"
-        ]
+        "classmap": ["utils"]
     },
     "require": {
         "getkirby/composer-installer": "^1.2",
         "php": ">=8.0.0",
         "indieweb/mention-client": "^1.2",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "mf2/mf2": "^0.5.0"
     },
     "require-dev": {
         "getkirby/cms": "^4",
@@ -43,17 +42,10 @@
         }
     },
     "scripts": {
-        "start": [
-            "Composer\\Config::disableProcessTimeout",
-            "@php -S localhost:8000 kirby/router.php"
-        ],
-        "test": "vendor/bin/phpunit --testdox tests",
+        "start": ["Composer\\Config::disableProcessTimeout", "@php -S localhost:8000 kirby/router.php"],
+        "test": "vendor/bin/phpunit --testdox",
         "build-test-package": "git archive HEAD -o indieConnector.zip --worktree-attributes",
         "build-composer": "composer install --no-dev --optimize-autoloader",
-        "build-release": [
-            "composer test",
-            "composer install --no-dev --optimize-autoloader",
-            "npm run build"
-        ]
+        "build-release": ["composer test tests", "composer install --no-dev --optimize-autoloader", "npm run build"]
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 use Kirby\Cms\File;
 use mauricerenck\IndieConnector\Sender;
 use mauricerenck\IndieConnector\TestCaseMocked;

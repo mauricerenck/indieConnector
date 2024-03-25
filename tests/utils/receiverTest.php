@@ -1,6 +1,6 @@
 <?php
 
-use mauricerenck\IndieConnector\WebmentionReceiver;
+use mauricerenck\IndieConnector\Receiver;
 use PHPUnit\Framework\TestCase;
 use Kirby\Cms;
 
@@ -41,7 +41,7 @@ final class receiverTest extends TestCase
 
     public function testResponseHasValidSecret()
     {
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->hasValidSecret($this->responseMock);
 
         $this->assertTrue($result);
@@ -52,7 +52,7 @@ final class receiverTest extends TestCase
         $invalidMock = $this->responseMock;
         $invalidMock->secret = 'bogus';
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->hasValidSecret($invalidMock);
 
         $this->assertFalse($result);
@@ -63,7 +63,7 @@ final class receiverTest extends TestCase
         $invalidMock = $this->responseMock;
         unset($invalidMock->secret);
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->hasValidSecret($invalidMock);
 
         $this->assertFalse($result);
@@ -73,7 +73,7 @@ final class receiverTest extends TestCase
     {
         $invalidMock = $this->responseMock;
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->responseHasPostBody($this->responseMock);
 
         $this->assertTrue($result);
@@ -84,7 +84,7 @@ final class receiverTest extends TestCase
         $invalidMock = $this->responseMock;
         unset($invalidMock->post);
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->responseHasPostBody($invalidMock);
 
         $this->assertFalse($result);
@@ -92,7 +92,7 @@ final class receiverTest extends TestCase
 
     public function testGetTargetUrl()
     {
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getTargetUrl($this->responseMock);
 
         $this->assertEquals('https://indie-connector.test:8890/en/phpunit', $result);
@@ -102,7 +102,7 @@ final class receiverTest extends TestCase
     {
         $invalidMock = $this->responseMock;
         $invalidMock->target = 'INVALID';
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getTargetUrl($invalidMock);
 
         $this->assertFalse($result);
@@ -110,7 +110,7 @@ final class receiverTest extends TestCase
 
     public function testGetSourceUrl()
     {
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getSourceUrl($this->responseMock);
 
         $this->assertEquals('https://brid-gy.appspot.com/like/twitter/mauricerenck/DUMMY/DUMMY', $result);
@@ -121,7 +121,7 @@ final class receiverTest extends TestCase
         $invalidMock = $this->responseMock;
         $invalidMock->source = 'INVALID';
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getSourceUrl($invalidMock);
 
         $this->assertFalse($result);
@@ -129,7 +129,7 @@ final class receiverTest extends TestCase
 
     public function testGetPageFromUrl()
     {
-        $receiverUtils = new WebmentionReceiver();
+        $receiverUtils = new Receiver();
         $result = $receiverUtils->getPageFromUrl($this->responseMock->target);
 
         $this->assertEquals('phpunit', $result->slug());
@@ -137,7 +137,7 @@ final class receiverTest extends TestCase
 
     public function testGetPageFromUrlWithoutTranslatedLanguage()
     {
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getPageFromUrl('https://dummy-url.tld/de/phpunit');
 
         $this->assertEquals('phpunit', $result->slug());
@@ -145,7 +145,7 @@ final class receiverTest extends TestCase
 
     public function testGetPageFromUrlWithoutLanguage()
     {
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getPageFromUrl('https://dummy-url.tld/phpunit');
 
         $this->assertEquals('phpunit', $result->slug());
@@ -153,7 +153,7 @@ final class receiverTest extends TestCase
 
     public function testHandleUnkownPage()
     {
-        $receiverUtils = new WebmentionReceiver();
+        $receiverUtils = new Receiver();
         $result = $receiverUtils->getPageFromUrl('https://dummy-url.tld/invalid');
 
         $this->assertFalse($result);
@@ -164,7 +164,7 @@ final class receiverTest extends TestCase
         $modifiedMock = $this->responseMock;
         $modifiedMock->post->{'wm-property'} = 'like-of';
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getWebmentionType($modifiedMock);
 
         $this->assertEquals('LIKE', $result);
@@ -175,7 +175,7 @@ final class receiverTest extends TestCase
         $modifiedMock = $this->responseMock;
         $modifiedMock->post->{'wm-property'} = 'in-reply-to';
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getWebmentionType($modifiedMock);
 
         $this->assertEquals('REPLY', $result);
@@ -186,7 +186,7 @@ final class receiverTest extends TestCase
         $modifiedMock = $this->responseMock;
         $modifiedMock->post->{'wm-property'} = 'repost-of';
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getWebmentionType($modifiedMock);
 
         $this->assertEquals('REPOST', $result);
@@ -197,7 +197,7 @@ final class receiverTest extends TestCase
         $modifiedMock = $this->responseMock;
         $modifiedMock->post->{'wm-property'} = 'mention-of';
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getWebmentionType($modifiedMock);
 
         $this->assertEquals('MENTION', $result);
@@ -208,7 +208,7 @@ final class receiverTest extends TestCase
         $modifiedMock = $this->responseMock;
         $modifiedMock->post->{'wm-property'} = 'bogus-of';
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getWebmentionType($modifiedMock);
 
         $this->assertEquals('REPLY', $result);
@@ -219,7 +219,7 @@ final class receiverTest extends TestCase
         $modifiedMock = $this->responseMock;
         unset($modifiedMock->post->{'wm-property'});
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getWebmentionType($modifiedMock);
 
         $this->assertEquals('MENTION', $result);
@@ -227,7 +227,7 @@ final class receiverTest extends TestCase
 
     public function testTwitterIsKnownNetwork()
     {
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->isKnownNetwork('https://twitter.com/mauricerenck');
 
         $this->assertTrue($result);
@@ -235,7 +235,7 @@ final class receiverTest extends TestCase
 
     public function testInstagramIsKnownNetwork()
     {
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->isKnownNetwork('https://instagram.com/mauricerenck');
 
         $this->assertTrue($result);
@@ -243,7 +243,7 @@ final class receiverTest extends TestCase
 
     public function testMastodonIsKnownNetwork()
     {
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->isKnownNetwork('https://mastodon.online/mauricerenck');
         $this->assertTrue($result);
 
@@ -253,7 +253,7 @@ final class receiverTest extends TestCase
 
     public function testFacebookIsEvilDontUseIt()
     {
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->isKnownNetwork('https://facebook.com/mauricerenck');
 
         $this->assertFalse($result);
@@ -261,7 +261,7 @@ final class receiverTest extends TestCase
 
     public function testShouldCreateAuthorArray()
     {
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getAuthor($this->responseMock);
 
         $expected = [
@@ -281,7 +281,7 @@ final class receiverTest extends TestCase
         $modifiedMock->post->author->name = '';
         $modifiedMock->post->author->url = '';
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getAuthor($this->responseMock);
 
         $expected = [
@@ -296,7 +296,7 @@ final class receiverTest extends TestCase
 
     public function testShouldReturnContent()
     {
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getContent($this->responseMock);
 
         $this->assertEquals('Hello World!', $result);
@@ -307,7 +307,7 @@ final class receiverTest extends TestCase
         $modifiedMock = $this->responseMock;
         $modifiedMock->post->content = '';
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getContent($modifiedMock);
 
         $this->assertEquals('', $result);
@@ -315,7 +315,7 @@ final class receiverTest extends TestCase
 
     public function testShouldGetPublicationDate()
     {
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getPubDate($this->responseMock);
 
         $this->assertEquals('2022-22-02T22:22:22Z', $result);
@@ -326,7 +326,7 @@ final class receiverTest extends TestCase
         $modifiedMock = $this->responseMock;
         $modifiedMock->post->published = null;
 
-        $senderUtils = new WebmentionReceiver();
+        $senderUtils = new Receiver();
         $result = $senderUtils->getPubDate($this->responseMock);
 
         $this->assertEquals('2022-22-02T22:22:22Z', $result);

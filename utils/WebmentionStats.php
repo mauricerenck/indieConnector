@@ -38,6 +38,13 @@ class WebmentionStats
         }
     }
 
+    public function trackOutgoingWebmentions(array $urls, $page): void
+    {
+        foreach ($urls as $url) {
+            $this->updateOutbox($page->uuid()->id(), $url);
+        }
+    }
+
     public function updateOutbox(string $pageUuid, string $target)
     {
         if ($this->doNotTrackHost($target)) {
@@ -47,6 +54,7 @@ class WebmentionStats
         $trackingDate = time();
         $mentionDate = $this->formatTrackingDate($trackingDate);
 
+        // FIXME make a bulk insert to reduce db load
         try {
             $uniqueHash = md5($target . $pageUuid . $mentionDate);
             $this->db->query('INSERT INTO webmention_outbox(id, page_uuid, sent_date, target) VALUES("' . $uniqueHash . '", "' . $pageUuid . '","' . $mentionDate . '", "' . $target . '")');

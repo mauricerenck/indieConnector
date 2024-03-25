@@ -4,11 +4,13 @@ namespace mauricerenck\IndieConnector;
 
 use Kirby\Http\Url;
 use Kirby\Toolkit\V;
-use Kirby\Http\Remote;
 use is_null;
 
-class WebmentionReceiver
+class Receiver
 {
+
+    public function __construct() {}
+
     public function hasValidSecret($response)
     {
         return (isset($response->secret) && $response->secret === option('mauricerenck.indieConnector.secret', ''));
