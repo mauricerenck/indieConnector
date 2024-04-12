@@ -8,13 +8,13 @@ use Mf2;
 class WebmentionReceiver extends Receiver
 {
     private $microformats = null;
-    public function __construct(private $pageUrl = null)
+    public function __construct(private $sourceUrl = null, private $targetUrl = null)
     {
         parent::__construct();
-        $this->microformats = new Microformats($pageUrl);
+        $this->microformats = new Microformats($targetUrl);
     }
 
-    public function webmentionFullfillsCriteria($sourceUrl, $targetUrl)
+    public function webmentionFullfillsCriteria()
     {
         // TODO check if source is a valid url
         // TODO check if source host is blocked
@@ -57,33 +57,6 @@ class WebmentionReceiver extends Receiver
         // TODO something is wrong here - return error
     }
 
-    public function getHEntry($microformats)
-    {
-        foreach ($microformats['items'] as $item) {
-            if (isset($item['type']) && in_array('h-entry', $item['type'])) {
-                return $item;
-            }
-        }
-        return null;
-    }
-
-    public function getHCard($microformats)
-    {
-        foreach ($microformats['items'] as $item) {
-            if (isset($item['type']) && in_array('h-card', $item['type'])) {
-                return $item;
-            }
-        }
-
-        return null;
-    }
-
-    public function getContent($hentry)
-    {
-        return $hentry['properties']['summary'][0] ?? ($hentry['properties']['content'][0]['value'] ?? null);
-    }
-
-    // TODO IMPLEMENT AND TEST
     public function getWebmentionData($microformats)
     {
         $data = [];
@@ -92,27 +65,36 @@ class WebmentionReceiver extends Receiver
             return false;
         }
 
-        $entry = $this->getHEntry($microformats);
-
-        $data['type'] = $this->microformats->getTypes($microformats['items']);
-        $data['content'] = $this->getContent($entry);
-        $data['published'] = $entry['properties']['published'][0];
+        $data['types'] = $this->microformats->getTypes($microformats);
+        $data['content'] = $this->microformats->getSummaryOrContent($microformats);
+        $data['published'] = $this->microformats->getPublishDate($microformats);
         $data['author'] = $this->microformats->getAuthor($microformats);
+        $data['title'] = $this->microformats->getTitle($microformats);
 
         return $data;
     }
 
-    // TODO IMPLEMENT AND TEST
+    public function splitWebmentionDataIntoHooks($webmentionData): array
+    {
+        $hookData = [];
+        foreach ($webmentionData['types'] as $webmentionType) {
+            $data = $webmentionData;
+            $data['type'] = $webmentionType;
+
+            $hookData[] = $data;
+        }
+
+        return $hookData;
+    }
+
     public function convertToHookData($data)
     {
-        // TODO multiple may be possible
-        // TODO add some sort of status to the data - for example to mark if no mf2 data was found
         return [
             'type' => $data['type'],
-            'target' => null, // TODO
-            'source' => null, // TODO
+            'target' => $this->targetUrl,
+            'source' => $this->sourceUrl,
             'published' => $data['published'],
-            'title' => null, // TODO NEW
+            'title' => $data['title'],
             'content' => $data['content'],
             'author' => [
                 'type' => 'card',

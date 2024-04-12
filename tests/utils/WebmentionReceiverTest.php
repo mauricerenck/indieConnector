@@ -32,169 +32,157 @@ final class WebmentionReceiverTest extends TestCaseMocked
 
     /**
      * @group receiveWebmentions
-     * @testdox getHEntry - get h-entry from mf2
+     * @testdox convertToHookData - should create an array with the correct keys
      */
-    public function testGetHEntry()
+    public function testShouldConvertToHookData()
     {
-        $item = [
-            'type' => ['h-entry'],
-            'properties' => [
-                'category' => ['Kirby CMS'],
-                'summary' => ['This is a summary'],
-                'published' => ['2024-02-01 09:30:00'],
-                'content' => [
-                    [
-                        'html' => 'This is a <strong>test</strong>.',
-                        'value' => 'This is a test.',
-                    ],
-                ],
-                'author' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
-                        'value' => 'Maurice Renck',
-                    ],
-                ],
+        $expected = [
+            'type' => 'in-reply-to',
+            'target' => 'https://indie-connector.tld',
+            'source' => 'https://sender.tld',
+            'published' => '2024-02-01 09:30:00',
+            'title' => 'This is my blog post',
+            'content' => 'This is a summary',
+            'author' => [
+                'type' => 'card',
+                'name' => 'Maurice Renck',
+                'avatar' => null,
+                'url' => 'https://maurice-renck.de',
             ],
         ];
 
         $mf2 = [
-            'items' => [$item],
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'name' => ['This is my blog post'],
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'in-reply-to' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'content' => [
+                            [
+                                'html' => 'This is a <strong>test</strong>.',
+                                'value' => 'This is a test.',
+                            ],
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
 
-        $webmentionReceiver = new WebmentionReceiver();
+        $webmentionReceiver = new WebmentionReceiver('https://sender.tld', 'https://indie-connector.tld');
+        $webmentionData = $webmentionReceiver->getWebmentionData($mf2);
+        $webmentions = $webmentionReceiver->splitWebmentionDataIntoHooks($webmentionData);
+        $result = $webmentionReceiver->convertToHookData($webmentions[0]);
 
-        $result = $webmentionReceiver->getHEntry($mf2);
-        $this->assertEquals($item, $result);
+        $this->assertCount(1, $webmentions);
+        $this->assertEquals($expected, $result);
     }
 
     /**
      * @group receiveWebmentions
-     * @testdox getHCard - get h-card from mf2
+     * @testdox splitWebmentionDataIntoHooks - should have two hooks
      */
-    public function testGetHCard()
+    public function testShouldSplitIntoHooks()
     {
-        $item = [
-            'type' => ['h-card', 'h-card-footer'],
-            'properties' => [
-                'name' => ['Maurice Renck'],
-                'note' => [
-                    'Maurice entwickelt Ideen & Tools f\u00fcr digitales Storytelling und ein offenes Web. Er schreibt seit \u00fcber 25 Jahren ins Internet, podcastet seit 2005. Maurice gr\u00fcndete ein Startup und ein Print-Magazin. Er schreibt Texte, Musik und Code.',
-                ],
-                'photo' => [
-                    [
-                        'value' => 'https://indieconnector.tld/profile.jpg',
-                        'alt ' => 'A photo of Maurice Renck',
-                    ],
-                ],
-                'url' => ['https://maurice-renck.de'],
-            ],
-        ];
-
         $mf2 = [
-            'items' => [$item],
-        ];
-
-        $webmentionReceiver = new WebmentionReceiver();
-
-        $result = $webmentionReceiver->getHCard($mf2);
-        $this->assertEquals($item, $result);
-    }
-
-    /**
-     * @group receiveWebmentions
-     * @testdox getContent - get the summary from h-entry
-     */
-    public function testGetContent()
-    {
-        $item = [
-            'type' => ['h-entry'],
-            'properties' => [
-                'category' => ['Kirby CMS'],
-                'summary' => ['This is a summary'],
-                'published' => ['2024-02-01 09:30:00'],
-                'content' => [
-                    [
-                        'html' => 'This is a <strong>test</strong>.',
-                        'value' => 'This is a test.',
-                    ],
-                ],
-                'author' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
-                        'value' => 'Maurice Renck',
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'name' => ['This is my blog post'],
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'in-reply-to' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'like-of' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'content' => [
+                            [
+                                'html' => 'This is a <strong>test</strong>.',
+                                'value' => 'This is a test.',
+                            ],
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
                     ],
                 ],
             ],
         ];
 
-        $webmentionReceiver = new WebmentionReceiver();
-        $result = $webmentionReceiver->getContent($item);
+        $webmentionReceiver = new WebmentionReceiver('https://sender.tld', 'https://indie-connector.tld');
+        $webmentionData = $webmentionReceiver->getWebmentionData($mf2);
+        $webmentions = $webmentionReceiver->splitWebmentionDataIntoHooks($webmentionData);
+        $result1 = $webmentionReceiver->convertToHookData($webmentions[0]);
+        $result2 = $webmentionReceiver->convertToHookData($webmentions[1]);
 
-        $this->assertEquals('This is a summary', $result);
+        $this->assertCount(2, $webmentions);
+        $this->assertContains('in-reply-to', $result1);
+        $this->assertContains('like-of', $result2);
     }
 
     /**
      * @group receiveWebmentions
-     * @testdox getContent - get the content from h-entry
+     * @testdox getWebmentionData - should create data for hooks
      */
-    public function testGetContentContent()
+    public function testGetWebmentionData()
     {
-        $item = [
-            'type' => ['h-entry'],
-            'properties' => [
-                'category' => ['Kirby CMS'],
-                'summary' => [],
-                'published' => ['2024-02-01 09:30:00'],
-                'content' => [
-                    [
-                        'html' => 'This is a <strong>test</strong>.',
-                        'value' => 'This is a test.',
-                    ],
-                ],
-                'author' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
-                        'value' => 'Maurice Renck',
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'name' => ['This is my blog post'],
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'in-reply-to' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'like-of' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'content' => [
+                            [
+                                'html' => 'This is a <strong>test</strong>.',
+                                'value' => 'This is a test.',
+                            ],
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
                     ],
                 ],
             ],
         ];
 
-        $webmentionReceiver = new WebmentionReceiver();
-        $result = $webmentionReceiver->getContent($item);
-
-        $this->assertEquals('This is a test.', $result);
-    }
-
-    /**
-     * @group receiveWebmentions
-     * @testdox getContent - handle empty content
-     */
-    public function testGetContentNoContent()
-    {
-        $item = [
-            'type' => ['h-entry'],
-            'properties' => [
-                'category' => ['Kirby CMS'],
-                'summary' => [],
-                'published' => ['2024-02-01 09:30:00'],
-                'content' => [],
-                'author' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
-                        'value' => 'Maurice Renck',
-                    ],
-                ],
-            ],
+        $expectedAuthor = [
+            'name' => 'Maurice Renck',
+            'photo' => null,
+            'url' => 'https://maurice-renck.de',
         ];
 
-        $webmentionReceiver = new WebmentionReceiver();
-        $result = $webmentionReceiver->getContent($item);
+        $webmentionReceiver = new WebmentionReceiver('https://sender.tld', 'https://indie-connector.tld');
+        $webmentionData = $webmentionReceiver->getWebmentionData($mf2);
 
-        $this->assertNull($result);
+        $this->assertCount(2, $webmentionData['types']);
+        $this->assertContains('in-reply-to', $webmentionData['types']);
+        $this->assertContains('like-of', $webmentionData['types']);
+        $this->assertEquals('This is a summary', $webmentionData['content']);
+        $this->assertEquals($expectedAuthor, $webmentionData['author']);
+        $this->assertEquals('This is my blog post', $webmentionData['title']);
     }
 }

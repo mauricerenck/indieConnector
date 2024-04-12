@@ -14,9 +14,10 @@
 
 ## Settings for receiving webmentions ([details](receiving.md))
 
-| Option   | Default | Description                        |
-| -------- | ------- | ---------------------------------- |
-| `secret` | `''`    | Your webmention.io web hook secret |
+| Option           | Default | Description                                                                    |
+| ---------------- | ------- | ------------------------------------------------------------------------------ |
+| `secret`         | `''`    | Your webmention.io web hook secret                                             |
+| `useHtmlContent` | `false` | Set to true if you want to show html content from the sender (not recommended) |
 
 ## Settings for statistics in the panel
 
@@ -25,7 +26,6 @@
 | `stats.enabled`    | `false`              | Enable webmention stats in the panel                                           |
 | `stats.doNotTrack` | `['fed.brid.gy']`    | When sending webmentions, these hosts will not be tracked                      |
 | `sqlitePath`       | `'content/.sqlite/'` | Relative path to where the sqlite file should be stored (directory must exist) |
-
 
 ## Settings for posting on mastodon ([details](mastodon.md))
 
@@ -36,10 +36,8 @@
 | `mastodon-instance-url` | `‘‘`            | Your mastodon instance url      |
 | `mastodon-text-field`   | `‘description‘` | Source field for toot text      |
 
-
 ## ActivityPub beta ([details](activitiypub.md))
 
 | Option              | Default | Description               |
 | ------------------- | ------- | ------------------------- |
 | `activityPubBridge` | `false` | Enable activityPub (beta) |
-

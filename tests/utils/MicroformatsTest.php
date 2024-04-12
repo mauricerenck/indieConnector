@@ -2,7 +2,6 @@
 
 use mauricerenck\IndieConnector\Microformats;
 use mauricerenck\IndieConnector\TestCaseMocked;
-use mauricerenck\IndieConnector\WebmentionReceiver;
 
 final class MicroformatsTest extends TestCaseMocked
 {
@@ -17,31 +16,35 @@ final class MicroformatsTest extends TestCaseMocked
      */
     public function testGetTypeLike()
     {
-        $item = [
-            'type' => ['h-entry'],
-            'properties' => [
-                'category' => ['Kirby CMS'],
-                'summary' => ['This is a summary'],
-                'published' => ['2024-02-01 09:30:00'],
-                'like-of' => ['https://unknown.url', 'https://indie-connector.tld'],
-                'content' => [
-                    [
-                        'html' => 'This is a <strong>test</strong>.',
-                        'value' => 'This is a test.',
-                    ],
-                ],
-                'author' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
-                        'value' => 'Maurice Renck',
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'like-of' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'content' => [
+                            [
+                                'html' => 'This is a <strong>test</strong>.',
+                                'value' => 'This is a test.',
+                            ],
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
                     ],
                 ],
             ],
         ];
 
         $microformats = new Microformats('https://indie-connector.tld');
-        $result = $microformats->getTypes([$item]);
+        $result = $microformats->getTypes($mf2);
 
         $this->assertEquals(['like-of'], $result);
     }
@@ -52,31 +55,35 @@ final class MicroformatsTest extends TestCaseMocked
      */
     public function testGetTypeRepost()
     {
-        $item = [
-            'type' => ['h-entry'],
-            'properties' => [
-                'category' => ['Kirby CMS'],
-                'summary' => ['This is a summary'],
-                'published' => ['2024-02-01 09:30:00'],
-                'repost-of' => ['https://unknown.url', 'https://indie-connector.tld'],
-                'content' => [
-                    [
-                        'html' => 'This is a <strong>test</strong>.',
-                        'value' => 'This is a test.',
-                    ],
-                ],
-                'author' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
-                        'value' => 'Maurice Renck',
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'repost-of' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'content' => [
+                            [
+                                'html' => 'This is a <strong>test</strong>.',
+                                'value' => 'This is a test.',
+                            ],
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
                     ],
                 ],
             ],
         ];
 
         $microformats = new Microformats('https://indie-connector.tld');
-        $result = $microformats->getTypes([$item]);
+        $result = $microformats->getTypes($mf2);
 
         $this->assertEquals(['repost-of'], $result);
     }
@@ -87,31 +94,35 @@ final class MicroformatsTest extends TestCaseMocked
      */
     public function testGetTypeBookmark()
     {
-        $item = [
-            'type' => ['h-entry'],
-            'properties' => [
-                'category' => ['Kirby CMS'],
-                'summary' => ['This is a summary'],
-                'published' => ['2024-02-01 09:30:00'],
-                'bookmark-of' => ['https://unknown.url', 'https://indie-connector.tld'],
-                'content' => [
-                    [
-                        'html' => 'This is a <strong>test</strong>.',
-                        'value' => 'This is a test.',
-                    ],
-                ],
-                'author' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
-                        'value' => 'Maurice Renck',
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'bookmark-of' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'content' => [
+                            [
+                                'html' => 'This is a <strong>test</strong>.',
+                                'value' => 'This is a test.',
+                            ],
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
                     ],
                 ],
             ],
         ];
 
         $microformats = new Microformats('https://indie-connector.tld');
-        $result = $microformats->getTypes([$item]);
+        $result = $microformats->getTypes($mf2);
 
         $this->assertEquals(['bookmark-of'], $result);
     }
@@ -122,31 +133,35 @@ final class MicroformatsTest extends TestCaseMocked
      */
     public function testGetTypeReply()
     {
-        $item = [
-            'type' => ['h-entry'],
-            'properties' => [
-                'category' => ['Kirby CMS'],
-                'summary' => ['This is a summary'],
-                'published' => ['2024-02-01 09:30:00'],
-                'in-reply-to' => ['https://unknown.url', 'https://indie-connector.tld'],
-                'content' => [
-                    [
-                        'html' => 'This is a <strong>test</strong>.',
-                        'value' => 'This is a test.',
-                    ],
-                ],
-                'author' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
-                        'value' => 'Maurice Renck',
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'in-reply-to' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'content' => [
+                            [
+                                'html' => 'This is a <strong>test</strong>.',
+                                'value' => 'This is a test.',
+                            ],
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
                     ],
                 ],
             ],
         ];
 
         $microformats = new Microformats('https://indie-connector.tld');
-        $result = $microformats->getTypes([$item]);
+        $result = $microformats->getTypes($mf2);
 
         $this->assertEquals(['in-reply-to'], $result);
     }
@@ -157,32 +172,36 @@ final class MicroformatsTest extends TestCaseMocked
      */
     public function testGetTypeMultiple()
     {
-        $item = [
-            'type' => ['h-entry'],
-            'properties' => [
-                'category' => ['Kirby CMS'],
-                'summary' => ['This is a summary'],
-                'published' => ['2024-02-01 09:30:00'],
-                'in-reply-to' => ['https://unknown.url', 'https://indie-connector.tld'],
-                'bookmark-of' => ['https://unknown.url', 'https://indie-connector.tld'],
-                'content' => [
-                    [
-                        'html' => 'This is a <strong>test</strong>.',
-                        'value' => 'This is a test.',
-                    ],
-                ],
-                'author' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
-                        'value' => 'Maurice Renck',
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'in-reply-to' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'bookmark-of' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'content' => [
+                            [
+                                'html' => 'This is a <strong>test</strong>.',
+                                'value' => 'This is a test.',
+                            ],
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
                     ],
                 ],
             ],
         ];
 
         $microformats = new Microformats('https://indie-connector.tld');
-        $result = $microformats->getTypes([$item]);
+        $result = $microformats->getTypes($mf2);
 
         $this->assertCount(2, $result);
         $this->assertContains('in-reply-to', $result);
@@ -195,31 +214,35 @@ final class MicroformatsTest extends TestCaseMocked
      */
     public function testGetTypeLikeUnknownUrls()
     {
-        $item = [
-            'type' => ['h-entry'],
-            'properties' => [
-                'category' => ['Kirby CMS'],
-                'summary' => ['This is a summary'],
-                'published' => ['2024-02-01 09:30:00'],
-                'like-of' => ['https://unknown.url', 'https://fake.tld'],
-                'content' => [
-                    [
-                        'html' => 'This is a <strong>test</strong>.',
-                        'value' => 'This is a test.',
-                    ],
-                ],
-                'author' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
-                        'value' => 'Maurice Renck',
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'like-of' => ['https://unknown.url', 'https://fake.tld'],
+                        'content' => [
+                            [
+                                'html' => 'This is a <strong>test</strong>.',
+                                'value' => 'This is a test.',
+                            ],
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
                     ],
                 ],
             ],
         ];
 
         $microformats = new Microformats('https://indie-connector.tld');
-        $result = $microformats->getTypes([$item]);
+        $result = $microformats->getTypes($mf2);
 
         $this->assertCount(0, $result);
     }
@@ -230,31 +253,35 @@ final class MicroformatsTest extends TestCaseMocked
      */
     public function testGetTypeUnknownType()
     {
-        $item = [
-            'type' => ['h-entry'],
-            'properties' => [
-                'category' => ['Kirby CMS'],
-                'summary' => ['This is a summary'],
-                'published' => ['2024-02-01 09:30:00'],
-                'spam-of' => ['https://unknown.url', 'https://indie-connector.tld'],
-                'content' => [
-                    [
-                        'html' => 'This is a <strong>test</strong>.',
-                        'value' => 'This is a test.',
-                    ],
-                ],
-                'author' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
-                        'value' => 'Maurice Renck',
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'spam-of' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'content' => [
+                            [
+                                'html' => 'This is a <strong>test</strong>.',
+                                'value' => 'This is a test.',
+                            ],
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
                     ],
                 ],
             ],
         ];
 
         $microformats = new Microformats('https://indie-connector.tld');
-        $result = $microformats->getTypes([$item]);
+        $result = $microformats->getTypes($mf2);
 
         $this->assertCount(0, $result);
     }
@@ -265,27 +292,63 @@ final class MicroformatsTest extends TestCaseMocked
      */
     public function testGetTypeEventFromChildUrl()
     {
-        $item = [
-            'type' => ['h-entry'],
-            'properties' => [
-                'category' => ['Kirby CMS'],
-                'summary' => ['This is a summary'],
-                'published' => ['2024-02-01 09:30:00'],
-                'content' => [
-                    [
-                        'html' => 'This is a <strong>test</strong>.',
-                        'value' => 'This is a test.',
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'content' => [
+                            [
+                                'html' => 'This is a <strong>test</strong>.',
+                                'value' => 'This is a test.',
+                            ],
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
                     ],
-                ],
-                'author' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Maurice Renck'], 'url' => ['https://maurice-renck.de']],
-                        'value' => 'Maurice Renck',
+                    'children' => [
+                        [
+                            'type' => ['h-event'],
+                            'properties' => [
+                                'name' => ['IndieWeb Summit'],
+                                'url' => ['https://indieweb.org/2017'],
+                                'location' => [],
+                                'invitee' => [
+                                    [
+                                        'type' => ['h-card'],
+                                        'properties' => ['name' => ['Indie'], 'url' => ['https://indie-connector.tld']],
+                                    ],
+                                ],
+                            ],
+                        ],
                     ],
                 ],
             ],
-            'children' => [
+        ];
+
+        $microformats = new Microformats('https://indie-connector.tld');
+        $result = $microformats->getTypes($mf2);
+
+        $this->assertCount(1, $result);
+        $this->assertEquals(['invite'], $result);
+    }
+
+    /**
+     * @group microformats
+     * @testdox getTypes - event from root
+     */
+    public function testGetTypeEventUrl()
+    {
+        $mf2 = [
+            'items' => [
                 [
                     'type' => ['h-event'],
                     'properties' => [
@@ -304,35 +367,7 @@ final class MicroformatsTest extends TestCaseMocked
         ];
 
         $microformats = new Microformats('https://indie-connector.tld');
-        $result = $microformats->getTypes([$item]);
-
-        $this->assertCount(1, $result);
-        $this->assertEquals(['invite'], $result);
-    }
-
-    /**
-     * @group microformats
-     * @testdox getTypes - event from root
-     */
-    public function testGetTypeEventUrl()
-    {
-        $item = [
-            'type' => ['h-event'],
-            'properties' => [
-                'name' => ['IndieWeb Summit'],
-                'url' => ['https://indieweb.org/2017'],
-                'location' => [],
-                'invitee' => [
-                    [
-                        'type' => ['h-card'],
-                        'properties' => ['name' => ['Indie'], 'url' => ['https://indie-connector.tld']],
-                    ],
-                ],
-            ],
-        ];
-
-        $microformats = new Microformats('https://indie-connector.tld');
-        $result = $microformats->getTypes([$item]);
+        $result = $microformats->getTypes($mf2);
 
         $this->assertCount(1, $result);
         $this->assertEquals(['invite'], $result);
@@ -804,6 +839,305 @@ final class MicroformatsTest extends TestCaseMocked
         $microformats = new Microformats();
 
         $result = $microformats->getAuthorFromHCard($hCard);
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @group microformats
+     * @testdox getSummaryOrContent - get summary from h-entry
+     */
+    public function testGetSummaryFromHEntry()
+    {
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'content' => [],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => [
+                                    'name' => ['Maurice Renck'],
+                                    'url' => null,
+                                    'photo' => null,
+                                ],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $expected = 'This is a summary';
+
+        $microformats = new Microformats();
+
+        $result = $microformats->getSummaryOrContent($mf2);
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @group microformats
+     * @testdox getSummaryOrContent - get content from h-entry
+     */
+    public function testGetContentFromHEntry()
+    {
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => [],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'content' => [
+                            'html' => 'This is the content.',
+                            'value' => 'This is the content',
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => [
+                                    'name' => ['Maurice Renck'],
+                                    'url' => null,
+                                    'photo' => null,
+                                ],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $expected = 'This is the content';
+
+        $microformats = new Microformats();
+
+        $result = $microformats->getSummaryOrContent($mf2);
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @group microformats
+     * @testdox getSummaryOrContent - get summary of both filled
+     */
+    public function testGetSummaryFromHEntryBothFilled()
+    {
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'content' => [
+                            'html' => 'This is the content.',
+                            'value' => 'This is the content',
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => [
+                                    'name' => ['Maurice Renck'],
+                                    'url' => null,
+                                    'photo' => null,
+                                ],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $expected = 'This is a summary';
+
+        $microformats = new Microformats();
+
+        $result = $microformats->getSummaryOrContent($mf2);
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @group microformats
+     * @testdox getSummaryOrContent - get content of summary null
+     */
+    public function testGetContentFromHEntrySummaryNull()
+    {
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => null,
+                        'published' => ['2024-02-01 09:30:00'],
+                        'content' => [
+                            'html' => 'This is the content.',
+                            'value' => 'This is the content',
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => [
+                                    'name' => ['Maurice Renck'],
+                                    'url' => null,
+                                    'photo' => null,
+                                ],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $expected = 'This is the content';
+
+        $microformats = new Microformats();
+
+        $result = $microformats->getSummaryOrContent($mf2);
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @group microformats
+     * @testdox getSummaryOrContent - get content as html
+     */
+    public function testGetContentFromHEntryHtml()
+    {
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => null,
+                        'published' => ['2024-02-01 09:30:00'],
+                        'content' => [
+                            'html' => 'This is <strong>the</strong> content',
+                            'value' => 'This is the content',
+                        ],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => [
+                                    'name' => ['Maurice Renck'],
+                                    'url' => null,
+                                    'photo' => null,
+                                ],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $expected = 'This is <strong>the</strong> content';
+
+        $microformats = new Microformats('', true);
+
+        $result = $microformats->getSummaryOrContent($mf2);
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @group microformats
+     * @testdox getSummaryOrContent - handly empty summary and content
+     */
+    public function testGetContentFromHEntryBothEmpty()
+    {
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => [],
+                        'published' => ['2024-02-01 09:30:00'],
+                        'content' => [],
+                        'author' => [
+                            [
+                                'type' => ['h-card'],
+                                'properties' => [
+                                    'name' => ['Maurice Renck'],
+                                    'url' => null,
+                                    'photo' => null,
+                                ],
+                                'value' => 'Maurice Renck',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $microformats = new Microformats();
+
+        $result = $microformats->getSummaryOrContent($mf2);
+        $this->assertNull($result);
+    }
+
+    /**
+     * @group microformats
+     * @testdox getPublishDate - get publish date from h-entry
+     */
+    public function testGetPublishDateFromHEntry()
+    {
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                    ],
+                ],
+            ],
+        ];
+
+        $expected = '2024-02-01 09:30:00';
+
+        $microformats = new Microformats();
+
+        $result = $microformats->getPublishDate($mf2);
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @group microformats
+     * @testdox getTitle - get name h-entry
+     */
+    public function testGetTitle()
+    {
+        $mf2 = [
+            'items' => [
+                [
+                    'type' => ['h-entry'],
+                    'properties' => [
+                        'name' => ['This is my blog post'],
+                        'category' => ['Kirby CMS'],
+                        'summary' => ['This is a summary'],
+                        'published' => ['2024-02-01 09:30:00'],
+                    ],
+                ],
+            ],
+        ];
+
+        $expected = 'This is my blog post';
+
+        $microformats = new Microformats();
+
+        $result = $microformats->getTitle($mf2);
         $this->assertEquals($expected, $result);
     }
 }

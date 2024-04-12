@@ -7,9 +7,9 @@ use Kirby\Http\Url;
 class Microformats
 {
     private $urlTypes = ['like-of', 'repost-of', 'bookmark-of', 'in-reply-to'];
-    public function __construct(private $pageUrl = null)
+    public function __construct(private $pageUrl = null, private $contentHtml = false)
     {
-        // VOID
+        $this->contentHtml = $contentHtml ?? option('mauricerenck.indieConnector.stats.useHtmlContent', false);
     }
 
     public function returnArraySave($values)
@@ -46,11 +46,15 @@ class Microformats
         return false;
     }
 
-    public function getTypes(array $items): array
+    public function getTypes(array $microformats): array
     {
+        if (empty($microformats['items'])) {
+            return null;
+        }
+
         $types = [];
 
-        foreach ($items as $item) {
+        foreach ($microformats['items'] as $item) {
             if (!isset($item['type'])) {
                 continue;
             }
@@ -192,5 +196,71 @@ class Microformats
             'url' => $url[0],
             'photo' => $photo[0]['value'],
         ];
+    }
+
+    public function getSummaryOrContent(array $microformats)
+    {
+        if (empty($microformats['items'])) {
+            return null;
+        }
+
+        $summary = null;
+        $content = null;
+
+        foreach ($microformats['items'] as $item) {
+            if (in_array('h-entry', $item['type'])) {
+                if (isset($item['properties'])) {
+                    if (isset($item['properties']['summary'])) {
+                        $summary = $item['properties']['summary'][0];
+                    }
+
+                    if (isset($item['properties']['content'])) {
+                        // TODO value or html via options
+                        $contentArray = $item['properties']['content'];
+                        $content = $this->contentHtml ? $contentArray['html'] : $contentArray['value'];
+                    }
+                }
+            }
+        }
+
+        return $summary ?? $content;
+    }
+
+    public function getTitle(array $microformats)
+    {
+        if (empty($microformats['items'])) {
+            return null;
+        }
+
+        foreach ($microformats['items'] as $item) {
+            if (in_array('h-entry', $item['type'])) {
+                if (isset($item['properties'])) {
+                    if (isset($item['properties']['name'])) {
+                        return $item['properties']['name'][0];
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function getPublishDate(array $microformats)
+    {
+        if (empty($microformats['items'])) {
+            return null;
+        }
+
+        foreach ($microformats['items'] as $item) {
+            if (in_array('h-entry', $item['type'])) {
+                if (isset($item['properties'])) {
+                    if (isset($item['properties']['published'])) {
+                        return $item['properties']['published'][0];
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }
