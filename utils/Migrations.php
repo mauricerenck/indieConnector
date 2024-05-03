@@ -15,7 +15,7 @@ class Migrations
             $pluginPath = str_replace('utils', '', __DIR__);
             $migrationPath = $pluginPath . '/migrations/';
 
-            if(!file_exists(option('mauricerenck.indieConnector.sqlitePath', '.sqlite/'))) {
+            if (!file_exists(option('mauricerenck.indieConnector.sqlitePath', '.sqlite/'))) {
                 mkdir(option('mauricerenck.indieConnector.sqlitePath', '.sqlite/'));
             }
 
@@ -43,12 +43,12 @@ class Migrations
                 $lastMigration = 0;
 
                 if ($versionResult !== false) {
-                    $lastMigration = (int)$versionResult->data[0]->version;
+                    $lastMigration = (int) $versionResult->data[0]->version;
                 }
 
                 if ($lastMigration < $version) {
                     foreach ($migrationStructures as $query) {
-                        if(!empty(trim($query))) {
+                        if (!empty(trim($query))) {
                             $db->execute(trim($query));
                         }
                     }
@@ -68,7 +68,6 @@ class Migrations
                 'type' => 'sqlite',
                 'database' => $sqlitePath . 'indieConnector.sqlite',
             ]);
-
         } catch (Exception $e) {
             echo 'Could not connect to Database: ', $e->getMessage(), "\n";
             return null;
