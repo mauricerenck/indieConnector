@@ -2,6 +2,7 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Database\Database;
+use Kirby\Toolkit\Collection;
 use Exception;
 
 class IndieConnectorDatabase
@@ -65,11 +66,23 @@ class IndieConnectorDatabase
         }
     }
 
-    public function select(string $table, array $fields, ?string $filters = ''): array|bool
+    public function select(string $table, array $fields, ?string $filters = ''): Collection|bool
     {
         try {
-            $query = 'SELECT (' . implode(',', $fields) . ') FROM ' . $table . ' ' . $filters . ')';
+            $query = 'SELECT ' . implode(',', $fields) . ' FROM ' . $table . ' ' . $filters;
             return $this->db->query($query);
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public function delete(string $table, string $filters): bool
+    {
+        try {
+            $query = 'DELETE FROM ' . $table . ' ' . $filters;
+            $this->db->query($query);
+
+            return true;
         } catch (Exception $e) {
             return false;
         }

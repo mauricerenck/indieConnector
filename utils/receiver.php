@@ -13,7 +13,8 @@ class Receiver
 
     public function hasValidSecret($response)
     {
-        return isset($response->secret) && $response->secret === option('mauricerenck.indieConnector.secret', '');
+        $secret = $response->get('secret');
+        return isset($secret) && $secret === option('mauricerenck.indieConnector.secret', '');
     }
 
     public function responseHasPostBody($response)

@@ -11,12 +11,14 @@ class QueueHandler
     public function __construct(
         private ?bool $queueEnabled = null,
         private ?IndieConnectorDatabase $indieDatabase = null,
-        private ?WebmentionReceiver $webmentionReceiver = null
+        private ?WebmentionReceiver $webmentionReceiver = null,
+        private ?int $retries = null
     ) {
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
         $this->receiver = $webmentionReceiver ?? new WebmentionReceiver();
         $this->queueEnabled = $queueEnabled ?? option('mauricerenck.indieConnector.queue.enabled', false);
+        $this->retries = $retries ?? option('mauricerenck.indieConnector.queue.retries', 5);
     }
 
     public function queueEnabled(): bool
@@ -30,6 +32,7 @@ class QueueHandler
 
         try {
             $uniqueHash = md5($targetUrl . $sourceUrl . $mentionDate);
+
             $this->indieDb->insert(
                 'queue',
                 ['id', 'sourceUrl', 'targetUrl', 'queueStatus'],
@@ -41,52 +44,52 @@ class QueueHandler
         }
     }
 
-    public function processQueue(): array
+    public function processQueue(int $limit = 0): void
     {
-        $queue = $this->indieDb->select('queue', ['id', 'sourceUrl', 'targetUrl'], 'WHERE queueStatus = "queued"');
+        $limitQuery = $limit > 0 ? ' LIMIT ' . $limit : '';
+        $queue = $this->indieDb->select(
+            'queue',
+            ['id', 'sourceUrl', 'targetUrl', 'retries'],
+            'WHERE queueStatus = "queued" OR queueStatus = "error"' . $limitQuery
+        );
 
         if (empty($queue)) {
-            return [
-                'status' => 'success',
-                'message' => 'no queued webmentions',
-                'queueId' => null,
-            ];
+            return;
         }
 
         foreach ($queue as $mention) {
-            $sourceUrl = $mention['sourceUrl'];
-            $targetUrl = $mention['targetUrl'];
+            $sourceUrl = $mention->sourceUrl();
+            $targetUrl = $mention->targetUrl();
+            $mentionId = $mention->id();
+            $retries = (int) $mention->retries();
+
+            if ($retries >= $this->retries) {
+                $this->indieDb->update(
+                    'queue',
+                    ['queueStatus', 'processLog'],
+                    ['failed', 'max retries reached'],
+                    'WHERE id = "' . $mentionId . '"'
+                );
+
+                continue;
+            }
 
             $result = $this->receiver->processWebmention($sourceUrl, $targetUrl);
 
             switch ($result['status']) {
                 case 'success':
-                    $this->indieDb->update(
-                        'queue',
-                        ['queueStatus'],
-                        ['processed'],
-                        'WHERE id = "' . $mention['id'] . '"'
-                    );
-
-                    return [
-                        'status' => 'success',
-                        'message' => 'webmention processed',
-                        'queueId' => $mention['id'],
-                    ];
+                    $this->indieDb->delete('queue', 'WHERE id = "' . $mentionId . '"');
+                    break;
 
                 case 'error':
                     $this->indieDb->update(
                         'queue',
-                        ['queueStatus', 'processLog'],
-                        ['error', $result['message']],
-                        'WHERE id = "' . $mention['id'] . '"'
+                        ['queueStatus', 'processLog', 'retries'],
+                        ['error', $result['message'], $retries + 1],
+                        'WHERE id = "' . $mentionId . '"'
                     );
 
-                    return [
-                        'status' => 'error',
-                        'message' => 'webmention processing error',
-                        'queueId' => $mention['id'],
-                    ];
+                    break;
             }
         }
     }
