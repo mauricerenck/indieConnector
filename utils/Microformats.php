@@ -7,9 +7,9 @@ use Kirby\Http\Url;
 class Microformats
 {
     private $urlTypes = ['like-of', 'repost-of', 'bookmark-of', 'in-reply-to'];
-    public function __construct(private $pageUrl = null, private $contentHtml = false)
+    public function __construct(private $pageUrl = null, private $contentHtml = null)
     {
-        $this->contentHtml = $contentHtml ?? option('mauricerenck.indieConnector.stats.useHtmlContent', false);
+        $this->contentHtml = $contentHtml ?? option('mauricerenck.indieConnector.receive.useHtmlContent', false);
     }
 
     public function returnArraySave($values)
@@ -181,20 +181,53 @@ class Microformats
         return $authorInfos;
     }
 
+    public function getAuthorName(array $hCard): string|null
+    {
+        if (!isset($hCard['properties']['name'])) {
+            return null;
+        }
+
+        $name = $this->returnArraySave($hCard['properties']['name']);
+
+        return !isset($name[0]) ? null : $name[0];
+    }
+
+    public function getAuthorUrl(array $hCard): string|null
+    {
+        if (!isset($hCard['properties']['url'])) {
+            return null;
+        }
+
+        $url = $this->returnArraySave($hCard['properties']['url']);
+
+        return !isset($url[0]) ? null : $url[0];
+    }
+
+    public function getAuthorPhoto(array $hCard): string|null
+    {
+        if (!isset($hCard['properties']['photo'])) {
+            return null;
+        }
+
+        $photo = $this->returnArraySave($hCard['properties']['photo']);
+
+        return !isset($photo[0]['value']) ? null : $photo[0]['value'];
+    }
+
     public function getAuthorFromHCard(array $hCard)
     {
         if (!isset($hCard['properties'])) {
             return null;
         }
 
-        $name = $this->returnArraySave($hCard['properties']['name']);
-        $url = $this->returnArraySave($hCard['properties']['url']);
-        $photo = $this->returnArraySave($hCard['properties']['photo']);
+        $name = $this->getAuthorName($hCard);
+        $url = $this->getAuthorUrl($hCard);
+        $photo = $this->getAuthorPhoto($hCard);
 
         return [
-            'name' => $name[0],
-            'url' => $url[0],
-            'photo' => $photo[0]['value'],
+            'name' => $name,
+            'url' => $url,
+            'photo' => $photo,
         ];
     }
 
@@ -210,12 +243,11 @@ class Microformats
         foreach ($microformats['items'] as $item) {
             if (in_array('h-entry', $item['type'])) {
                 if (isset($item['properties'])) {
-                    if (isset($item['properties']['summary'])) {
+                    if (isset($item['properties']['summary']) && !empty($item['properties']['summary'])) {
                         $summary = $item['properties']['summary'][0];
                     }
 
-                    if (isset($item['properties']['content'])) {
-                        // TODO value or html via options
+                    if (isset($item['properties']['content']) && !empty($item['properties']['content'])) {
                         $contentArray = $item['properties']['content'];
                         $content = $this->contentHtml ? $contentArray['html'] : $contentArray['value'];
                     }

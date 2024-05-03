@@ -844,6 +844,72 @@ final class MicroformatsTest extends TestCaseMocked
 
     /**
      * @group microformats
+     * @testdox getAuthorName - get author name from h-card
+     */
+    public function testGetAuthorNameFromHCard()
+    {
+        $hCard = [
+            'type' => ['h-card'],
+            'properties' => [
+                'name' => ['Maurice Renck'],
+                'url' => ['https://maurice-renck.de'],
+                'photo' => [['value' => 'https://example.org/photo.png', 'alt' => '']],
+            ],
+            'value' => 'Maurice Renck',
+        ];
+
+        $microformats = new Microformats();
+        $result = $microformats->getAuthorName($hCard);
+
+        $this->assertEquals('Maurice Renck', $result);
+    }
+
+    /**
+     * @group microformats
+     * @testdox getAuthorUrl - get author url from h-card
+     */
+    public function testGetAuthorUrlFromHCard()
+    {
+        $hCard = [
+            'type' => ['h-card'],
+            'properties' => [
+                'name' => ['Maurice Renck'],
+                'url' => ['https://maurice-renck.de'],
+                'photo' => [['value' => 'https://example.org/photo.png', 'alt' => '']],
+            ],
+            'value' => 'Maurice Renck',
+        ];
+
+        $microformats = new Microformats();
+        $result = $microformats->getAuthorUrl($hCard);
+
+        $this->assertEquals('https://maurice-renck.de', $result);
+    }
+
+    /**
+     * @group microformats
+     * @testdox getAuthorPhoto - get author photo from h-card
+     */
+    public function testGetAuthorPhotoFromHCard()
+    {
+        $hCard = [
+            'type' => ['h-card'],
+            'properties' => [
+                'name' => ['Maurice Renck'],
+                'url' => ['https://maurice-renck.de'],
+                'photo' => [['value' => 'https://example.org/photo.png', 'alt' => '']],
+            ],
+            'value' => 'Maurice Renck',
+        ];
+
+        $microformats = new Microformats();
+        $result = $microformats->getAuthorPhoto($hCard);
+
+        $this->assertEquals('https://example.org/photo.png', $result);
+    }
+
+    /**
+     * @group microformats
      * @testdox getSummaryOrContent - get summary from h-entry
      */
     public function testGetSummaryFromHEntry()
