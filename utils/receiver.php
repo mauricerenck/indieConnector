@@ -4,16 +4,16 @@ namespace mauricerenck\IndieConnector;
 
 use Kirby\Http\Url;
 use Kirby\Toolkit\V;
-use is_null;
 
 class Receiver
 {
-
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
     public function hasValidSecret($response)
     {
-        return (isset($response->secret) && $response->secret === option('mauricerenck.indieConnector.secret', ''));
+        return isset($response->secret) && $response->secret === option('mauricerenck.indieConnector.secret', '');
     }
 
     public function responseHasPostBody($response)
@@ -55,13 +55,13 @@ class Receiver
         return $response->source;
     }
 
-    public function getPageFromUrl(string $url)
+    public function getPageFromUrl(string $url): bool|object
     {
         $path = Url::path($url);
 
         if ($path == '') {
             $page = page(site()->homePageId());
-        } elseif (!$page = page($path)) {
+        } elseif (!($page = page($path))) {
             $page = page(kirby()->router()->call($path));
 
             if ($page->isHomeOrErrorPage()) {
@@ -117,10 +117,10 @@ class Receiver
     {
         $authorInfo = $response->post->author;
         $author = [
-            'type' => (isset($authorInfo->type) && !empty($authorInfo->type)) ? $authorInfo->type : null,
-            'name' => (isset($authorInfo->name) && !empty($authorInfo->name)) ? $authorInfo->name : null,
-            'avatar' => (isset($authorInfo->photo) && !empty($authorInfo->photo)) ? $authorInfo->photo : '',
-            'url' => (isset($authorInfo->url) && !empty($authorInfo->url)) ? $authorInfo->url : null,
+            'type' => isset($authorInfo->type) && !empty($authorInfo->type) ? $authorInfo->type : null,
+            'name' => isset($authorInfo->name) && !empty($authorInfo->name) ? $authorInfo->name : null,
+            'avatar' => isset($authorInfo->photo) && !empty($authorInfo->photo) ? $authorInfo->photo : '',
+            'url' => isset($authorInfo->url) && !empty($authorInfo->url) ? $authorInfo->url : null,
         ];
 
         if ($this->getWebmentionType($response) === 'MENTION') {
@@ -137,23 +137,19 @@ class Receiver
 
     public function getContent($response)
     {
-        return (isset($response->post->content) && isset($response->post->content->text)) ? $response->post->content->text : '';
+        return isset($response->post->content) && isset($response->post->content->text)
+            ? $response->post->content->text
+            : '';
     }
 
     public function getPubDate($response)
     {
-        return (!is_null($response->post->published)) ? $response->post->published : $response->post->{'wm-received'};
+        return !is_null($response->post->published) ? $response->post->published : $response->post->{'wm-received'};
     }
 
     public function isKnownNetwork(string $authorUrl)
     {
-        $networkHosts = [
-            'x.com',
-            'twitter.com',
-            'instagram.com',
-            'mastodon.online',
-            'mastodon.social',
-        ];
+        $networkHosts = ['x.com', 'twitter.com', 'instagram.com', 'mastodon.online', 'mastodon.social'];
 
         foreach ($networkHosts as $host) {
             if (strpos($authorUrl, $host) !== false) {
