@@ -243,12 +243,14 @@ class Microformats
         foreach ($microformats['items'] as $item) {
             if (in_array('h-entry', $item['type'])) {
                 if (isset($item['properties'])) {
-                    if (isset($item['properties']['summary']) && !empty($item['properties']['summary'])) {
-                        $summary = $item['properties']['summary'][0];
+                    $properties = $item['properties'];
+
+                    if (isset($properties['summary']) && !empty($properties['summary'])) {
+                        $summary = $properties['summary'][0];
                     }
 
-                    if (isset($item['properties']['content']) && !empty($item['properties']['content'])) {
-                        $contentArray = $item['properties']['content'];
+                    if (isset($properties['content']) && !empty($properties['content'])) {
+                        $contentArray = $properties['content'][0];
                         $content = $this->contentHtml ? $contentArray['html'] : $contentArray['value'];
                     }
                 }

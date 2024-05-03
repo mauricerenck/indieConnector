@@ -961,10 +961,7 @@ final class MicroformatsTest extends TestCaseMocked
                         'category' => ['Kirby CMS'],
                         'summary' => [],
                         'published' => ['2024-02-01 09:30:00'],
-                        'content' => [
-                            'html' => 'This is the content.',
-                            'value' => 'This is the content',
-                        ],
+                        'content' => [['html' => 'This is the content.', 'value' => 'This is the content']],
                         'author' => [
                             [
                                 'type' => ['h-card'],
@@ -1003,10 +1000,7 @@ final class MicroformatsTest extends TestCaseMocked
                         'category' => ['Kirby CMS'],
                         'summary' => ['This is a summary'],
                         'published' => ['2024-02-01 09:30:00'],
-                        'content' => [
-                            'html' => 'This is the content.',
-                            'value' => 'This is the content',
-                        ],
+                        'content' => [['html' => 'This is the content.', 'value' => 'This is the content']],
                         'author' => [
                             [
                                 'type' => ['h-card'],
@@ -1045,10 +1039,7 @@ final class MicroformatsTest extends TestCaseMocked
                         'category' => ['Kirby CMS'],
                         'summary' => null,
                         'published' => ['2024-02-01 09:30:00'],
-                        'content' => [
-                            'html' => 'This is the content.',
-                            'value' => 'This is the content',
-                        ],
+                        'content' => [['html' => 'This is the content.', 'value' => 'This is the content']],
                         'author' => [
                             [
                                 'type' => ['h-card'],
@@ -1088,8 +1079,7 @@ final class MicroformatsTest extends TestCaseMocked
                         'summary' => null,
                         'published' => ['2024-02-01 09:30:00'],
                         'content' => [
-                            'html' => 'This is <strong>the</strong> content',
-                            'value' => 'This is the content',
+                            ['html' => 'This is <strong>the</strong> content', 'value' => 'This is the content'],
                         ],
                         'author' => [
                             [
