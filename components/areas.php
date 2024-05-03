@@ -2,7 +2,7 @@
 
 namespace mauricerenck\IndieConnector;
 
-if (option('mauricerenck.indieConnector.stats.enabled', false) === false) {
+if (option('mauricerenck.indieConnector.stats', false) === false) {
     return null;
 }
 
@@ -81,9 +81,9 @@ return [
                                 'sent' => $sent,
                             ],
                         ];
-                    }
-                ]
-            ]
+                    },
+                ],
+            ],
         ];
-    }
+    },
 ];
