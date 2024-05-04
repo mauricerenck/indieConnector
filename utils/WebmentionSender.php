@@ -2,14 +2,12 @@
 
 namespace mauricerenck\IndieConnector;
 
-use \IndieWeb\MentionClient;
+use IndieWeb\MentionClient;
 
 class WebmentionSender extends Sender
 {
-    public function __construct(
-        private ?bool $activeWebmentions = null,
-        private $mentionClient = null
-    ) {
+    public function __construct(private ?bool $activeWebmentions = null, private $mentionClient = null)
+    {
         parent::__construct();
 
         $this->mentionClient = new MentionClient();
@@ -48,7 +46,7 @@ class WebmentionSender extends Sender
         $this->storeProcessedUrls($processedUrls, $page);
 
         // TODO Check if its better to move elsewhere
-        if (option('mauricerenck.indieConnector.stats', false)) {
+        if (option('mauricerenck.indieConnector.stats.enabled', false)) {
             $stats = new WebmentionStats();
             $stats->trackOutgoingWebmentions($processedUrls, $page);
         }
@@ -66,7 +64,6 @@ class WebmentionSender extends Sender
             // TODO Log this in new json format for error reporting in panel and retries
             return false;
         }
-
 
         // TODO FEATURE: Check if url is blocked
         // if (!$this->isBlocked($url)) {
@@ -101,7 +98,6 @@ class WebmentionSender extends Sender
                 return true;
             }
         }
-
 
         return false;
     }

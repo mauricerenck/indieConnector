@@ -18,6 +18,9 @@
 | ---------------- | ------- | ------------------------------------------------------------------------------ |
 | `secret`         | `''`    | Your webmention.io web hook secret                                             |
 | `useHtmlContent` | `false` | Set to true if you want to show html content from the sender (not recommended) |
+| `queue.enabled`  | `false` | Queue all incoming webmentions before processing them                          |
+| `queue.retries`  | `5`     | Retry `n` times to process the webmention if there is an error                 |
+
 
 ## Settings for statistics in the panel
 
@@ -25,7 +28,11 @@
 | ------------------ | -------------------- | ------------------------------------------------------------------------------ |
 | `stats.enabled`    | `false`              | Enable webmention stats in the panel                                           |
 | `stats.doNotTrack` | `['fed.brid.gy']`    | When sending webmentions, these hosts will not be tracked                      |
+
+## Database settings
+
 | `sqlitePath`       | `'content/.sqlite/'` | Relative path to where the sqlite file should be stored (directory must exist) |
+
 
 ## Settings for posting on mastodon ([details](mastodon.md))
 
@@ -35,6 +42,7 @@
 | `mastodon-bearer`       | `‘‘`            | Your API Token                  |
 | `mastodon-instance-url` | `‘‘`            | Your mastodon instance url      |
 | `mastodon-text-field`   | `‘description‘` | Source field for toot text      |
+
 
 ## ActivityPub beta ([details](activitiypub.md))
 

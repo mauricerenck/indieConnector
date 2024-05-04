@@ -2,7 +2,7 @@
 
 namespace mauricerenck\IndieConnector;
 
-if (option('mauricerenck.indieConnector.stats', false) === false) {
+if (option('mauricerenck.indieConnector.stats.enabled', false) === false) {
     return null;
 }
 

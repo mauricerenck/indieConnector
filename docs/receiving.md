@@ -12,7 +12,6 @@ To "connect" this plugin to webmention.io you have to set a callback secret in y
 
 This could be any string, think of it as a sort of password.
 
-
 ## Add the webmention.io endpoints
 
 Add webmention.io endpoints to your HTML `<head></head>`. Those will look like this and you will get them from webmention.io when you login to your account:
@@ -24,7 +23,7 @@ Add webmention.io endpoints to your HTML `<head></head>`. Those will look like t
 ```
 
 In order to be allowed to use webmention hooks, you have to receive at least one webmention on your site before. So after adding those headers to your site, you have to send a webmention to yourself.
-To do so, IndieConnector has an endpoint ready for you: 
+To do so, IndieConnector has an endpoint ready for you:
 
 `https://YOUR-DOMAIN.TLD/indieconnector/send-test-mention/YOUR-SECRET`
 
@@ -34,18 +33,19 @@ Please make sure not to share this url! Everybody knowing your secret would be a
 
 ## Enable Webmention.io Hook
 
-- Go to your webmention.io account -> Webhooks.
-- Enter the IndieConnector endpoint: `https://your-url.tld/indieconnector/webhook/webmentionio`
-- Enter the callback secret you set in your config.php
+-   Go to your webmention.io account -> Webhooks.
+-   Enter the IndieConnector endpoint: `https://your-url.tld/indieconnector/webhook/webmentionio`
+-   Enter the callback secret you set in your config.php
 
 ## Enable panel overview
 
-*This feature required sqlite to be available by your hoster. Most hosters support this by default, but you might want to make sure it's enabled.*
+_This feature required sqlite to be available by your hoster. Most hosters support this by default, but you might want to make sure it's enabled._
 
 IndieConnector comes with a nice overview of all your received webmentions. To enable this feature, set the `stats` option in your `config.php` to true and set a path where the database file should be stored. **Make sure this path exists, it will not be created**. The path is relative to your kirby root.
 
 Example setup:
+
 ```
-'mauricerenck.indieConnector.stats' => true,
+'mauricerenck.indieConnector.stats.enabled' => true,
 'mauricerenck.indieConnector.sqlitePath' => 'content/.sqlite/',
 ```

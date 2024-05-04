@@ -11,7 +11,10 @@ class Migrations
 {
     public function migrate()
     {
-        if (option('mauricerenck.indieConnector.stats', false)) {
+        $statsEnabled = option('mauricerenck.indieConnector.stats.enabled', false);
+        $queueEnabled = option('mauricerenck.indieConnector.queue.enabled', false);
+
+        if ($statsEnabled || $queueEnabled) {
             $pluginPath = str_replace('utils', '', __DIR__);
             $migrationPath = $pluginPath . '/migrations/';
 

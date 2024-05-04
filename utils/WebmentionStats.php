@@ -301,7 +301,7 @@ class WebmentionStats
 
     public function getStatSummary()
     {
-        if (!option('mauricerenck.indieConnector.stats', false)) {
+        if (!option('mauricerenck.indieConnector.stats.enabled', false)) {
             $error = [
                 'error' => true,
                 'message' => 'Webmention statistics are disabled. Enable them in your kirby config.',
