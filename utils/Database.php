@@ -2,7 +2,7 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Database\Database;
-use Kirby\Toolkit\Collection;
+
 use Exception;
 
 class IndieConnectorDatabase
@@ -19,7 +19,7 @@ class IndieConnectorDatabase
         try {
             $sqlitePath = option('mauricerenck.indieConnector.sqlitePath');
 
-            return new Database([
+            return $this->db = new Database([
                 'type' => 'sqlite',
                 'database' => $sqlitePath . 'indieConnector.sqlite',
             ]);
@@ -34,6 +34,7 @@ class IndieConnectorDatabase
             $values = $this->convertValuesToSaveDbString($values);
             $query =
                 'INSERT INTO ' . $table . '(' . implode(',', $fields) . ') VALUES("' . implode('","', $values) . '")';
+
             $this->db->query($query);
 
             return true;
@@ -66,7 +67,7 @@ class IndieConnectorDatabase
         }
     }
 
-    public function select(string $table, array $fields, ?string $filters = ''): Collection|bool
+    public function select(string $table, array $fields, ?string $filters = ''): mixed
     {
         try {
             $query = 'SELECT ' . implode(',', $fields) . ' FROM ' . $table . ' ' . $filters;

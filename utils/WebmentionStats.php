@@ -7,14 +7,15 @@ use Kirby\Http\Url;
 
 class WebmentionStats
 {
-    private $db;
+    private $indieDb;
 
-    public function __construct(private ?array $doNotTrack = null)
-    {
-        $indieDb = new IndieConnectorDatabase();
-
-        $this->db = $indieDb->connect();
+    public function __construct(
+        private ?array $doNotTrack = null,
+        private ?IndieConnectorDatabase $indieDatabase = null
+    ) {
         $this->doNotTrack = $doNotTrack ?? option('mauricerenck.indieConnector.stats.doNotTrack', ['fed.brid.gy']);
+
+        $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
     }
 
     public function trackMention(string $target, string $source, string $type, string $image)
@@ -23,27 +24,15 @@ class WebmentionStats
             return false;
         }
 
-        $trackingDate = time();
-        $mentionDate = $this->formatTrackingDate($trackingDate);
+        $mentionDate = $this->indieDb->getFormattedDate();
 
         try {
             $uniqueHash = md5($target . $source . $type . $mentionDate);
-            $this->db->query(
-                'INSERT INTO webmentions(id, mention_type, mention_date, mention_source, mention_target, mention_image) VALUES("' .
-                    $uniqueHash .
-                    '", "' .
-                    $type .
-                    '","' .
-                    $mentionDate .
-                    '", "' .
-                    $source .
-                    '", "' .
-                    $target .
-                    '", "' .
-                    $image .
-                    '")'
+            $this->indieDb->insert(
+                'webmentions',
+                ['id', 'mention_type', 'mention_date', 'mention_source', 'mention_target', 'mention_image'],
+                [$uniqueHash, $type, $mentionDate, $source, $target, $image]
             );
-
             return true;
         } catch (Exception $e) {
             echo 'Could not connect to Database: ', $e->getMessage(), "\n";
@@ -64,22 +53,15 @@ class WebmentionStats
             return false;
         }
 
-        $trackingDate = time();
-        $mentionDate = $this->formatTrackingDate($trackingDate);
+        $mentionDate = $this->indieDb->getFormattedDate();
 
-        // FIXME make a bulk insert to reduce db load
         try {
             $uniqueHash = md5($target . $pageUuid . $mentionDate);
-            $this->db->query(
-                'INSERT INTO webmention_outbox(id, page_uuid, sent_date, target) VALUES("' .
-                    $uniqueHash .
-                    '", "' .
-                    $pageUuid .
-                    '","' .
-                    $mentionDate .
-                    '", "' .
-                    $target .
-                    '")'
+
+            $this->indieDb->insert(
+                'webmention_outbox',
+                ['id', 'page_uuid', 'sent_date', 'target'],
+                [$uniqueHash, $pageUuid, $mentionDate, $target]
             );
 
             return true;
@@ -95,13 +77,12 @@ class WebmentionStats
             $month = (int) $month;
             $month = $month < 10 ? '0' . $month : $month;
 
-            $result = $this->db->query(
-                'SELECT COUNT(id) as summary, * FROM webmentions WHERE mention_date LIKE "' .
-                    $year .
-                    '-' .
-                    $month .
-                    '-%" GROUP BY mention_type;'
+            $result = $this->indieDb->select(
+                'webmentions',
+                ['COUNT(id) as summary', '*'],
+                'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_type;'
             );
+
             $summary = [
                 'summary' => 0,
                 'likes' => 0,
@@ -120,7 +101,7 @@ class WebmentionStats
 
             return $summary;
         } catch (Exception $e) {
-            echo 'Could not connect to Database: ', $e->getMessage(), "\n";
+            echo 'Query failed: ', $e->getMessage(), "\n";
             return false;
         }
     }
@@ -131,13 +112,12 @@ class WebmentionStats
         $month = date('m', $timestamp);
 
         try {
-            $result = $this->db->query(
-                'SELECT mention_date, COUNT(mention_type) as mentions, mention_type FROM webmentions WHERE mention_date LIKE "' .
-                    $year .
-                    '-' .
-                    $month .
-                    '-%" GROUP BY mention_type, mention_date;'
+            $result = $this->indieDb->select(
+                'webmentions',
+                ['mention_date', 'mention_type', 'COUNT(mention_type) as mentions'],
+                'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_type, mention_date;'
             );
+
             $detailedStats = [];
 
             foreach ($result->data as $mention) {
@@ -170,13 +150,12 @@ class WebmentionStats
             $month = (int) $month;
             $month = $month < 10 ? '0' . $month : $month;
 
-            $result = $this->db->query(
-                'SELECT mention_target, mention_type, COUNT(mention_type) as mentions FROM webmentions WHERE mention_date LIKE "' .
-                    $year .
-                    '-' .
-                    $month .
-                    '-%" GROUP BY mention_target, mention_type;'
+            $result = $this->indieDb->select(
+                'webmentions',
+                ['mention_target', 'mention_type', 'COUNT(mention_type) as mentions'],
+                'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_target, mention_type;'
             );
+
             $targets = [];
 
             foreach ($result->data as $webmention) {
@@ -221,13 +200,12 @@ class WebmentionStats
             $month = (int) $month;
             $month = $month < 10 ? '0' . $month : $month;
 
-            $result = $this->db->query(
-                'SELECT mention_source, mention_type, mention_image, COUNT(mention_type) as mentions FROM webmentions WHERE mention_date LIKE "' .
-                    $year .
-                    '-' .
-                    $month .
-                    '-%" GROUP BY mention_source, mention_type;'
+            $result = $this->indieDb->select(
+                'webmentions',
+                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions'],
+                'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_source, mention_type;'
             );
+
             $sources = [];
 
             foreach ($result->data as $webmention) {
@@ -266,9 +244,12 @@ class WebmentionStats
             $month = (int) $month;
             $month = $month < 10 ? '0' . $month : $month;
 
-            $result = $this->db->query(
-                'SELECT page_uuid, target FROM webmention_outbox WHERE sent_date LIKE "' . $year . '-' . $month . '-%";'
+            $result = $this->indieDb->select(
+                'webmention_outbox',
+                ['page_uuid', 'target'],
+                'WHERE sent_date LIKE "' . $year . '-' . $month . '-%";'
             );
+
             $targets = [];
 
             foreach ($result->data as $webmention) {
@@ -334,23 +315,18 @@ class WebmentionStats
         return in_array($targetHost, $this->doNotTrack);
     }
 
-    private function formatTrackingDate(int $timestamp): string
-    {
-        return date('Y-m-d', $timestamp);
-    }
-
     private function mentionTypeToJsonType(string $type): string
     {
         switch ($type) {
-            case 'LIKE':
+            case 'like-of':
                 return 'likes';
-            case 'REPLY':
+            case 'in-reply-to':
                 return 'replies';
-            case 'REPOST':
+            case 'repost-of':
                 return 'reposts';
-            case 'MENTION':
+            case 'mention-of':
                 return 'mentions';
-            case 'BOOKMARK':
+            case 'bookmark-of':
                 return 'bookmarks';
             default:
                 return 'mention';
