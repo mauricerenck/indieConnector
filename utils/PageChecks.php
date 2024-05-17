@@ -2,13 +2,6 @@
 
 namespace mauricerenck\IndieConnector;
 
-use Kirby\Cms\File;
-use Kirby\Data\Data;
-use IndieWeb\MentionClient;
-use in_array;
-use array_merge;
-use Exception;
-
 class PageChecks
 {
     public function __construct(private ?array $allowedTemplates = null, private ?array $blockedTemplates = null)
@@ -20,6 +13,10 @@ class PageChecks
     public function pageFullfillsCriteria($page)
     {
         if (!$this->pageHasNeededStatus($page)) {
+            return false;
+        }
+
+        if (!$this->pageHasEnabledWebmentions($page)) {
             return false;
         }
 
@@ -47,5 +44,11 @@ class PageChecks
     public function templateIsBlocked($template)
     {
         return in_array($template, $this->blockedTemplates);
+    }
+
+    public function pageHasEnabledWebmentions($page)
+    {
+        $status = $page->webmentionsStatus();
+        return !isset($status) || $status->isEmpty() || $status->toBool();
     }
 }

@@ -156,4 +156,30 @@ final class PageChecksTest extends TestCaseMocked
 
         $this->assertFalse($result);
     }
+
+    /**
+     * @group pageChecksTests
+     * @testdox pageHasDisabledWebmentions - should handle disabled webmentions
+     */
+    public function testPageHasDisabledWebmentions()
+    {
+        $page = $this->getPageMock(false, ['Webmentionsstatus' => false]);
+
+        $result = $this->pageCheckMock->pageHasEnabledWebmentions($page);
+
+        $this->assertFalse($result);
+    }
+
+    /**
+     * @group pageChecksTests
+     * @testdox pageHasDisabledWebmentions - should handle enabled webmentions
+     */
+    public function testPageHasEnabledWebmentions()
+    {
+        $page = $this->getPageMock(false, ['Webmentionsstatus' => true]);
+
+        $result = $this->pageCheckMock->pageHasEnabledWebmentions($page);
+
+        $this->assertTrue($result);
+    }
 }
