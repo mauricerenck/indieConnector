@@ -3,13 +3,15 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Toolkit\V;
+use Kirby\Cms\Url;
 
 class UrlChecks
 {
-    public function __construct(private ?array $localHosts = null)
+    public function __construct(private ?array $localHosts = null, private ?array $blockedSources = null)
     {
         $this->localHosts =
             $localHosts ?? option('mauricerenck.indieConnector.debug.localHosts', ['//localhost', '//127.0.0.1']);
+        $this->blockedSources = $blockedSources ?? option('mauricerenck.indieConnector.block.sources', []);
     }
 
     public function urlIsValid(string $url): bool
@@ -41,5 +43,14 @@ class UrlChecks
     public function isLocalUrl(string $url): bool
     {
         return !in_array($url, $this->localHosts);
+    }
+
+    public function isBlockedSource(string $url): bool
+    {
+        // TODO also get blocked sources from database
+        $blockedSourceUrl = in_array($url, $this->blockedSources);
+        $blockedSourceHost = in_array(Url::stripPath($url), $this->blockedSources);
+
+        return $blockedSourceUrl || $blockedSourceHost;
     }
 }
