@@ -1,5 +1,7 @@
 <?php
 
+use Kirby\Content\Content;
+use Kirby\Cms\Collection;
 use mauricerenck\IndieConnector\QueueHandler;
 use mauricerenck\IndieConnector\TestCaseMocked;
 
@@ -23,17 +25,14 @@ final class QueueHandlerTest extends TestCaseMocked
     public function testProcessQueue()
     {
         $queueHandler = new QueueHandler(true, $this->databaseMock, $this->webmentionReceiverMock);
-
-        $queueMock = [
-            [
-                'sourceUrl' => 'https://source.tld',
-                'targetUrl' => 'https://target.tld',
-                'type' => 'webmention',
-                'status' => 'queued',
-                'created' => date('Y-m-d H:i:s'),
-                'id' => '123',
-            ],
-        ];
+        $contentMock = new Content([
+            'sourceUrl' => 'https://source.tld',
+            'targetUrl' => 'https://target.tld',
+            'queueStatus' => 'queued',
+            'id' => '123',
+            'retries' => 0,
+        ]);
+        $dataCollection = new Collection([$contentMock]);
 
         $this->webmentionReceiverMock->shouldReceive('processWebmention')->andReturn([
             'status' => 'success',
@@ -43,23 +42,27 @@ final class QueueHandlerTest extends TestCaseMocked
         $this->databaseMock->shouldReceive('connect')->once()->andReturn(true);
         $this->databaseMock
             ->shouldReceive('select')
-            ->with('queue', ['id', 'sourceUrl', 'targetUrl'], 'WHERE queueStatus = "queued"')
+            ->with(
+                'queue',
+                ['id', 'sourceUrl', 'targetUrl', 'retries'],
+                'WHERE queueStatus = "queued" OR queueStatus = "error"'
+            )
             ->once()
-            ->andReturn($queueMock);
+            ->andReturn($dataCollection);
+
         $this->databaseMock
             ->shouldReceive('update')
-            ->with('queue', ['queueStatus'], ['processed'], 'WHERE id = "123"')
+            ->with('queue', ['queueStatus', 'processLog'], ['failed', 'max retries reached'], 'WHERE id = "123"')
             ->once()
-            ->andReturn(true);
+            ->andReturn($dataCollection);
+        $this->databaseMock->shouldReceive('delete')->with('queue', 'WHERE id = "123"')->once()->andReturn(true);
 
         $expected = [
             'status' => 'success',
             'message' => 'webmention processed',
-            'queueId' => '123',
         ];
 
         $result = $queueHandler->processQueue();
-
         $this->assertEquals($expected, $result);
     }
 
@@ -71,38 +74,47 @@ final class QueueHandlerTest extends TestCaseMocked
     {
         $queueHandler = new QueueHandler(true, $this->databaseMock, $this->webmentionReceiverMock);
 
-        $queueMock = [
-            [
-                'sourceUrl' => 'https://source.tld',
-                'targetUrl' => 'https://target.tld',
-                'type' => 'webmention',
-                'status' => 'queued',
-                'created' => date('Y-m-d H:i:s'),
-                'id' => '123',
-            ],
-        ];
+        $contentMock = new Content([
+            'sourceUrl' => 'https://source.tld',
+            'targetUrl' => 'https://target.tld',
+            'type' => 'webmention',
+            'status' => 'queued',
+            'created' => date('Y-m-d H:i:s'),
+            'id' => '123',
+            'retries' => 1,
+        ]);
+        $dataCollection = new Collection([$contentMock]);
 
         $this->webmentionReceiverMock->shouldReceive('processWebmention')->andReturn([
             'status' => 'error',
-            'message' => 'something went wrong',
+            'message' => 'webmention processing error',
         ]);
 
         $this->databaseMock->shouldReceive('connect')->once()->andReturn(true);
         $this->databaseMock
             ->shouldReceive('select')
-            ->with('queue', ['id', 'sourceUrl', 'targetUrl'], 'WHERE queueStatus = "queued"')
+            ->with(
+                'queue',
+                ['id', 'sourceUrl', 'targetUrl', 'retries'],
+                'WHERE queueStatus = "queued" OR queueStatus = "error"'
+            )
             ->once()
-            ->andReturn($queueMock);
+            ->andReturn($dataCollection);
+
         $this->databaseMock
             ->shouldReceive('update')
-            ->with('queue', ['queueStatus', 'processLog'], ['error', 'something went wrong'], 'WHERE id = "123"')
+            ->with(
+                'queue',
+                ['queueStatus', 'processLog', 'retries'],
+                ['error', 'webmention processing error', 2],
+                'WHERE id = "123"'
+            )
             ->once()
             ->andReturn(true);
 
         $expected = [
             'status' => 'error',
             'message' => 'webmention processing error',
-            'queueId' => '123',
         ];
 
         $result = $queueHandler->processQueue();
@@ -118,22 +130,18 @@ final class QueueHandlerTest extends TestCaseMocked
     {
         $queueHandler = new QueueHandler(true, $this->databaseMock, $this->webmentionReceiverMock);
 
-        $queueMock = [];
         $this->databaseMock->shouldReceive('connect')->once()->andReturn(true);
         $this->databaseMock
             ->shouldReceive('select')
-            ->with('queue', ['id', 'sourceUrl', 'targetUrl'], 'WHERE queueStatus = "queued"')
-            ->once()
-            ->andReturn($queueMock);
-
-        $expected = [
-            'status' => 'success',
-            'message' => 'no queued webmentions',
-            'queueId' => null,
-        ];
+            ->with(
+                'queue',
+                ['id', 'sourceUrl', 'targetUrl', 'retries'],
+                'WHERE queueStatus = "queued" OR queueStatus = "error"'
+            )
+            ->once();
 
         $result = $queueHandler->processQueue();
 
-        $this->assertEquals($expected, $result);
+        $this->assertNull($result);
     }
 }

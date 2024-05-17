@@ -15,7 +15,6 @@ class QueueHandler
         private ?int $retries = null
     ) {
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
-        $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
         $this->receiver = $webmentionReceiver ?? new WebmentionReceiver();
         $this->queueEnabled = $queueEnabled ?? option('mauricerenck.indieConnector.queue.enabled', false);
         $this->retries = $retries ?? option('mauricerenck.indieConnector.queue.retries', 5);
@@ -44,7 +43,7 @@ class QueueHandler
         }
     }
 
-    public function processQueue(int $limit = 0): void
+    public function processQueue(int $limit = 0)
     {
         $limitQuery = $limit > 0 ? ' LIMIT ' . $limit : '';
         $queue = $this->indieDb->select(
@@ -61,7 +60,7 @@ class QueueHandler
             $sourceUrl = $mention->sourceUrl();
             $targetUrl = $mention->targetUrl();
             $mentionId = $mention->id();
-            $retries = (int) $mention->retries();
+            $retries = $mention->retries()->toInt();
 
             if ($retries >= $this->retries) {
                 $this->indieDb->update(
@@ -91,6 +90,7 @@ class QueueHandler
 
                     break;
             }
+            return $result;
         }
     }
 }
