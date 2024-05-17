@@ -11,11 +11,6 @@ class WebmentionIo extends Receiver
         parent::__construct();
     }
 
-    public function hasValidSecret($postBody)
-    {
-        return isset($postBody['secret']) && $postBody['secret'] === option('mauricerenck.indieConnector.secret', '');
-    }
-
     public function getWebmentionType($postBody)
     {
         if (!isset($postBody['post']['wm-property'])) {

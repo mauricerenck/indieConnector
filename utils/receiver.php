@@ -3,7 +3,7 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Http\Url;
-use Kirby\Toolkit\V;
+use Kirby\Http\Response;
 
 class Receiver
 {
@@ -11,49 +11,55 @@ class Receiver
     {
     }
 
-    public function hasValidSecret($response)
+    public function processIncomingWebmention($data)
     {
-        $secret = $response->get('secret');
-        return isset($secret) && $secret === option('mauricerenck.indieConnector.secret', '');
+        $urlChecks = new UrlChecks();
+        $pageChecks = new PageChecks();
+
+        $urls = $this->getPostDataUrls($data);
+        if (!$urlChecks->urlIsValid($urls['source'])) {
+            return new Response('Source URL is not valid', 'text/plain', 406); // Not Acceptable
+        }
+
+        if (!$urlChecks->urlIsValid($urls['target'])) {
+            return new Response('Target URL is not valid', 'text/plain', 406); // Not Acceptable
+        }
+
+        if ($urlChecks->isBlockedSource($urls['source'])) {
+            return new Response('Source URL is blocked', 'text/plain', 406); // Not Acceptable
+        }
+
+        $page = $this->getPageFromUrl($urls['target']);
+
+        if (!$page) {
+            return new Response('Target page not found', 'text/plain', 404);
+        }
+
+        if (!$pageChecks->pageHasNeededStatus($page)) {
+            return new Response('Target page not found', 'text/plain', 404);
+        }
+
+        return [
+            'status' => 'success',
+            'urls' => $urls,
+        ];
     }
 
-    public function responseHasPostBody($response)
+    public function hasValidSecret($postBody)
     {
-        if (!isset($response->post)) {
-            return false;
-        }
-
-        return true;
+        return isset($postBody['secret']) && $postBody['secret'] === option('mauricerenck.indieConnector.secret', '');
     }
 
-    public function getTargetUrl($response)
+    public function getPostDataUrls($postBody): array|bool
     {
-        if (!isset($response->target)) {
-            return false;
+        if (isset($postBody['source']) && isset($postBody['target'])) {
+            return [
+                'source' => $postBody['source'],
+                'target' => $postBody['target'],
+            ];
         }
 
-        if (!V::url($response->target)) {
-            return false;
-        }
-
-        return $response->target;
-    }
-
-    public function getSourceUrl($response)
-    {
-        if (!isset($response->source)) {
-            return false;
-        }
-
-        if (!V::url($response->source)) {
-            return false;
-        }
-
-        if (strpos($response->source, '//localhost') === true || strpos($response->source, '//127.0.0') === true) {
-            return false;
-        }
-
-        return $response->source;
+        return false;
     }
 
     public function getPageFromUrl(string $url): bool|object
@@ -77,76 +83,24 @@ class Receiver
         return $page;
     }
 
-    public function createWebmention()
+    public function convertToHookData($data, array $urls)
     {
-    }
-
-    public function getTransformedSourceUrl(string $url): string
-    {
-        if (V::url($url)) {
-            return $url;
-        }
-
-        return '';
-    }
-
-    public function getWebmentionType($response)
-    {
-        if (!isset($response->post->{'wm-property'})) {
-            return 'MENTION';
-        }
-
-        switch ($response->post->{'wm-property'}) {
-            case 'like-of':
-                return 'LIKE';
-            case 'in-reply-to':
-                return 'REPLY';
-            case 'repost-of':
-                return 'REPOST'; // retweet z.b.
-            case 'mention-of':
-                return 'MENTION'; // classic webmention z.b.
-            case 'bookmark-of':
-                return 'MENTION'; // classic webmention z.b.
-            case 'rsvp':
-                return 'MENTION'; // classic webmention z.b.
-            default:
-                return 'REPLY';
-        }
-    }
-
-    public function getAuthor($response)
-    {
-        $authorInfo = $response->post->author;
-        $author = [
-            'type' => isset($authorInfo->type) && !empty($authorInfo->type) ? $authorInfo->type : null,
-            'name' => isset($authorInfo->name) && !empty($authorInfo->name) ? $authorInfo->name : null,
-            'avatar' => isset($authorInfo->photo) && !empty($authorInfo->photo) ? $authorInfo->photo : '',
-            'url' => isset($authorInfo->url) && !empty($authorInfo->url) ? $authorInfo->url : null,
+        return [
+            'type' => $data['type'],
+            'target' => $urls['target'],
+            'source' => $urls['source'],
+            'published' => $data['published'],
+            'title' => $data['title'],
+            'content' => $data['content'],
+            'author' => [
+                'type' => 'card',
+                'name' => $data['author']['name'],
+                'avatar' => $data['author']['photo'],
+                'url' => $data['author']['url'],
+            ],
         ];
-
-        if ($this->getWebmentionType($response) === 'MENTION') {
-            if (is_null($author['name'])) {
-                $author['name'] = $this->getSourceUrl($response);
-            }
-            if (is_null($author['url'])) {
-                $author['url'] = $this->getSourceUrl($response);
-            }
-        }
-
-        return $author;
     }
-
-    public function getContent($response)
-    {
-        return isset($response->post->content) && isset($response->post->content->text)
-            ? $response->post->content->text
-            : '';
-    }
-
-    public function getPubDate($response)
-    {
-        return !is_null($response->post->published) ? $response->post->published : $response->post->{'wm-received'};
-    }
+    // =======
 
     public function isKnownNetwork(string $authorUrl)
     {

@@ -4,42 +4,64 @@ namespace mauricerenck\IndieConnector;
 
 use Kirby\Http\Remote;
 use Mf2;
+use Exception;
 
 class WebmentionReceiver extends Receiver
 {
-    private $microformats = null;
     public function __construct(private $sourceUrl = null, private $targetUrl = null)
     {
         parent::__construct();
-        $this->microformats = new Microformats($targetUrl);
     }
 
-    public function webmentionFullfillsCriteria()
+    public function processWebmention($sourceUrl, $targetUrl)
     {
-        // TODO check if source is a valid url
-        // TODO check if source host is blocked
-        // TODO check if source host is local
-        // TODO check if target is a valid url
-        // TODO check if target and source are the same
-        // TODO check if target is a page
-        // TODO check if target is a page with webmentions enabled
+        try {
+            $microformats = $this->getDataFromSource($sourceUrl);
+            $webmention = $this->getWebmentionData($microformats);
 
-        return true;
+            if ($webmention === false) {
+                return [
+                    'status' => 'error',
+                    'message' => 'no webmention data',
+                ];
+            }
+
+            $targetPage = $this->getPageFromUrl($targetUrl);
+            $hookData = $this->splitWebmentionDataIntoHooks($webmention);
+
+            foreach ($hookData as $data) {
+                $hookData = $this->convertToHookData($data, [
+                    'source' => $sourceUrl,
+                    'target' => $targetUrl,
+                ]);
+                $this->triggerWebmentionHook($hookData, $targetPage);
+            }
+
+            return [
+                'status' => 'success',
+                'message' => 'webmention processed',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ];
+        }
     }
 
     public function getDataFromSource($sourceUrl)
     {
         $request = Remote::get($sourceUrl);
-        $remote = $request->info();
+        $responseCode = $request->code();
 
-        if ($remote['http_code'] === 410) {
+        if ($responseCode === 410) {
             // TODO DELETED - DO SOMETHING
             return [
                 'status' => 'deleted',
             ];
         }
 
-        if ($remote['http_code'] === 200) {
+        if ($responseCode === 200) {
             // TODO NOT FOUND - DO SOMETHING
 
             $sourceBody = $request->content();
@@ -65,11 +87,12 @@ class WebmentionReceiver extends Receiver
             return false;
         }
 
-        $data['types'] = $this->microformats->getTypes($microformats);
-        $data['content'] = $this->microformats->getSummaryOrContent($microformats);
-        $data['published'] = $this->microformats->getPublishDate($microformats);
-        $data['author'] = $this->microformats->getAuthor($microformats);
-        $data['title'] = $this->microformats->getTitle($microformats);
+        $mf2 = new Microformats($this->targetUrl);
+        $data['types'] = $mf2->getTypes($microformats);
+        $data['content'] = $mf2->getSummaryOrContent($microformats);
+        $data['published'] = $mf2->getPublishDate($microformats);
+        $data['author'] = $mf2->getAuthor($microformats);
+        $data['title'] = $mf2->getTitle($microformats);
 
         return $data;
     }
@@ -87,21 +110,11 @@ class WebmentionReceiver extends Receiver
         return $hookData;
     }
 
-    public function convertToHookData($data)
+    public function triggerWebmentionHook($webmention, $targetPage)
     {
-        return [
-            'type' => $data['type'],
-            'target' => $this->targetUrl,
-            'source' => $this->sourceUrl,
-            'published' => $data['published'],
-            'title' => $data['title'],
-            'content' => $data['content'],
-            'author' => [
-                'type' => 'card',
-                'name' => $data['author']['name'],
-                'avatar' => $data['author']['photo'],
-                'url' => $data['author']['url'],
-            ],
-        ];
+        kirby()->trigger('indieConnector.webmention.received', [
+            'webmention' => $webmention,
+            'targetPage' => $targetPage,
+        ]);
     }
 }
