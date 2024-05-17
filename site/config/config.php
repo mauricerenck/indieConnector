@@ -2,7 +2,7 @@
 
 return [
     'debug' => true,
-    'url' => 'https://indie-connector.test:8890',
+    'url' => 'http://indieconnector.ddev.site',
     'api' => [
         'basicAuth' => true,
     ],
