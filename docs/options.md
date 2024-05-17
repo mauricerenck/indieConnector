@@ -20,6 +20,7 @@
 | `useHtmlContent` | `false` | Set to true if you want to show html content from the sender (not recommended) |
 | `queue.enabled`  | `false` | Queue all incoming webmentions before processing them                          |
 | `queue.retries`  | `5`     | Retry `n` times to process the webmention if there is an error                 |
+| `block.sources`  | `[]`    | An array of source URLs to block, remove the path to block the entire host     |
 
 
 ## Settings for statistics in the panel
