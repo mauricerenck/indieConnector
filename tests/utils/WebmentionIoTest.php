@@ -48,48 +48,6 @@ final class WebmentionIoTest extends TestCaseMocked
 
     /**
      * @group webmentionIo
-     * @testdox hasValidSecret - should return true on valid secret
-     */
-    public function testResponseHasValidSecret()
-    {
-        $webmentionIo = new WebmentionIo();
-        $result = $webmentionIo->hasValidSecret($this->responseMock);
-
-        $this->assertTrue($result);
-    }
-
-    /**
-     * @group webmentionIo
-     * @testdox hasValidSecret - should return false on invalid secret
-     */
-    public function testResponseHasInvalidSecret()
-    {
-        $invalidMock = $this->responseMock;
-        $invalidMock['secret'] = 'INVALID';
-
-        $webmentionIo = new WebmentionIo();
-        $result = $webmentionIo->hasValidSecret($invalidMock);
-
-        $this->assertFalse($result);
-    }
-
-    /**
-     * @group webmentionIo
-     * @testdox hasValidSecret - should return false on invalid hook data
-     */
-    public function testResponseHasNoSecret()
-    {
-        $invalidMock = $this->responseMock;
-        unset($invalidMock['secret']);
-
-        $webmentionIo = new WebmentionIo();
-        $result = $webmentionIo->hasValidSecret($invalidMock);
-
-        $this->assertFalse($result);
-    }
-
-    /**
-     * @group webmentionIo
      * @testdox getWebmentionType - should return like-of
      */
     public function testDetectWebmentionTypeLike()

@@ -5,13 +5,9 @@ use mauricerenck\IndieConnector\WebmentionReceiver;
 
 final class WebmentionReceiverTest extends TestCaseMocked
 {
-    private $microformatsJSON;
-
     public function setUp(): void
     {
         parent::setUp();
-
-        $this->microformatsJSON = file_get_contents(__DIR__ . '/../fixtures/mf.json');
     }
 
     /**
@@ -32,13 +28,38 @@ final class WebmentionReceiverTest extends TestCaseMocked
 
     /**
      * @group receiveWebmentions
+     * @testdox processWebmention - should process webmention
+     */
+    public function testShouldProcessWebmention()
+    {
+        $webmentionReceiver = new WebmentionReceiver(
+            'https://indieconnector.dev/tests/reply.php?replyto=https://indie-connector.test:8890/home',
+            $this->localUrl . '/home'
+        );
+
+        $sourceUrl = 'https://indieconnector.dev/tests/reply.php?replyto=https://indie-connector.test:8890/home';
+        $targetUrl = $this->localUrl . '/home';
+
+        $expected = [
+            'status' => 'success',
+            'message' => 'webmention processed',
+        ];
+
+        $result = $webmentionReceiver->processWebmention($sourceUrl, $targetUrl);
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @group receiveWebmentions
      * @testdox convertToHookData - should create an array with the correct keys
      */
     public function testShouldConvertToHookData()
     {
+        $targetUrl = $this->localUrl . '/home';
+
         $expected = [
             'type' => 'in-reply-to',
-            'target' => 'https://indie-connector.tld',
+            'target' => $targetUrl,
             'source' => 'https://sender.tld',
             'published' => '2024-02-01 09:30:00',
             'title' => 'This is my blog post',
@@ -60,7 +81,7 @@ final class WebmentionReceiverTest extends TestCaseMocked
                         'category' => ['Kirby CMS'],
                         'summary' => ['This is a summary'],
                         'published' => ['2024-02-01 09:30:00'],
-                        'in-reply-to' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'in-reply-to' => ['https://unknown.url', $targetUrl],
                         'content' => [
                             [
                                 'html' => 'This is a <strong>test</strong>.',
@@ -79,10 +100,17 @@ final class WebmentionReceiverTest extends TestCaseMocked
             ],
         ];
 
-        $webmentionReceiver = new WebmentionReceiver('https://sender.tld', 'https://indie-connector.tld');
+        $webmentionReceiver = new WebmentionReceiver(
+            'https://indieconnector.dev/tests/reply.php?replyto=https://indie-connector.test:8890/home',
+            $targetUrl
+        );
         $webmentionData = $webmentionReceiver->getWebmentionData($mf2);
         $webmentions = $webmentionReceiver->splitWebmentionDataIntoHooks($webmentionData);
-        $result = $webmentionReceiver->convertToHookData($webmentions[0]);
+
+        $result = $webmentionReceiver->convertToHookData($webmentions[0], [
+            'source' => 'https://sender.tld',
+            'target' => $targetUrl,
+        ]);
 
         $this->assertCount(1, $webmentions);
         $this->assertEquals($expected, $result);
@@ -94,6 +122,8 @@ final class WebmentionReceiverTest extends TestCaseMocked
      */
     public function testShouldSplitIntoHooks()
     {
+        $targetUrl = $this->localUrl . '/home';
+
         $mf2 = [
             'items' => [
                 [
@@ -103,8 +133,8 @@ final class WebmentionReceiverTest extends TestCaseMocked
                         'category' => ['Kirby CMS'],
                         'summary' => ['This is a summary'],
                         'published' => ['2024-02-01 09:30:00'],
-                        'in-reply-to' => ['https://unknown.url', 'https://indie-connector.tld'],
-                        'like-of' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'in-reply-to' => ['https://unknown.url', $targetUrl],
+                        'like-of' => ['https://unknown.url', $targetUrl],
                         'content' => [
                             [
                                 'html' => 'This is a <strong>test</strong>.',
@@ -123,11 +153,16 @@ final class WebmentionReceiverTest extends TestCaseMocked
             ],
         ];
 
-        $webmentionReceiver = new WebmentionReceiver('https://sender.tld', 'https://indie-connector.tld');
+        $urls = [
+            'source' => 'https://sender.tld',
+            'target' => $targetUrl,
+        ];
+
+        $webmentionReceiver = new WebmentionReceiver('https://sender.tld', $targetUrl);
         $webmentionData = $webmentionReceiver->getWebmentionData($mf2);
         $webmentions = $webmentionReceiver->splitWebmentionDataIntoHooks($webmentionData);
-        $result1 = $webmentionReceiver->convertToHookData($webmentions[0]);
-        $result2 = $webmentionReceiver->convertToHookData($webmentions[1]);
+        $result1 = $webmentionReceiver->convertToHookData($webmentions[0], $urls);
+        $result2 = $webmentionReceiver->convertToHookData($webmentions[1], $urls);
 
         $this->assertCount(2, $webmentions);
         $this->assertContains('in-reply-to', $result1);
