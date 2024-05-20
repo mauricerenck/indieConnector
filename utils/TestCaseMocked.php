@@ -52,7 +52,9 @@ https://text-field-url.tld",
             'Blockeditor' =>
                 '[{"content":{"text":"<p>A text from a block <a href=\"https:\/\/www.block-url.tld\" target=\"_blank\" title=\"block url\" rel=\"noopener noreferrer\">https:\/\/www.block-url.tld<\/a><\/p><p><\/p>"},"id":"3c65a3c5-7b47-4493-bedd-0c949561b180","isHidden":false,"type":"text"}]',
             'Webmentionsstatus' => true,
+            'enablemastodonposting' => true,
             'Uuid' => 'abcdefghijklmnopqrstuvwxyz',
+            'Mastodonimage' => '- file://mXmNs6GZfcxrgI1p',
         ];
 
         $pageContent = array_merge($defaultContent, $content);

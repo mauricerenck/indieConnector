@@ -10,17 +10,19 @@
 | `allowedTemplates`        | `[]`                                                           | Set templates allowed to send webmentions                                                |
 | `blockedTemplates`        | `[]`                                                           | Block templates from sending webmentions                                                 |
 | `send-mention-url-fields` | `['textfield:text','layouteditor:layout','blockeditor:block']` | Set fieldnames and types to look for urls in                                             |
-| `debug.localHosts`        | `['//localhost','//127.0.0.1']`                                | Set local hosts to prevent sending webmentions and posts when testing on a local machine |
+| `localhosts`              | `['//localhost','//127.0.0.1']`                                | Set local hosts to prevent sending webmentions and posts when testing on a local machine |
+| `blockedTargets`          | `[]`                                							 | Array of hosts to block sending webmentions to                                           |
 
 ## Settings for receiving webmentions ([details](receiving.md))
 
-| Option           | Default | Description                                                                    |
-| ---------------- | ------- | ------------------------------------------------------------------------------ |
-| `secret`         | `''`    | Your webmention.io web hook secret                                             |
-| `useHtmlContent` | `false` | Set to true if you want to show html content from the sender (not recommended) |
-| `queue.enabled`  | `false` | Queue all incoming webmentions before processing them                          |
-| `queue.retries`  | `5`     | Retry `n` times to process the webmention if there is an error                 |
-| `block.sources`  | `[]`    | An array of source URLs to block, remove the path to block the entire host     |
+| Option              | Default | Description                                                                    |
+| ------------------- | ------- | ------------------------------------------------------------------------------ |
+| `secret`            | `''`    | Your webmention.io web hook secret                                             |
+| `receive.enabled`   | `true`  | Enable receiving webmentions                                                   |
+| `receive.useHtmlContent`    | `false` | Set to true if you want to show html content from the sender (not recommended) |
+| `receive.blockedSources`    | `[]`    | An array of source URLs to block, remove the path to block the entire host     |
+| `queue.enabled`     | `false` | Queue all incoming webmentions before processing them                          |
+| `queue.retries`     | `5`     | Retry `n` times to process the webmention if there is an error                 |
 
 
 ## Settings for statistics in the panel
@@ -42,8 +44,13 @@
 | `sendMastodon`          | `false`         | Enable posting toots on publish |
 | `mastodon-bearer`       | `‘‘`            | Your API Token                  |
 | `mastodon-instance-url` | `‘‘`            | Your mastodon instance url      |
-| `mastodon-text-field`   | `‘description‘` | Source field for toot text      |
+| `mastodon.text-length`  | `500`           | When to trim the text           |
+| `mastodon-text-field`   | `‘description‘` | DEPRECATED - use `post.textfield`     |
 
+| `post.textfield`        | `‘description‘` | Text source field for posting elsewhere |
+| `post.imagefield`        | `''` | Image source field for posting elsewhere, must be one image |
+| `post.allowedTemplates`        | `[]` | Set templates allowed to send webmentions |
+| `post.blockedTemplates`        | `[]` | Block templates from sending webmentions |
 
 ## ActivityPub beta ([details](activitiypub.md))
 
