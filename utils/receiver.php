@@ -7,14 +7,19 @@ use Kirby\Http\Response;
 
 class Receiver
 {
-    public function __construct()
+    public function __construct(private ?bool $receiveWebmention = null)
     {
+        $this->receiveWebmention = $receiveWebmention ?? option('mauricerenck.indieConnector.receive.enabled', true);
     }
 
     public function processIncomingWebmention($data)
     {
         $urlChecks = new UrlChecks();
         $pageChecks = new PageChecks();
+
+        if (!$this->receiveWebmention) {
+            return new Response('Webmention receiving is disabled', 'text/plain', 405); // Method Not Allowed
+        }
 
         $urls = $this->getPostDataUrls($data);
         if (!$urlChecks->urlIsValid($urls['source'])) {
@@ -99,19 +104,5 @@ class Receiver
                 'url' => $data['author']['url'],
             ],
         ];
-    }
-    // =======
-
-    public function isKnownNetwork(string $authorUrl)
-    {
-        $networkHosts = ['x.com', 'twitter.com', 'instagram.com', 'mastodon.online', 'mastodon.social'];
-
-        foreach ($networkHosts as $host) {
-            if (strpos($authorUrl, $host) !== false) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

@@ -12,22 +12,6 @@ final class WebmentionReceiverTest extends TestCaseMocked
 
     /**
      * @group receiveWebmentions
-     * @testdox getDataFromSource - should get and parse mf2 data from source
-     */
-    public function testShouldSendWebmention()
-    {
-        $webmentionReceiver = new WebmentionReceiver();
-        $sourceUrl = 'https://maurice-renck.de/de/blog/2024/kirby-podcaster-transcripts';
-
-        $result = $webmentionReceiver->getDataFromSource($sourceUrl);
-        // NOTE this is for getting mf2 json from a real source
-        // $mf2Result = $webmentionReceiver->getDataFromSource('http://indieconnector.mauricerenck.de/');
-        // file_put_contents('detailed-mf2.json', json_encode($mf2Result));
-        $this->assertTrue(false);
-    }
-
-    /**
-     * @group receiveWebmentions
      * @testdox processWebmention - should process webmention
      */
     public function testShouldProcessWebmention()

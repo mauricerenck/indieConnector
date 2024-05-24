@@ -165,38 +165,4 @@ final class ReceiverTest extends TestCaseMocked
 
         $this->assertFalse($result);
     }
-
-    public function testTwitterIsKnownNetwork()
-    {
-        $senderUtils = new Receiver();
-        $result = $senderUtils->isKnownNetwork('https://twitter.com/mauricerenck');
-
-        $this->assertTrue($result);
-    }
-
-    public function testInstagramIsKnownNetwork()
-    {
-        $senderUtils = new Receiver();
-        $result = $senderUtils->isKnownNetwork('https://instagram.com/mauricerenck');
-
-        $this->assertTrue($result);
-    }
-
-    public function testMastodonIsKnownNetwork()
-    {
-        $senderUtils = new Receiver();
-        $result = $senderUtils->isKnownNetwork('https://mastodon.online/mauricerenck');
-        $this->assertTrue($result);
-
-        $result = $senderUtils->isKnownNetwork('https://mastodon.social/mauricerenck');
-        $this->assertTrue($result);
-    }
-
-    public function testFacebookIsEvilDontUseIt()
-    {
-        $senderUtils = new Receiver();
-        $result = $senderUtils->isKnownNetwork('https://facebook.com/mauricerenck');
-
-        $this->assertFalse($result);
-    }
 }
