@@ -59,6 +59,7 @@ class MastodonSender extends Sender
             return false;
         }
 
+        // FIXME move this to the Sender class?
         if (!$this->pageChecks->pageHasEnabledMastodon($page)) {
             return false;
         }
