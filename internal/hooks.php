@@ -16,11 +16,9 @@ return [
         $urls = $webmentions->getUnprocessedUrls($newPage);
         $webmentions->sendWebmentions($newPage, $urls);
 
-        if (option('mauricerenck.indieConnector.sendMastodon', false)) {
-            if (!$newPage->isDraft() && $oldPage->isDraft()) {
-                $mastodonSender = new MastodonSender();
-                $mastodonSender->sendToot($newPage);
-            }
+        if (!$newPage->isDraft() && $oldPage->isDraft()) {
+            $mastodonSender = new MastodonSender();
+            $mastodonSender->sendPost($newPage);
         }
     },
 

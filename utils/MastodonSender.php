@@ -15,6 +15,7 @@ class MastodonSender extends Sender
         private ?string $imagefield = null,
         private ?string $instanceUrl = null,
         private ?string $token = null,
+        private ?bool $enabled = false,
         private ?UrlChecks $urlChecks = null,
         private ?PageChecks $pageChecks = null
     ) {
@@ -23,6 +24,7 @@ class MastodonSender extends Sender
         $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
         $this->instanceUrl = $instanceUrl ?? option('mauricerenck.indieConnector.mastodon-instance-url', false);
         $this->token = $token ?? option('mauricerenck.indieConnector.mastodon-bearer', false);
+        $this->enabled = $enabled ?? option('mauricerenck.indieConnector.sendMastodon', false);
         $this->urlChecks = $urlChecks ?? new UrlChecks();
         $this->pageChecks = $pageChecks ?? new PageChecks();
 
@@ -32,8 +34,12 @@ class MastodonSender extends Sender
         }
     }
 
-    public function sendToot($page)
+    public function sendPost($page)
     {
+        if (!$this->enabled) {
+            return false;
+        }
+
         if (!$this->token) {
             throw new Exception('No Mastodon token set');
             return false;

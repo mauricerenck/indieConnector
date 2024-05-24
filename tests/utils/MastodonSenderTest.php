@@ -29,10 +29,11 @@ final class MastodonSenderTest extends TestCaseMocked
             null,
             'https://example.com',
             '1234567890',
+            true,
             $this->urlCheckMock
         );
 
-        $result = $sender->sendToot($page);
+        $result = $sender->sendPost($page);
 
         $this->assertTrue($result);
     }
@@ -55,10 +56,11 @@ final class MastodonSenderTest extends TestCaseMocked
             null,
             'https://example.com',
             '1234567890',
+            true,
             $this->urlCheckMock
         );
 
-        $result = $sender->sendToot($page);
+        $result = $sender->sendPost($page);
 
         $this->assertFalse($result);
     }
@@ -81,10 +83,11 @@ final class MastodonSenderTest extends TestCaseMocked
             null,
             'https://example.com',
             '1234567890',
+            true,
             $this->urlCheckMock
         );
 
-        $result = $sender->sendToot($page);
+        $result = $sender->sendPost($page);
 
         $this->assertFalse($result);
     }
@@ -101,7 +104,7 @@ final class MastodonSenderTest extends TestCaseMocked
 
         $sender = new MastodonSender(500, 'description', null, 'https://example.com', '1234567890');
 
-        $result = $sender->sendToot($page);
+        $result = $sender->sendPost($page);
 
         $this->assertFalse($result);
     }
