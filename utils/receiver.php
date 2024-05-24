@@ -70,7 +70,6 @@ class Receiver
     public function getPageFromUrl(string $url): bool|object
     {
         $path = Url::path($url);
-
         if ($path == '') {
             $page = page(site()->homePageId());
         } elseif (!($page = page($path))) {
