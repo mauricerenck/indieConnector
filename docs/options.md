@@ -10,8 +10,10 @@
 | `allowedTemplates`        | `[]`                                                           | Set templates allowed to send webmentions                                                |
 | `blockedTemplates`        | `[]`                                                           | Block templates from sending webmentions                                                 |
 | `send-mention-url-fields` | `['textfield:text','layouteditor:layout','blockeditor:block']` | Set fieldnames and types to look for urls in                                             |
-| `localhosts`              | `['//localhost','//127.0.0.1']`                                | Set local hosts to prevent sending webmentions and posts when testing on a local machine |
+| `localhosts`              | `['localhost','127.0.0.1']`                                    | Set local hosts to prevent sending webmentions and posts when testing on a local machine |
 | `blockedTargets`          | `[]`                                							 | Array of hosts to block sending webmentions to                                           |
+| `send.maxRetries`         | `3`                                							 | How often should indieconnector try to send a mention if it failes                       |
+
 
 ## Settings for receiving webmentions ([details](receiving.md))
 

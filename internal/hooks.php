@@ -12,9 +12,7 @@ return [
 
     'page.changeStatus:after' => function ($newPage, $oldPage) {
         $webmentions = new WebmentionSender();
-
-        $urls = $webmentions->getUnprocessedUrls($newPage);
-        $webmentions->sendWebmentions($newPage, $urls);
+        $webmentions->sendWebmentions($newPage);
 
         if (!$newPage->isDraft() && $oldPage->isDraft()) {
             $mastodonSender = new MastodonSender();
