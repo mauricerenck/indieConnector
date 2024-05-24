@@ -16,8 +16,8 @@ final class UrlChecksTest extends TestCaseMocked
      */
     public function testShouldDetectLocalHost()
     {
-        $senderUtilsMock = new UrlChecks();
-        $result = $senderUtilsMock->isLocalUrl('https://localhost/de/my-page');
+        $urlChecks = new UrlChecks(['localhost', '127.0.0.1']);
+        $result = $urlChecks->isLocalUrl('https://localhost/de/my-page');
         $this->assertTrue($result);
     }
 
@@ -27,9 +27,9 @@ final class UrlChecksTest extends TestCaseMocked
      */
     public function testShouldDetectUrlNotOnLocalHost()
     {
-        $senderUtilsMock = new UrlChecks();
-        $result = $senderUtilsMock->isLocalUrl('https://external-host-tld/de/my-page');
-        $this->assertTrue($result);
+        $urlChecks = new UrlChecks(['localhost', '127.0.0.1']);
+        $result = $urlChecks->isLocalUrl('https://external-host-tld/de/my-page');
+        $this->assertFalse($result);
     }
 
     /**
@@ -38,8 +38,8 @@ final class UrlChecksTest extends TestCaseMocked
      */
     public function testIsBlockedSourceConfig()
     {
-        $senderUtilsMock = new UrlChecks(null, ['https://blocked-source.tld/my-spam-page']);
-        $result = $senderUtilsMock->isBlockedSource('https://blocked-source.tld/my-spam-page');
+        $urlChecks = new UrlChecks(null, ['https://blocked-source.tld/my-spam-page']);
+        $result = $urlChecks->isBlockedSource('https://blocked-source.tld/my-spam-page');
         $this->assertTrue($result);
     }
 
@@ -49,8 +49,8 @@ final class UrlChecksTest extends TestCaseMocked
      */
     public function testIsBlockedSourceHostConfig()
     {
-        $senderUtilsMock = new UrlChecks(null, ['https://blocked-source.tld']);
-        $result = $senderUtilsMock->isBlockedSource('https://blocked-source.tld/my-spam-page');
+        $urlChecks = new UrlChecks(null, ['https://blocked-source.tld']);
+        $result = $urlChecks->isBlockedSource('https://blocked-source.tld/my-spam-page');
         $this->assertTrue($result);
     }
 
@@ -60,8 +60,34 @@ final class UrlChecksTest extends TestCaseMocked
      */
     public function testIsUnBlockedSourceHostConfig()
     {
-        $senderUtilsMock = new UrlChecks(null, ['https://blocked-source.tld']);
-        $result = $senderUtilsMock->isBlockedSource('https://allowed-source.tld/my-spam-page');
+        $urlChecks = new UrlChecks(null, ['https://blocked-source.tld']);
+        $result = $urlChecks->isBlockedSource('https://allowed-source.tld/my-spam-page');
+        $this->assertFalse($result);
+    }
+
+    /**
+     * @group urlHandling
+     * @testdox skipSameHost - should detect own host
+     */
+    public function testShouldDetectOwnHost()
+    {
+        $urlChecks = new UrlChecks();
+
+        $hostname = kirby()->environment()->host();
+        $result = $urlChecks->skipSameHost('https://' . $hostname . '/de/my-page');
+
+        $this->assertTrue($result);
+    }
+
+    /**
+     * @group urlHandling
+     * @testdox skipSameHost - should detect external host
+     */
+    public function testShouldDetectExternalHost()
+    {
+        $urlChecks = new UrlChecks();
+        $result = $urlChecks->skipSameHost('https://external-host.tld/de/my-page');
+
         $this->assertFalse($result);
     }
 }
