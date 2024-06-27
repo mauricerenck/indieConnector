@@ -260,7 +260,7 @@ class WebmentionSender extends Sender
             $db->insert(
                 'deleted_pages',
                 ['id', 'slug', 'deletedAt'],
-                [$page->uuid()->id(), $page->slug(), $deletedDate]
+                [$page->uuid()->id(), $page->uri(), $deletedDate]
             );
 
             $this->sendWebmentions($page);
@@ -283,7 +283,7 @@ class WebmentionSender extends Sender
 
         try {
             $db = new IndieConnectorDatabase();
-            $db->delete('deleted_pages', 'where slug = "' . $page->slug() . '"');
+            $db->delete('deleted_pages', 'where slug = "' . $page->uri() . '"');
             return true;
         } catch (Exception $e) {
             echo 'Could not connect to Database: ', $e->getMessage(), "\n";
