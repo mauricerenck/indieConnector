@@ -18,6 +18,21 @@ return [
         }
     },
 
+    'page.delete:before' => function ($page) {
+        $webmentions = new WebmentionSender();
+        $webmentions->markPageAsDeleted($page);
+    },
+
+    'page.create:after' => function ($page) {
+        $webmentions = new WebmentionSender();
+        $webmentions->removePageFromDeleted($page);
+    },
+
+    'page.changeSlug:after' => function ($newPage) {
+        $webmentions = new WebmentionSender();
+        $webmentions->removePageFromDeleted($newPage);
+    },
+
     'system.loadPlugins:after' => function () {
         $migrations = new Migrations();
         $migrations->migrate();

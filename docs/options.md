@@ -13,6 +13,7 @@
 | `localhosts`              | `['localhost','127.0.0.1']`                                    | Set local hosts to prevent sending webmentions and posts when testing on a local machine |
 | `blockedTargets`          | `[]`                                							 | Array of hosts to block sending webmentions to                                           |
 | `send.maxRetries`         | `3`                                							 | How often should indieconnector try to send a mention if it failes                       |
+| `send.markDeleted`        | `false`                             							 | When you delete a page, mark it as gone, so webmention targets can get informed about that - **Needs a database!**                       |
 
 
 ## Settings for receiving webmentions ([details](receiving.md))

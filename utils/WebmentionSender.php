@@ -4,12 +4,14 @@ namespace mauricerenck\IndieConnector;
 
 use IndieWeb\MentionClient;
 use Kirby\Data\Json;
+use Exception;
 
 class WebmentionSender extends Sender
 {
     public function __construct(
         private ?bool $activeWebmentions = null,
         private ?int $maxRetries = null,
+        private ?int $markDeletedPages = null,
 
         private $mentionClient = null,
         private ?UrlChecks $urlChecks = null,
@@ -19,6 +21,7 @@ class WebmentionSender extends Sender
 
         $this->activeWebmentions = $activeWebmentions ?? option('mauricerenck.indieConnector.sendWebmention', true);
         $this->maxRetries = $maxRetries ?? option('mauricerenck.indieConnector.send.maxRetries', 3);
+        $this->markDeletedPages = $markDeletedPages ?? option('mauricerenck.indieConnector.send.markDeleted', false);
         $this->mentionClient = new MentionClient();
         $this->urlChecks = $urlChecks ?? new UrlChecks();
         $this->pageChecks = $pageChecks ?? new PageChecks();
@@ -234,5 +237,73 @@ class WebmentionSender extends Sender
         }
 
         return $processedUrlsV1;
+    }
+
+    public function markPageAsDeleted($page)
+    {
+        if (!$this->markDeletedPages) {
+            return false;
+        }
+
+        if (!$this->activeWebmentions) {
+            return false;
+        }
+
+        $outbox = $this->readOutbox($page);
+        if (count($outbox) === 0) {
+            return false;
+        }
+
+        try {
+            $db = new IndieConnectorDatabase();
+            $deletedDate = $db->getFormattedDate();
+            $db->insert(
+                'deleted_pages',
+                ['id', 'slug', 'deletedAt'],
+                [$page->uuid()->id(), $page->slug(), $deletedDate]
+            );
+
+            $this->sendWebmentions($page);
+            return true;
+        } catch (Exception $e) {
+            echo 'Could not connect to Database: ', $e->getMessage(), "\n";
+            return false;
+        }
+    }
+
+    public function removePageFromDeleted($page)
+    {
+        if (!$this->markDeletedPages) {
+            return false;
+        }
+
+        if (!$this->activeWebmentions) {
+            return false;
+        }
+
+        try {
+            $db = new IndieConnectorDatabase();
+            $db->delete('deleted_pages', 'where slug = "' . $page->slug() . '"');
+            return true;
+        } catch (Exception $e) {
+            echo 'Could not connect to Database: ', $e->getMessage(), "\n";
+            return false;
+        }
+    }
+
+    public function returnAsDeletedPage($slug)
+    {
+        if (!$this->markDeletedPages) {
+            return false;
+        }
+
+        try {
+            $db = new IndieConnectorDatabase();
+            $result = $db->select('deleted_pages', ['slug'], 'where slug = "' . $slug . '"');
+            return $result->count() === 0 ? false : true;
+        } catch (Exception $e) {
+            echo 'Could not connect to Database: ', $e->getMessage(), "\n";
+            return false;
+        }
     }
 }

@@ -20,6 +20,19 @@ Kirby::plugin('mauricerenck/indieConnector', [
     ],
     'routes' => [
         [
+            'pattern' => '(:all)',
+            'method' => 'GET|POST|PUT',
+            'language' => '*',
+            'action' => function ($_lang, $slug) {
+                $webmentions = new WebmentionSender();
+                if ($webmentions->returnAsDeletedPage($slug)) {
+                    return new Response('Gone', 'text/plain', 410);
+                }
+
+                $this->next();
+            },
+        ],
+        [
             'pattern' => '(indieConnector|indieconnector)/webmention',
             'method' => 'GET',
             'action' => function () {
