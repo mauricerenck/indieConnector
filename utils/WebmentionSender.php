@@ -8,6 +8,8 @@ use Exception;
 
 class WebmentionSender extends Sender
 {
+    private $indieDb;
+
     public function __construct(
         private ?bool $activeWebmentions = null,
         private ?int $maxRetries = null,
@@ -15,7 +17,8 @@ class WebmentionSender extends Sender
 
         private $mentionClient = null,
         private ?UrlChecks $urlChecks = null,
-        private ?PageChecks $pageChecks = null
+        private ?PageChecks $pageChecks = null,
+        private ?IndieConnectorDatabase $indieDatabase = null
     ) {
         parent::__construct();
 
@@ -25,6 +28,7 @@ class WebmentionSender extends Sender
         $this->mentionClient = new MentionClient();
         $this->urlChecks = $urlChecks ?? new UrlChecks();
         $this->pageChecks = $pageChecks ?? new PageChecks();
+        $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
     }
 
     public function sendWebmentions($page)
@@ -255,15 +259,12 @@ class WebmentionSender extends Sender
         }
 
         try {
-            $db = new IndieConnectorDatabase();
-            $deletedDate = $db->getFormattedDate();
-            $db->insert(
+            $deletedDate = $this->indieDb->getFormattedDate();
+            $this->indieDb->insert(
                 'deleted_pages',
                 ['id', 'slug', 'deletedAt'],
                 [$page->uuid()->id(), $page->uri(), $deletedDate]
             );
-
-            $this->sendWebmentions($page);
             return true;
         } catch (Exception $e) {
             echo 'Could not connect to Database: ', $e->getMessage(), "\n";
@@ -282,8 +283,7 @@ class WebmentionSender extends Sender
         }
 
         try {
-            $db = new IndieConnectorDatabase();
-            $db->delete('deleted_pages', 'where slug = "' . $page->uri() . '"');
+            $this->indieDb->delete('deleted_pages', 'where slug = "' . $page->uri() . '"');
             return true;
         } catch (Exception $e) {
             echo 'Could not connect to Database: ', $e->getMessage(), "\n";
@@ -298,8 +298,7 @@ class WebmentionSender extends Sender
         }
 
         try {
-            $db = new IndieConnectorDatabase();
-            $result = $db->select('deleted_pages', ['slug'], 'where slug = "' . $slug . '"');
+            $result = $this->indieDb->select('deleted_pages', ['slug'], 'where slug = "' . $slug . '"');
             return $result->count() === 0 ? false : true;
         } catch (Exception $e) {
             echo 'Could not connect to Database: ', $e->getMessage(), "\n";

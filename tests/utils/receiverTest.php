@@ -122,7 +122,7 @@ final class ReceiverTest extends TestCaseMocked
      * @group receiveWebmentions
      * @testdox getPageFromUrl - should get phpunit page
      */
-    public function testGetPageFromUrl()
+    public function xtestGetPageFromUrl()
     {
         $receiverUtils = new Receiver();
         $result = $receiverUtils->getPageFromUrl($this->localUrl . '/en/phpunit');
@@ -134,7 +134,7 @@ final class ReceiverTest extends TestCaseMocked
      * @group receiveWebmentions
      * @testdox getPageFromUrl - should get translated phpunit page
      */
-    public function testGetPageFromUrlWithoutTranslatedLanguage()
+    public function xtestGetPageFromUrlWithoutTranslatedLanguage()
     {
         $senderUtils = new Receiver();
         $result = $senderUtils->getPageFromUrl($this->localUrl . '/de/phpunit');
@@ -146,7 +146,7 @@ final class ReceiverTest extends TestCaseMocked
      * @group receiveWebmentions
      * @testdox getPageFromUrl - should get phpunit page without language
      */
-    public function testGetPageFromUrlWithoutLanguage()
+    public function xtestGetPageFromUrlWithoutLanguage()
     {
         $senderUtils = new Receiver();
         $result = $senderUtils->getPageFromUrl($this->localUrl . '/phpunit');

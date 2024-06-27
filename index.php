@@ -22,8 +22,7 @@ Kirby::plugin('mauricerenck/indieConnector', [
         [
             'pattern' => '(:all)',
             'method' => 'GET|POST|PUT',
-            'language' => '*',
-            'action' => function ($_lang, $slug) {
+            'action' => function ($slug) {
                 $webmentions = new WebmentionSender();
                 if ($webmentions->returnAsDeletedPage($slug)) {
                     return new Response('Gone', 'text/plain', 410);

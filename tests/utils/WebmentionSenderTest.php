@@ -5,13 +5,16 @@ use mauricerenck\IndieConnector\TestCaseMocked;
 final class WebmentionSenderTest extends TestCaseMocked
 {
     private $senderUtilsMock;
+    private $databaseMock;
 
     public function setUp(): void
     {
         parent::setUp();
+        $this->databaseMock = Mockery::mock(mauricerenck\IndieConnector\IndieConnectorDatabase::class);
 
         $this->senderUtilsMock = Mockery::mock(
-            'mauricerenck\IndieConnector\WebmentionSender[pageFullfillsCriteria,shouldSendWebmentionToTarget,send,storeProcessedUrls,readOutbox,writeOutbox]'
+            'mauricerenck\IndieConnector\WebmentionSender[pageFullfillsCriteria,shouldSendWebmentionToTarget,send,storeProcessedUrls,readOutbox,writeOutbox]',
+            ['indieDatabase' => $this->databaseMock]
         );
     }
 
@@ -57,13 +60,6 @@ final class WebmentionSenderTest extends TestCaseMocked
         $result = $this->senderUtilsMock->sendWebmentions($pageMock, $urls);
         $this->assertFalse($result);
     }
-
-    // public function testShouldNotSend()
-    // {
-    //     $sendWebmention = new WebmentionSender();
-    //     $result = $sendWebmention->send('https://text-field-url.tld', site()->url());
-    //     $this->assertFalse($result);
-    // }
 
     /**
      * @group sendWebmentions
@@ -427,5 +423,38 @@ final class WebmentionSenderTest extends TestCaseMocked
 
         $result = $this->senderUtilsMock->mergeUrlsWithOutbox($newEntries, $pageMock);
         $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @group deletePages
+     * @testdox markPageAsDeleted - should create db entry
+     */
+    public function testMarkPageAsDeleted()
+    {
+        $pageMock = $this->getPageMock();
+
+        $outboxData = [
+            [
+                'url' => 'https://processed-url.tld',
+                'status' => 'success',
+                'date' => date('Y-m-d H:i:s'),
+                'retries' => 0,
+            ],
+        ];
+
+        $this->senderUtilsMock->shouldReceive('markDeletedPages')->andReturn(true);
+        $this->senderUtilsMock->shouldReceive('readOutbox')->andReturn($outboxData);
+        $this->senderUtilsMock->shouldReceive('sendWebmentions')->andReturn(true);
+
+        $this->databaseMock->shouldReceive('getFormattedDate')->once()->andReturn('0');
+        $this->databaseMock->shouldReceive('connect')->once()->andReturn(true);
+        $this->databaseMock
+            ->shouldReceive('insert')
+            ->with('deleted_pages', ['id', 'slug', 'deletedAt'], [$pageMock->uuid()->id(), $pageMock->uri(), 0])
+            ->once()
+            ->andReturn(true);
+
+        $result = $this->senderUtilsMock->markPageAsDeleted($pageMock);
+        $this->assertTrue($result);
     }
 }
