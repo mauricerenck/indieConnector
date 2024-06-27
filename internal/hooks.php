@@ -18,7 +18,7 @@ return [
         }
     },
 
-    'page.delete:before' => function ($page) {
+    'page.delete:after' => function ($page) {
         $webmentions = new WebmentionSender();
         if ($webmentions->markPageAsDeleted($page)) {
             $webmentions->sendWebmentions($page);
