@@ -65,7 +65,12 @@ class PageChecks
     public function pageHasEnabledWebmentions($page)
     {
         $status = $page->webmentionsStatus();
-        return !isset($status) || $status->isEmpty() || $status->toBool();
+
+        if (!isset($status) || $status->isEmpty()) {
+            return true;
+        }
+
+        return $status->toBool();
     }
 
     public function pageHasEnabledMastodon($page)

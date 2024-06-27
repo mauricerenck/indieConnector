@@ -5,9 +5,7 @@ namespace mauricerenck\IndieConnector;
 return [
     'page.update:after' => function ($newPage) {
         $webmentions = new WebmentionSender();
-
-        $urls = $webmentions->getUnprocessedUrls($newPage);
-        $webmentions->sendWebmentions($newPage, $urls);
+        $webmentions->sendWebmentions($newPage);
     },
 
     'page.changeStatus:after' => function ($newPage, $oldPage) {

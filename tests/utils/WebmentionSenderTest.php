@@ -213,9 +213,9 @@ final class WebmentionSenderTest extends TestCaseMocked
         $outboxData = [
             [
                 'url' => 'https://processed-url.tld',
-                'status' => 'success',
+                'status' => 'error',
                 'date' => date('Y-m-d H:i:s'),
-                'retries' => 0,
+                'retries' => 10,
             ],
             [
                 'url' => 'https://processed-url-2.tld',

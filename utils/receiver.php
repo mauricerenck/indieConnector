@@ -23,15 +23,15 @@ class Receiver
 
         $urls = $this->getPostDataUrls($data);
         if (!$urlChecks->urlIsValid($urls['source'])) {
-            return new Response('Source URL is not valid', 'text/plain', 406); // Not Acceptable
+            return new Response('Source URL is not valid', 'text/plain', 400); // Not Acceptable
         }
 
         if (!$urlChecks->urlIsValid($urls['target'])) {
-            return new Response('Target URL is not valid', 'text/plain', 406); // Not Acceptable
+            return new Response('Target URL is not valid', 'text/plain', 400); // Not Acceptable
         }
 
         if ($urlChecks->isBlockedSource($urls['source'])) {
-            return new Response('Source URL is blocked', 'text/plain', 406); // Not Acceptable
+            return new Response('Source URL is blocked', 'text/plain', 400); // Not Acceptable
         }
 
         $page = $this->getPageFromUrl($urls['target']);
@@ -70,10 +70,15 @@ class Receiver
     public function getPageFromUrl(string $url): bool|object
     {
         $path = Url::path($url);
+
         if ($path == '') {
             $page = page(site()->homePageId());
         } elseif (!($page = page($path))) {
-            $page = page(kirby()->router()->call($path));
+            $page = kirby()->router()->call($path, 'GET');
+
+            if (!$page) {
+                return false;
+            }
 
             if ($page->isHomeOrErrorPage()) {
                 return false;

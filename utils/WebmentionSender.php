@@ -101,7 +101,7 @@ class WebmentionSender extends Sender
 
         return false;
     }
-    //
+
     public function filterDuplicateUrls($urls)
     {
         return array_unique($urls);
@@ -121,8 +121,6 @@ class WebmentionSender extends Sender
         foreach ($processedUrls as $processedUrl) {
             if ($processedUrl['url'] === $url) {
                 switch ($processedUrl['status']) {
-                    case 'success':
-                        return true;
                     case 'error':
                         if ($processedUrl['retries'] >= $this->maxRetries) {
                             return true;
@@ -213,7 +211,12 @@ class WebmentionSender extends Sender
     public function writeOutbox($urls, $page)
     {
         $outboxFile = $page->file(option('mauricerenck.indieConnector.outboxFilename', 'indieConnector.json'));
-        Json::write($outboxFile->root(), $urls);
+
+        $filePath = is_null($outboxFile)
+            ? $page->root() . '/' . option('mauricerenck.indieConnector.outboxFilename', 'indieConnector.json')
+            : $outboxFile->root();
+
+        Json::write($filePath, $urls);
     }
 
     public function convertProcessedUrlsToV2($processedUrls)

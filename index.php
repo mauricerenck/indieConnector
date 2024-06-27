@@ -9,9 +9,9 @@ use Kirby\Http\Response;
 @include_once __DIR__ . '/vendor/autoload.php';
 
 Kirby::plugin('mauricerenck/indieConnector', [
-    'options' => require_once(__DIR__ . '/internal/options.php'),
-    'hooks' => require_once(__DIR__ . '/internal/hooks.php'),
-    'areas' => require_once(__DIR__ . '/components/areas.php'),
+    'options' => require_once __DIR__ . '/internal/options.php',
+    'hooks' => require_once __DIR__ . '/internal/hooks.php',
+    'areas' => require_once __DIR__ . '/components/areas.php',
     'snippets' => [
         'activitypub-wm' => __DIR__ . '/snippets/activitypub-webmention.php',
     ],
@@ -24,65 +24,101 @@ Kirby::plugin('mauricerenck/indieConnector', [
             'method' => 'GET',
             'action' => function () {
                 // TODO show a form as a fallback
-            }
+            },
         ],
         [
             'pattern' => '(indieConnector|indieconnector)/webmention',
             'method' => 'POST',
             'action' => function () {
-                // TODO handle incoming webmentions
+                $request = kirby()->request();
+                $data = $request->data();
 
-                // Step 1 - Queue webmention, if queue is enabled
-            }
+                if (!isset($data) || empty($data)) {
+                    return new Response('No POST data found', 'text/plain', 400); // Not Acceptable
+                }
+
+                $webmentionReceiver = new WebmentionReceiver();
+                $result = $webmentionReceiver->processIncomingWebmention($data);
+
+                if ($result instanceof Response) {
+                    return $result;
+                }
+
+                kirby()->trigger('indieConnector.webmention.queue', [
+                    'targetUrl' => $result['urls']['target'],
+                    'sourceUrl' => $result['urls']['source'],
+                ]);
+
+                return new Response('Webmention received', 'text/plain', 202); // Accepted
+            },
+        ],
+        [
+            'pattern' => '(indieConnector|indieconnector)/queue',
+            'method' => 'POST',
+            'action' => function () {
+                $request = kirby()->request();
+                $data = $request->data();
+
+                if (!isset($data) || empty($data)) {
+                    return new Response('No POST data found', 'text/plain', 400); // Not Acceptable
+                }
+
+                $receiver = new Receiver();
+                if (!$receiver->hasValidSecret($data)) {
+                    return new Response('Authentication failed', 'text/plain', 401);
+                }
+
+                $limit = $data['limit'] ?? 10;
+
+                kirby()->trigger('indieConnector.webmention.processQueue', [
+                    'limit' => $limit,
+                ]);
+
+                return new Response('Queue processed', 'text/plain', 202); // Accepted
+            },
         ],
         [
             'pattern' => '(indieConnector|indieconnector)/webhook/webmentionio',
             'method' => 'POST',
             'action' => function () {
-                $response = json_decode(file_get_contents('php://input'));
-                $receiver = new Receiver();
+                $request = kirby()->request();
+                $data = $request->data();
 
-                if (!$receiver->hasValidSecret($response)) {
+                if (!isset($data) || empty($data)) {
+                    return new Response('No POST data found', 'text/plain', 400); // Not Acceptable
+                }
+
+                $webmentionReceiver = new WebmentionIo();
+
+                if (!$webmentionReceiver->hasValidSecret($data)) {
                     return new Response('Authentication failed', 'text/plain', 401);
                 }
 
-                if (!$receiver->responseHasPostBody($response)) {
-                    return new Response('Webmention body not found', 'text/plain', 406); // Not Acceptable
-                }
+                $result = $webmentionReceiver->processIncomingWebmention($data);
 
-                $targetUrl = $receiver->getTargetUrl($response);
-                if (!$targetUrl) {
-                    return new Response('No Target Url Given', 'text/plain', 406); // Not Acceptable
-                }
-
-                $sourceUrl = $receiver->getSourceUrl($response);
-                if (!$sourceUrl) {
-                    return new Response('No Source Url Given', 'text/plain', 406); // Not Acceptable
-                }
-
-                $targetPage = $receiver->getPageFromUrl($targetUrl);
-                if (!$targetPage) {
-                    return new Response('Target Page Not Found', 'text/plain', 404);
+                if ($result instanceof Response) {
+                    return $result;
                 }
 
                 $webmention = [
-                    'type' => $receiver->getWebmentionType($response),
-                    'target' => $targetPage->id(),
-                    'source' => $receiver->getTransformedSourceUrl($sourceUrl),
-                    'author' => $receiver->getAuthor($response),
-                    'content' => $receiver->getContent($response),
-                    'published' => $receiver->getPubDate($response),
+                    'type' => $webmentionReceiver->getWebmentionType($data),
+                    'targetUrl' => $result['urls']['target'],
+                    'sourceUrl' => $result['urls']['source'],
+                    'title' => null,
+                    'author' => $webmentionReceiver->getAuthor($data),
+                    'content' => $webmentionReceiver->getContent($data),
+                    'published' => $webmentionReceiver->getPubDate($data),
                 ];
 
-                kirby()->trigger('indieConnector.webmention.received', ['webmention' => $webmention, 'targetPage' => $targetPage]);
+                $hookData = $webmentionReceiver->convertToHookData($webmention, $result['urls']);
 
-                if (option('mauricerenck.indieConnector.stats', false)) {
-                    $stats = new WebmentionStats();
-                    $stats->trackMention($webmention['target'], $webmention['source'], $webmention['type'], $webmention['author']['avatar']);
-                }
+                kirby()->trigger('indieConnector.webmention.received', [
+                    'webmention' => $hookData,
+                    'targetPage' => $result['urls']['target'],
+                ]);
 
-                return $webmention;
-            }
+                return new Response('Webmention received', 'text/plain', 202); // Accepted
+            },
         ],
         [
             'pattern' => 'indieconnector/send-test-mention/(:any)',
@@ -91,6 +127,7 @@ Kirby::plugin('mauricerenck/indieConnector', [
                     return new Response('Authentication failed', 'text/plain', 401);
                 }
 
+                // FIXME send a post request to new indieconnector domain to trigger webmention
                 $webmentionSender = new WebmentionSender();
                 $result = $webmentionSender->send(site()->homePage()->url(), site()->homePage()->url());
 
@@ -99,7 +136,7 @@ Kirby::plugin('mauricerenck/indieConnector', [
                 }
 
                 return 'Sent! You should be able to configure your webmention.io hook now.';
-            }
+            },
         ],
         [
             'pattern' => '^.well-known/((host-meta|webfinger).(:any)|(host-meta|webfinger))',
@@ -119,7 +156,7 @@ Kirby::plugin('mauricerenck/indieConnector', [
                 $redirectUrl = 'https://fed.brid.gy/.well-known/' . $file . '?' . implode('&', $queryString);
 
                 die(header('Location: ' . $redirectUrl));
-            }
-        ]
-    ]
+            },
+        ],
+    ],
 ]);

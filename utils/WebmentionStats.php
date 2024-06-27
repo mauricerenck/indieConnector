@@ -101,7 +101,7 @@ class WebmentionStats
 
             return $summary;
         } catch (Exception $e) {
-            echo 'Query failed: ', $e->getMessage(), "\n";
+            // echo 'Query failed: ', $e->getMessage(), "\n"; FIXME results in panel output before header
             return false;
         }
     }
@@ -139,7 +139,7 @@ class WebmentionStats
 
             return $detailedStats;
         } catch (Exception $e) {
-            echo 'Could not connect to Database: ', $e->getMessage(), "\n";
+            // echo 'Could not connect to Database: ', $e->getMessage(), "\n"; FIXME results in panel output before header
             return false;
         }
     }
@@ -189,7 +189,7 @@ class WebmentionStats
 
             return $targets;
         } catch (Exception $e) {
-            echo 'Could not connect to Database: ', $e->getMessage(), "\n";
+            // echo 'Could not connect to Database: ', $e->getMessage(), "\n"; FIXME results in panel output before header
             return false;
         }
     }
@@ -233,7 +233,7 @@ class WebmentionStats
 
             return $sources;
         } catch (Exception $e) {
-            echo 'Could not connect to Database: ', $e->getMessage(), "\n";
+            // echo 'Could not connect to Database: ', $e->getMessage(), "\n"; FIXME results in panel output before header
             return false;
         }
     }
@@ -275,7 +275,7 @@ class WebmentionStats
 
             return $targets;
         } catch (Exception $e) {
-            echo 'Could not connect to Database: ', $e->getMessage(), "\n";
+            // echo 'Could not connect to Database: ', $e->getMessage(), "\n"; FIXME results in panel output before header
             return false;
         }
     }
