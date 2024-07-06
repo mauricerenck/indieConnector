@@ -33,6 +33,25 @@ final class WebmentionReceiverTest extends TestCaseMocked
         $this->assertEquals($expected, $result);
     }
 
+    // /**
+    //  * @group receiveWebmentions
+    //  * @testdox getDataFromSource - should get and parse mf2 data from source
+    //  */
+    // public function testShouldSendWebmention()
+    // {
+    //     $webmentionReceiver = new WebmentionReceiver();
+    //     $sourceUrl =
+    //         'https://brid.gy/like/mastodon/@mauricerenck@mastodon.online/112474546285378499/111626473261717260';
+
+    //     $result = $webmentionReceiver->getDataFromSource($sourceUrl);
+    //     // NOTE this is for getting mf2 json from a real source
+    //     $mf2Result = $webmentionReceiver->getDataFromSource(
+    //         'https://brid.gy/like/mastodon/@mauricerenck@mastodon.online/112474546285378499/111626473261717260'
+    //     );
+    //     file_put_contents('bridgy-mf2.json', json_encode($mf2Result));
+    //     $this->assertTrue(false);
+    // }
+
     /**
      * @group receiveWebmentions
      * @testdox convertToHookData - should create an array with the correct keys
