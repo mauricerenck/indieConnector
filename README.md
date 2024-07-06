@@ -26,8 +26,10 @@ Use one of these three methods to install the plugin:
 * [Be a Mastodon Instance](docs/activitypub.md) (ActivityPub)
 * [Post to Mastodon](docs/mastodon.md)
 * [Subscribe to the hook](docs/hook.md)
+* [Using webmention.io](docs/webmentionio.md)
+* [Using microformats](docs/microformats.md)
 * [All options](docs/options.md)
-* [Switch from Tratschtante to IndieConnector](docs/switch.md)
+
 ---
 
 ## Features
@@ -41,12 +43,11 @@ Use one of these three methods to install the plugin:
 
 ---
 
-## Roadmap 
+## Roadmap
 
-- [ ] Receive webmentions without webmention.io
+- [x] Receive webmentions without webmention.io
 - [ ] React to webmention delete
-- [ ] Queue webmentions before processing
+- [x] Queue webmentions before processing
 - [ ] Nested indieweb replies
-- [ ] Blocklist for domains
+- [x] Blocklist for domains
 - [ ] Blocklist for users
-
