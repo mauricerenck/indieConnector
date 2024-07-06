@@ -15,7 +15,7 @@ class MastodonSender extends Sender
         private ?string $imagefield = null,
         private ?string $instanceUrl = null,
         private ?string $token = null,
-        private ?bool $enabled = false,
+        private ?bool $enabled = null,
         private ?UrlChecks $urlChecks = null,
         private ?PageChecks $pageChecks = null
     ) {
@@ -59,7 +59,6 @@ class MastodonSender extends Sender
             return false;
         }
 
-        // FIXME move this to the Sender class?
         if (!$this->pageChecks->pageHasEnabledMastodon($page)) {
             return false;
         }
