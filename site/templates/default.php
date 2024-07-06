@@ -13,6 +13,10 @@
 <body>
 <h1><?= $page->title() ?></h1>
 
+<div>
+    <?= $page->text()->kt() ?>
+</div>
+
 <main>
     <div class="h-entry">
       <p class="p-name">Post content goes here...</p>
