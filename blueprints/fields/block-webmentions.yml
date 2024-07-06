@@ -10,13 +10,13 @@ fields:
               de: Webmentions deaktiviert
             - en: Webmentions active
               de: Webmentions aktiviert
-    enableMastodonPosting:
-        label: Mastodon
+    enableExternalPosting:
+        label: External Posting
         type: toggle
         default: true
         width: 1/2
         text:
-            - en: Post on Mastodon deactivated
-              de: Nicht bei Mastodon posten
-            - en: Post on Mastodon
-              de: Bei Mastodon posten
+            - en: Posting deactivated
+              de: Nicht woanders posten
+            - en: Posting enabled
+              de: Woanders posten

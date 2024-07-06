@@ -73,9 +73,9 @@ class PageChecks
         return $status->toBool();
     }
 
-    public function pageHasEnabledMastodon($page)
+    public function pageHasEnabledExternalPosting($page)
     {
-        $status = $page->enableMastodonPosting();
+        $status = $page->enableExternalPosting();
         return !isset($status) || $status->isEmpty() || $status->toBool();
     }
 }

@@ -15,6 +15,9 @@ return [
         if (!$newPage->isDraft() && $oldPage->isDraft()) {
             $mastodonSender = new MastodonSender();
             $mastodonSender->sendPost($newPage);
+
+            $blueskySender = new BlueskySender();
+            $blueskySender->sendPost($newPage);
         }
     },
 
