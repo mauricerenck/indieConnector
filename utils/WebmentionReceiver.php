@@ -26,6 +26,13 @@ class WebmentionReceiver extends Receiver
                 ];
             }
 
+            if (isset($webmention['status']) && $webmention['status'] === 'deleted') {
+                kirby()->trigger('indieConnector.webmention.deleted', [
+                    'targetUrl' => $targetUrl,
+                    'sourceUrl' => $sourceUrl,
+                ]);
+            }
+
             $targetPage = $this->getPageFromUrl($targetUrl);
             $hookData = $this->splitWebmentionDataIntoHooks($webmention);
 
@@ -55,20 +62,15 @@ class WebmentionReceiver extends Receiver
         $responseCode = $request->code();
 
         if ($responseCode === 410) {
-            // TODO DELETED - DO SOMETHING
             return [
                 'status' => 'deleted',
             ];
         }
 
         if ($responseCode === 200) {
-            // TODO NOT FOUND - DO SOMETHING
-
             $sourceBody = $request->content();
             if (empty($sourceBody)) {
-                return [
-                    'status' => 'no content',
-                ];
+                return false;
             }
 
             $mf = Mf2\parse($sourceBody, $sourceUrl);
@@ -76,7 +78,7 @@ class WebmentionReceiver extends Receiver
             return $mf;
         }
 
-        // TODO something is wrong here - return error
+        return false;
     }
 
     public function getWebmentionData($microformats)
