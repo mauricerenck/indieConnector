@@ -18,8 +18,14 @@ class WebmentionStats
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
     }
 
-    public function trackMention(string $target, string $source, string $type, string $image)
-    {
+    public function trackMention(
+        string $target,
+        string $source,
+        string $type,
+        string $image,
+        string $author,
+        string $title
+    ) {
         if ($this->doNotTrackHost($source)) {
             return false;
         }
@@ -30,8 +36,17 @@ class WebmentionStats
             $uniqueHash = md5($target . $source . $type . $mentionDate);
             $this->indieDb->insert(
                 'webmentions',
-                ['id', 'mention_type', 'mention_date', 'mention_source', 'mention_target', 'mention_image'],
-                [$uniqueHash, $type, $mentionDate, $source, $target, $image]
+                [
+                    'id',
+                    'mention_type',
+                    'mention_date',
+                    'mention_source',
+                    'mention_target',
+                    'mention_image',
+                    'author',
+                    'title',
+                ],
+                [$uniqueHash, $type, $mentionDate, $source, $target, $image, $author, $title]
             );
             return true;
         } catch (Exception $e) {
@@ -202,7 +217,7 @@ class WebmentionStats
 
             $result = $this->indieDb->select(
                 'webmentions',
-                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions'],
+                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions, author, title'],
                 'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_source, mention_type;'
             );
 
@@ -212,10 +227,13 @@ class WebmentionStats
                 $targetHash = md5($webmention->mention_source);
 
                 if (!isset($sources[$targetHash])) {
-                    $host = parse_url($webmention->mention_source);
+                    $host = parse_url($webmention->mention_source, PHP_URL_HOST);
+
                     $sources[$targetHash] = [
                         'source' => $webmention->mention_source,
-                        'host' => $host['host'],
+                        'host' => $host,
+                        'title' => $webmention->title,
+                        'author' => !empty($webmention->author) ? $webmention->author : $host,
                         'image' => $webmention->mention_image,
                         'likes' => 0,
                         'replies' => 0,

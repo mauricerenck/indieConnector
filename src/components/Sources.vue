@@ -8,8 +8,11 @@
                 <td>
                     <k-link :to="source.source" :title="source.source" class="k-link-centered">
                         <img :src="source.image" class="avatar" v-if="source.image !== null" />
-                        <span class="shortened-link">{{ source.source }}</span>
+                        <span class="shortened-link">{{ source.author }}</span>
                     </k-link>
+                </td>
+                <td>
+                    {{ source.title }}
                 </td>
                 <td>
                     <div v-bind:class="{ dimmed: source.likes === 0 }">

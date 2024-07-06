@@ -95,7 +95,7 @@ export default {
     }
 
     td:first-child {
-        width: 50%;
+        /* width: 50%; */
     }
 
     td div {

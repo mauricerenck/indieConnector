@@ -67,12 +67,16 @@ return [
     'indieConnector.webmention.received' => function ($webmention) {
         if (option('mauricerenck.indieConnector.stats.enabled', false)) {
             $stats = new WebmentionStats();
+            $receiver = new Receiver();
+            $targetPage = $receiver->getPageFromUrl($webmention['target']);
 
             $stats->trackMention(
-                $webmention['target'],
+                $targetPage->id(),
                 $webmention['source'],
                 $webmention['type'],
-                $webmention['author']['avatar']
+                $webmention['author']['avatar'],
+                $webmention['author']['name'],
+                $webmention['title']
             );
         }
     },
