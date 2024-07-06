@@ -109,7 +109,7 @@ Kirby::plugin('mauricerenck/indieConnector', [
                     'type' => $webmentionIo->getWebmentionType($data),
                     'targetUrl' => $result['urls']['target'],
                     'sourceUrl' => $result['urls']['source'],
-                    'title' => null,
+                    'title' => '',
                     'author' => $webmentionIo->getAuthor($data),
                     'content' => $webmentionIo->getContent($data),
                     'published' => $webmentionIo->getPubDate($data),
