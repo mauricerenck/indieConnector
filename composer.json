@@ -1,7 +1,7 @@
 {
     "name": "mauricerenck/indieconnector",
     "version": "1.10.0",
-    "description": "Kirby Webmentions your plugins can subscribe to",
+    "description": "A Kirby IndieWeb plugin",
     "type": "kirby-plugin",
     "license": "MIT",
     "homepage": "https://github.com/mauricerenck/indieConnector",
@@ -11,15 +11,21 @@
             "email": "hello@maurice-renck.de"
         }
     ],
+    "support": {
+        "docs": "https://github.com/mauricerenck/indieConnector/blob/main/README.md",
+        "source": "https://github.com/mauricerenck/indieConnector"
+    },
     "autoload": {
         "psr-4": {
-            "mauricerenck\\IndieConnector\\": "utils/"
+            "mauricerenck\\IndieConnector\\": "lib/"
         },
-        "classmap": ["utils"]
+        "classmap": [
+            "lib"
+        ]
     },
     "require": {
         "getkirby/composer-installer": "^1.2",
-        "php": ">=8.0.0",
+        "php": ">=8.2.0",
         "indieweb/mention-client": "^1.2",
         "ext-curl": "*",
         "mf2/mf2": "^0.5.0",
@@ -34,7 +40,7 @@
         "mauricerenck/tratschtante": "*"
     },
     "suggests": {
-        "mauricerenck/komments": "1.12"
+        "mauricerenck/komments": "2.0.5"
     },
     "config": {
         "optimize-autoloader": true,
@@ -43,10 +49,17 @@
         }
     },
     "scripts": {
-        "start": ["Composer\\Config::disableProcessTimeout", "@php -S localhost:8000 kirby/router.php"],
+        "start": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php -S localhost:8000 kirby/router.php"
+        ],
         "test": "vendor/bin/phpunit --testdox",
         "build-test-package": "git archive HEAD -o indieConnector.zip --worktree-attributes",
         "build-composer": "composer install --no-dev --optimize-autoloader",
-        "build-release": ["composer test tests", "composer install --no-dev --optimize-autoloader", "npm run build"]
+        "build-release": [
+            "composer test tests",
+            "composer install --no-dev --optimize-autoloader",
+            "npm run build"
+        ]
     }
 }

@@ -5,17 +5,16 @@ namespace mauricerenck\IndieConnector;
 use Kirby;
 use Kirby\Http\Response;
 
-@require_once __DIR__ . '/lib/indieweb-comments.php';
+@require_once __DIR__ . '/dependencies/indieweb-comments.php';
 @include_once __DIR__ . '/vendor/autoload.php';
 
 Kirby::plugin('mauricerenck/indieConnector', [
-    'options' => require_once __DIR__ . '/internal/options.php',
-    'hooks' => require_once __DIR__ . '/internal/hooks.php',
-    'areas' => require_once __DIR__ . '/components/areas.php',
+    'hooks' => require_once __DIR__ . '/plugin/hooks.php',
+    'areas' => require_once __DIR__ . '/plugin/areas.php',
     'snippets' => [
         'activitypub-wm' => __DIR__ . '/snippets/activitypub-webmention.php',
     ],
-    'tags' => require_once __DIR__ . '/components/kirbytags.php',
+    'tags' => require_once __DIR__ . '/plugin/kirbytags.php',
     'blueprints' => [
         'indieconnector/fields/webmentions' => __DIR__ . '/blueprints/fields/block-webmentions.yml',
     ],
@@ -30,13 +29,6 @@ Kirby::plugin('mauricerenck/indieConnector', [
                 }
 
                 $this->next();
-            },
-        ],
-        [
-            'pattern' => '(indieConnector|indieconnector)/webmention',
-            'method' => 'GET',
-            'action' => function () {
-                // TODO show a form as a fallback
             },
         ],
         [
