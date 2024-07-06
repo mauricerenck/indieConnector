@@ -20,9 +20,6 @@ sections:
             blockeditor:
                 type: blocks
                 label: Blocks
-            description:
-                type: text
-                label: Description
             mastodonimage:
                 type: files
                 max: 1
