@@ -30,6 +30,10 @@ class WebmentionStats
             return false;
         }
 
+        if ($this->webmentionIsUpdate($source, $target)) {
+            return false;
+        }
+
         $mentionDate = $this->indieDb->getFormattedDate();
 
         try {
@@ -331,6 +335,17 @@ class WebmentionStats
         }
 
         return in_array($targetHost, $this->doNotTrack);
+    }
+
+    public function webmentionIsUpdate(string $source, string $target)
+    {
+        $result = $this->indieDb->select(
+            'webmentions',
+            ['mention_type'],
+            'WHERE mention_source = "' . $source . '" AND mention_target = "' . $target . '";'
+        );
+
+        return $result->num_rows > 0;
     }
 
     private function mentionTypeToJsonType(string $type): string
