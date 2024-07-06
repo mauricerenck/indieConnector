@@ -78,7 +78,7 @@ Three field types are supported (and should work for most cases
 2. layout - the kirby layout field type (can contain blocks)
 3. block - the kirby block field type
 
-The fieldname is the name you use in your blueprint and in your templates to output the value. 
+The fieldname is the name you use in your blueprint and in your templates to output the value.
 
 So if you use the blockeditor and your blueprint field is named `pageblocks` you have to set `pageblocks:block`.
 
@@ -91,3 +91,18 @@ You can change the filename of the json file including the processed url by sett
 ```
 
 Please make sure to do that upfront, existing files won't be renamed and webmentions will be sent again.
+
+## Sending different types of webmentions
+
+You can send different types of webmentions. For some of them IndieConnector comes with some kirbytags. You can use them in your content to send a specific type of webmention:
+
+```
+(like: https://example.com)
+(bookmark: https://example.com)
+(reply: https://example.com)
+(repost: https://example.com)
+```
+
+All those tags function as the default Kirby link Kirbytag and will simply add a specific tag to it. You can use all the other options of the link tag as well. See https://getkirby.com/docs/reference/text/kirbytags/link
+
+You can send even more different kinds of webmentions. [Have a look at the Microformats you can use](microformats.md).
