@@ -297,6 +297,7 @@ final class WebmentionSenderTest extends TestCaseMocked
         ];
 
         $result = $this->senderUtilsMock->urlWasAlreadyProcessed('https://processed-url-2.tld', $outboxData);
+
         $this->assertTrue($result);
     }
 

@@ -14,6 +14,7 @@ class WebmentionSender extends Sender
         private ?bool $activeWebmentions = null,
         private ?int $maxRetries = null,
         private ?int $markDeletedPages = null,
+        private ?string $outboxFilename = null,
 
         private $mentionClient = null,
         private ?UrlChecks $urlChecks = null,
@@ -22,13 +23,25 @@ class WebmentionSender extends Sender
     ) {
         parent::__construct();
 
-        $this->activeWebmentions = $activeWebmentions ?? option('mauricerenck.indieConnector.sendWebmention', true);
+        $this->activeWebmentions = $activeWebmentions ?? option('mauricerenck.indieConnector.send.enabled', true);
         $this->maxRetries = $maxRetries ?? option('mauricerenck.indieConnector.send.maxRetries', 3);
         $this->markDeletedPages = $markDeletedPages ?? option('mauricerenck.indieConnector.send.markDeleted', false);
+        $this->outboxFilename =
+            $outboxFilename ?? option('mauricerenck.indieConnector.send.outboxFilename', 'indieConnector.json');
+
         $this->mentionClient = new MentionClient();
         $this->urlChecks = $urlChecks ?? new UrlChecks();
         $this->pageChecks = $pageChecks ?? new PageChecks();
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
+
+        // backwards compatibility
+        if (!$activeWebmentions && option('mauricerenck.indieConnector.sendWebmention', false)) {
+            $this->activeWebmentions = option('mauricerenck.indieConnector.sendWebmention');
+        }
+
+        if (!$outboxFilename && option('mauricerenck.indieConnector.outboxFilename', false)) {
+            $this->outboxFilename = option('mauricerenck.indieConnector.outboxFilename');
+        }
     }
 
     public function sendWebmentions($page)
@@ -202,7 +215,7 @@ class WebmentionSender extends Sender
 
     public function readOutbox($page): array
     {
-        $outboxFile = $page->file(option('mauricerenck.indieConnector.outboxFilename', 'indieConnector.json'));
+        $outboxFile = $page->file($this->outboxFilename);
 
         if (is_null($outboxFile)) {
             return [];
@@ -217,11 +230,9 @@ class WebmentionSender extends Sender
 
     public function writeOutbox($urls, $page)
     {
-        $outboxFile = $page->file(option('mauricerenck.indieConnector.outboxFilename', 'indieConnector.json'));
+        $outboxFile = $page->file($this->outboxFilename);
 
-        $filePath = is_null($outboxFile)
-            ? $page->root() . '/' . option('mauricerenck.indieConnector.outboxFilename', 'indieConnector.json')
-            : $outboxFile->root();
+        $filePath = is_null($outboxFile) ? $page->root() . '/' . $this->outboxFilename : $outboxFile->root();
 
         Json::write($filePath, $urls);
     }

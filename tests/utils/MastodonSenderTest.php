@@ -46,7 +46,7 @@ final class MastodonSenderTest extends TestCaseMocked
     {
         $page = $this->getPageMock(false, [
             'description' => 'This is a test description',
-            'enablemastodonposting' => false,
+            'enableexternalposting' => false,
         ]);
         $this->urlCheckMock->shouldReceive('isLocalUrl')->andReturn(false);
 

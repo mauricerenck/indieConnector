@@ -10,13 +10,22 @@ class PageChecks
         private ?array $allowedPostTemplates = null,
         private ?array $blockedPostTemplates = null
     ) {
-        $this->allowedTemplates = $allowedTemplates ?? option('mauricerenck.indieConnector.allowedTemplates', []);
-        $this->blockedTemplates = $blockedTemplates ?? option('mauricerenck.indieConnector.blockedTemplates', []);
+        $this->allowedTemplates = $allowedTemplates ?? option('mauricerenck.indieConnector.send.allowedTemplates', []);
+        $this->blockedTemplates = $blockedTemplates ?? option('mauricerenck.indieConnector.send.blockedTemplates', []);
 
         $this->allowedPostTemplates =
             $allowedPosseTemplates ?? option('mauricerenck.indieConnector.post.allowedTemplates', []);
         $this->blockedPostTemplates =
             $blockedPosseTemplates ?? option('mauricerenck.indieConnector.post.blockedTemplates', []);
+
+        // backwards compatibility
+        if (!$allowedTemplates && option('mauricerenck.indieConnector.allowedTemplates', false)) {
+            $this->allowedTemplates = option('mauricerenck.indieConnector.allowedTemplates');
+        }
+
+        if (!$blockedTemplates && option('mauricerenck.indieConnector.blockedTemplates', false)) {
+            $this->blockedTemplates = option('mauricerenck.indieConnector.blockedTemplates');
+        }
     }
 
     public function pageFullfillsCriteria($page)

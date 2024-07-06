@@ -26,21 +26,35 @@ final class WebmentionStatsTest extends TestCaseMocked
         $source = 'source';
         $target = 'target';
         $image = 'image';
+        $author = 'author';
+        $title = 'title';
+
         $uniqueHash = md5($target . $source . $type . $mentionDate);
 
         $this->databaseMock->shouldReceive('getFormattedDate')->once()->andReturn('0');
         $this->databaseMock->shouldReceive('connect')->once()->andReturn(true);
+        $this->databaseMock->shouldReceive('select')->once()->andReturn(true);
+        $this->databaseMock->shouldReceive('select')->once()->andReturn(true);
         $this->databaseMock
             ->shouldReceive('insert')
             ->with(
                 'webmentions',
-                ['id', 'mention_type', 'mention_date', 'mention_source', 'mention_target', 'mention_image'],
-                [$uniqueHash, $type, $mentionDate, $source, $target, $image]
+                [
+                    'id',
+                    'mention_type',
+                    'mention_date',
+                    'mention_source',
+                    'mention_target',
+                    'mention_image',
+                    'author',
+                    'title',
+                ],
+                [$uniqueHash, $type, $mentionDate, $source, $target, $image, $author, $title]
             )
             ->once()
             ->andReturn(true);
 
-        $result = $queueHandler->trackMention('target', 'source', 'like-of', 'image');
+        $result = $queueHandler->trackMention('target', 'source', 'like-of', 'image', 'author', 'title');
         $this->assertTrue($result);
     }
 

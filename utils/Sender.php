@@ -13,13 +13,14 @@ class Sender
     ) {
         $this->fieldsToParseUrls =
             $fieldsToParseUrls ??
-            option('mauricerenck.indieConnector.send-mention-url-fields', [
-                'text:text',
-                'description:text',
-                'intro:text',
-            ]);
+            option('mauricerenck.indieConnector.send.url-fields', ['text:text', 'description:text', 'intro:text']);
         $this->activityPubBridge = $activityPubBridge ?? option('mauricerenck.indieConnector.activityPubBridge', false);
         $this->urlChecks = $urlChecks ?? new UrlChecks();
+
+        // backwards compatibility
+        if (!$fieldsToParseUrls && option('mauricerenck.indieConnector.send-mention-url-fields', false)) {
+            $this->fieldsToParseUrls = option('mauricerenck.indieConnector.send-mention-url-fields');
+        }
     }
 
     public function isValidTarget(string $url)

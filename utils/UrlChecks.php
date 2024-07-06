@@ -55,7 +55,12 @@ class UrlChecks
         $urlHost = parse_url($url, PHP_URL_HOST);
         $host = kirby()->environment()->host();
 
-        return option('mauricerenck.indieConnector.skipSameHost', true) && $urlHost === $host;
+        // backwards compatibility
+        $skip =
+            option('mauricerenck.indieConnector.skipSameHost', null) ??
+            option('mauricerenck.indieConnector.send.skipSameHost', true);
+
+        return $skip && $urlHost === $host;
     }
 
     public function isBlockedSource(string $url): bool
