@@ -19,18 +19,36 @@ class MastodonSender extends Sender
         private ?UrlChecks $urlChecks = null,
         private ?PageChecks $pageChecks = null
     ) {
-        $this->tootMaxLength = $tootMaxLength ?? option('mauricerenck.indieConnector.mastodon-text-length', 500);
         $this->textfield = $textfield ?? option('mauricerenck.indieConnector.post.textfield', 'description');
         $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
-        $this->instanceUrl = $instanceUrl ?? option('mauricerenck.indieConnector.mastodon-instance-url', false);
-        $this->token = $token ?? option('mauricerenck.indieConnector.mastodon-bearer', false);
-        $this->enabled = $enabled ?? option('mauricerenck.indieConnector.sendMastodon', false);
+
+        $this->enabled = $enabled ?? option('mauricerenck.indieConnector.mastodon.enabled', false);
+        $this->instanceUrl = $instanceUrl ?? option('mauricerenck.indieConnector.mastodon.instance-url', false);
+        $this->token = $token ?? option('mauricerenck.indieConnector.mastodon.bearer', false);
+        $this->tootMaxLength = $tootMaxLength ?? option('mauricerenck.indieConnector.mastodon.text-length', 500);
+
         $this->urlChecks = $urlChecks ?? new UrlChecks();
         $this->pageChecks = $pageChecks ?? new PageChecks();
 
         // backwards compatibility
-        if (!$textfield && option('mauricerenck.indieConnector.mastodon-text-field', null)) {
+        if (!$textfield && option('mauricerenck.indieConnector.mastodon-text-field', false)) {
             $this->textfield = option('mauricerenck.indieConnector.mastodon-text-field');
+        }
+
+        if (!$tootMaxLength && option('mauricerenck.indieConnector.mastodon-text-length', false)) {
+            $this->tootMaxLength = option('mauricerenck.indieConnector.mastodon-text-length');
+        }
+
+        if (!$instanceUrl && option('mauricerenck.indieConnector.mastodon-instance-url', false)) {
+            $this->instanceUrl = option('mauricerenck.indieConnector.mastodon-instance-url');
+        }
+
+        if (!$token && option('mauricerenck.indieConnector.mastodon-bearer', false)) {
+            $this->token = option('mauricerenck.indieConnector.mastodon-bearer');
+        }
+
+        if (!$enabled && option('mauricerenck.indieConnector.sendMastodon', false)) {
+            $this->enabled = option('mauricerenck.indieConnector.sendMastodon');
         }
     }
 
@@ -59,7 +77,7 @@ class MastodonSender extends Sender
             return false;
         }
 
-        if (!$this->pageChecks->pageHasEnabledMastodon($page)) {
+        if (!$this->pageChecks->pageHasEnabledExternalPosting($page)) {
             return false;
         }
 
@@ -73,10 +91,7 @@ class MastodonSender extends Sender
                 : Str::short($page->title(), $trimTextPosition);
             $message .= "\n" . $pageUrl;
 
-            $headers = [
-                'Authorization: Bearer ' . option('mauricerenck.indieConnector.mastodon-bearer'),
-                'Content-Type: application/json',
-            ];
+            $headers = ['Authorization: Bearer ' . $this->token, 'Content-Type: application/json'];
 
             $requestBody = [
                 'status' => $message,
