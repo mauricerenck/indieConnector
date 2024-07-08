@@ -1,12 +1,19 @@
 # Kirby IndieConnector
-#### Send and receive Webmentions, send Mastodon posts or act like an ActivityPub instance
+#### Send and receive Webmentions, send Mastodon and Bluesky posts or act like an ActivityPub instance
 
 ![GitHub release](https://img.shields.io/github/release/mauricerenck/indieConnector.svg?maxAge=1800) ![License](https://img.shields.io/github/license/mashape/apistatus.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-4%2B-black.svg)
 
 ---
-IndieConnector receives and sends Webmentions. It can also post to Mastodon when a new page is published and act like a ActivityPub Instance (using fed.brid.gy).
+IndieConnector is your interface to the IndieWeb. It'll help you to:
+
+- Receive Webmentions
+- Send Webmentions
+- Post to Mastodon
+- Post to Bluesky
+- Act like a ActivityPub Instance
 
 This plugins handles all the stuff around Webmentions and then normalizes the format and triggers a hook. Other plugins can then subscribe to this hook and use the data.
+
 If you want Webmentions to be shown on your pages, you have to use additional plugins (or write your own) which use IndieConnector to handle Webmentions. For example the [Komments plugin](https://github.com/mauricerenck/komments) which will then show received webmentions as a comment (or in any other way you wish).
 
 ---
@@ -25,7 +32,7 @@ Use one of these three methods to install the plugin:
 * [Sending Webmentions](docs/sending.md)
 * [Activate the Panel view](docs/panel-view.md)
 * [Be a Mastodon Instance](docs/activitypub.md) (ActivityPub)
-* [Post to Mastodon](docs/mastodon.md)
+* [Post to Mastodon or Bluesky](docs/mastodon.md)
 * [Subscribe to the hook](docs/hook.md)
 * [Using webmention.io](docs/webmentionio.md)
 * [Using microformats](docs/microformats.md)
@@ -33,22 +40,11 @@ Use one of these three methods to install the plugin:
 
 ---
 
-## Features
-
-- Receive Webmentions on your site
-- Send Webmentions from your site
-- Shows a Webmention overview in the panel
-- Propagates Webmentions via Hook so other plugins can subscribe and use them
-- Send updates to mastodon (toot)
-- Act as a ActivityPub Instance (via fed.bridgy)
-
----
-
 ## Roadmap
 
-- [x] Receive webmentions without webmention.io
-- [ ] React to webmention delete
-- [x] Queue webmentions before processing
+- [ ] Send Webmentions and Posts asynchronously
 - [ ] Nested indieweb replies
-- [x] Blocklist for domains
-- [ ] Blocklist for users
+- [ ] Blocklist for users on Mastodon and Bluesky
+- [ ] Manual post to Mastodon and Bluesky
+- [ ] Manual queue cleanup
+- [ ] Block hosts from within the panel
