@@ -23,6 +23,7 @@ Use one of these three methods to install the plugin:
 
 * [Receiving Webmentions](docs/receiving.md)
 * [Sending Webmentions](docs/sending.md)
+* [Activate the Panel view](docs/panel-view.md)
 * [Be a Mastodon Instance](docs/activitypub.md) (ActivityPub)
 * [Post to Mastodon](docs/mastodon.md)
 * [Subscribe to the hook](docs/hook.md)

@@ -2,50 +2,48 @@
 
 ## Base Setup
 
-To "connect" this plugin to webmention.io you have to set a callback secret in your config.php
+IndieConnector by default is set up to receive webmentions. You have to add the the webmention endpoint to your site. This is done by adding the following code to your HTML `<head></head>`:
 
-```
-[
-    'mauricerenck.indieConnector.secret' => 'my-secret',
-]
+```php
+<?php snippet('webmention-endpoint'); ?>
 ```
 
-This could be any string, think of it as a sort of password.
+This is all you need to receive webmentions.
 
-## Add the webmention.io endpoints
+**Please keep in mind that this plugin does not store or display webmentions. You'll need an additional plugin for that.**
 
-Add webmention.io endpoints to your HTML `<head></head>`. Those will look like this and you will get them from webmention.io when you login to your account:
+## Enabling the queue
 
-```
-<!-- webmention -->
-<link rel="pingback" href="https://webmention.io/YOUR-ACCOUNT/xmlrpc" />
-<link rel="webmention" href="https://webmention.io/YOUR-ACCOUNT/webmention" />
-```
-
-In order to be allowed to use webmention hooks, you have to receive at least one webmention on your site before. So after adding those headers to your site, you have to send a webmention to yourself.
-To do so, IndieConnector has an endpoint ready for you:
-
-`https://YOUR-DOMAIN.TLD/indieconnector/send-test-mention/YOUR-SECRET`
-
-Replace the domain with yours and `YOUR-SECRET` with the secret you defined in your config.php. This way nobody else can use this endpoint. The result should be a sent webmention. You should be able to see it on your webmention.io dashboard. This should also enable the webhook functionality of webmention.io.
-
-Please make sure not to share this url! Everybody knowing your secret would be able to use the IndieConnector Webmention endpoint. Only webmention.io should do so.
-
-## Enable Webmention.io Hook
-
--   Go to your webmention.io account -> Webhooks.
--   Enter the IndieConnector endpoint: `https://your-url.tld/indieconnector/webhook/webmentionio`
--   Enter the callback secret you set in your config.php
-
-## Enable panel overview
-
-_This feature required sqlite to be available by your hoster. Most hosters support this by default, but you might want to make sure it's enabled._
-
-IndieConnector comes with a nice overview of all your received webmentions. To enable this feature, set the `stats` option in your `config.php` to true and set a path where the database file should be stored. **Make sure this path exists, it will not be created**. The path is relative to your kirby root.
+If you receive a lot of webmentions, you might want to enable the queue feature. This will store all incoming webmentions in a queue and process them in the background. To enable this feature, set the `queue` option in your `config.php` to true.
 
 Example setup:
 
+```php
+'mauricerenck.indieConnector.queue.enabled' => true,
+'mauricerenck.indieConnector.secret' => 'your-very-secret',
 ```
-'mauricerenck.indieConnector.stats.enabled' => true,
-'mauricerenck.indieConnector.sqlitePath' => 'content/.sqlite/',
+
+If for some reason an entry cannot be processed, IndieConnector will retry five times before marking it as failed. You can change this number by setting the `retries` option in your `config.php`.
+
+Example setup:
+
+```php
+'mauricerenck.indieConnector.queue.retries' => 3,
 ```
+
+If you enable the queue, you have to set up a cronjob to process the queue. Processing is triggered by sending a **POST** request to the `indieconnector/queue` endpoint. The body needs to include your secret and the amount of entries you want to process. The amount of entries is optional and defaults to 10.:
+
+```json
+{
+  "limit": "2",
+  "secret": "your-very-secret"
+}
+```
+
+## Blocking sources
+
+Maybe you don't want to receive webmentions from certain sources. You can block these sources by setting the `receive.blockedSources` option in your `config.php`. This option should be an array of URLs. You can either block the whole domain or a specific URL.
+
+## Using HTML content
+
+By default IndieConnector will only use the `text` property of the webmention. If you want to use the `html` property instead, you can set the `receive.useHtmlContent` option in your `config.php` to true. I would not recommend this, as it can lead to security issues.

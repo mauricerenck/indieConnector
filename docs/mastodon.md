@@ -1,12 +1,83 @@
-# Mastodon
+# Posting to Mastodon or Bluesky
 
-If you want to post a toot when a new page is published, you can do so:
+You can enable automatically posting to Mastodon or Bluesky when a new page is published. IndieConnector will then create a post with a short description and a link to the page.
 
+## General setup
+
+In order to post to Mastodon or Bluesky, you have to setup some fields in your `config.php`. The textfield is the field that will be used as the text for the post. And if you want to also post an image, you have to define an image field:
+
+```php
+'mauricerenck.indieConnector.post.textfield' => 'description',
+'mauricerenck.indieConnector.post.imagefield' => 'postImage',
 ```
-'mauricerenck.indieConnector.sendMastodon' => true,
-'mauricerenck.indieConnector.mastodon-bearer' => 'my-secret-token',
-'mauricerenck.indieConnector.mastodon-instance-url' => 'https://mastodon.online/api/v1/statuses',
-'mauricerenck.indieConnector.mastodon-text-field' => 'description',
+
+The image field must be of type `files` and can only inlcude one image. The image will be uploaded to Mastodon or Bluesky:
+
+```yaml
+postImage:
+  label: Post Image
+  type: files
+  multiple: false
 ```
 
-Insert the url of the instance your account runs on. You have to get an Bearer Token, you should be getting this from your instance, too. Go to your account settings, there should be an entry like `development` or `api` in the menu. Create a new app and set write access. Copy the token you get and use it here. You can also set a source field for the text which will be used in your toot. This text will be shortened if it's too long and the url of your page will be appended. 
+## Mastodon
+
+If you want to create a Mastdon post when a new page is published, you can do so by setting the following options in your `config.php`:
+
+```php
+'mauricerenck.indieConnector.post.mastodon.enabled' => true,
+'mauricerenck.indieConnector.post.mastodon.bearer' => 'YOUR-ACCESS-TOKEN',
+'mauricerenck.indieConnector.post.mastodon.instance-url' => 'https://mastodon.tld',
+```
+
+Create your own access token by going to your Mastodon account settings and creating a new app. Set the app to write access and copy the token. The instance url is the url of your Mastodon instance.
+
+### Text length
+
+Depending on your Mastodon instance the text length may vary. The default is 500. You can set it via the following option:
+
+```php
+'mauricerenck.indieConnector.post.mastodon.text-length' => 500,
+```
+
+## Bluesky
+
+If you want to create a Bluesky post when a new page is published, you can do so by setting the following options in your `config.php`:
+
+```php
+'mauricerenck.indieConnector.post.mastodon.enabled' => true,
+'mauricerenck.indieConnector.post.mastodon.bluesky.handle' => 'USERNAME.bsky.social',
+'mauricerenck.indieConnector.post.mastodon.password' => 'YOUR-APP-PASSWORD',
+```
+
+To get your app password, go to your Bluesky account settings and go to "App Passwords". Create a new password and copy it.
+
+## Prevent posting in certain cases
+
+You may not always want to post to Mastodon or Bluesky, for example when you create pages like your privacy policy. You can prevent posting by setting the following option in your `config.php`:
+
+```php
+'mauricerenck.indieConnector.post.blockedTemplates' => ['privacy-policy'],
+```
+
+This will prevent posting when the template of the page is `privacy-policy`. You can add as many templates as you want.
+
+You could also turn things around and only allow posting for certain templates:
+
+```php
+'mauricerenck.indieConnector.post.allowedTemplates' => ['note', 'article'],
+```
+
+This way only pages with the templates `note` or `article` will be posted to Mastodon or Bluesky.
+
+### Per page
+
+In addition you can also disable posting on a per page basis by setting the following field in the page blueprint:
+
+```yaml
+fields:
+  indieConnector:
+    extends: indieconnector/fields/webmentions
+```
+
+This will show toggle in the panel that allows you to disable posting for this page.
