@@ -11,6 +11,7 @@ Kirby::plugin('mauricerenck/indieConnector', [
     'hooks' => require_once __DIR__ . '/plugin/hooks.php',
     'areas' => require_once __DIR__ . '/plugin/areas.php',
     'snippets' => [
+        'webmention-endpoint' => __DIR__ . '/snippets/webmention-endpoint.php',
         'activitypub-wm' => __DIR__ . '/snippets/activitypub-webmention.php',
     ],
     'tags' => require_once __DIR__ . '/plugin/kirbytags.php',
