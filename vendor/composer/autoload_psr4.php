@@ -6,6 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'mauricerenck\\IndieConnector\\' => array($baseDir . '/utils'),
+    'mauricerenck\\IndieConnector\\' => array($baseDir . '/lib'),
+    'cjrasmussen\\BlueskyApi\\' => array($vendorDir . '/cjrasmussen/bluesky-api/src'),
     'Kirby\\' => array($vendorDir . '/getkirby/composer-installer/src'),
 );

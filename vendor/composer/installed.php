@@ -10,6 +10,15 @@
         'dev' => false,
     ),
     'versions' => array(
+        'cjrasmussen/bluesky-api' => array(
+            'pretty_version' => '2.0.1',
+            'version' => '2.0.1.0',
+            'reference' => 'ed8faf16139503a60f3960aa940760b49e89788c',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../cjrasmussen/bluesky-api',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'getkirby/composer-installer' => array(
             'pretty_version' => '1.2.1',
             'version' => '1.2.1.0',
