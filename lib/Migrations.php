@@ -15,7 +15,7 @@ class Migrations
         $queueEnabled = option('mauricerenck.indieConnector.queue.enabled', false);
 
         if ($statsEnabled || $queueEnabled) {
-            $pluginPath = str_replace('utils', '', __DIR__);
+            $pluginPath = str_replace('lib', '', __DIR__);
             $migrationPath = $pluginPath . '/migrations/';
 
             if (!file_exists(option('mauricerenck.indieConnector.sqlitePath', '.sqlite/'))) {
