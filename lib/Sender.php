@@ -113,6 +113,46 @@ class Sender
         return join('', $htmlParts);
     }
 
+    public function getPostTargetUrl($target, $page)
+    {
+        $outbox = $this->readOutbox($page);
+
+        $posts = array_filter($outbox['posts'], function ($post) use ($target) {
+            return $post['target'] === $target;
+        });
+
+        $firstEntry = reset($posts);
+        return $firstEntry['url'] ?? null;
+    }
+
+    public function alreadySentToTarget($target, $page)
+    {
+        $post = $this->getPostTargetUrl($target, $page);
+
+        return !is_null($post);
+    }
+
+    public function updateExternalPosts($url, $statusCode, $target, $page)
+    {
+        $outbox = $this->readOutbox($page);
+
+        $status = $statusCode === 200 ? 'success' : 'error';
+        $newPost = [
+            'url' => $url,
+            'status' => $status,
+            'target' => $target,
+            'date' => date('Y-m-d H:i:s'),
+            'retries' => 0,
+        ];
+
+        $newPosts = array_merge([$newPost], $outbox['posts']);
+        $outbox['posts'] = $newPosts;
+
+        $this->writeOutbox($outbox, $page);
+
+        return $outbox;
+    }
+
     public function convertProcessedUrlsToV2($processedUrls)
     {
         $processedUrlsV2 = [];

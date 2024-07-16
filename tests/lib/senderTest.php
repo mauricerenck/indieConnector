@@ -303,4 +303,76 @@ final class senderTest extends TestCaseMocked
         $result = $this->senderUtilsMock->convertProcessedUrlsToV2($urls);
         $this->assertEquals($expect, $result);
     }
+
+    /**
+     * @group mastodonSender
+     * @testdox getPostTargetUrl - should get Mastodon URL
+     */
+    public function testShouldGetMastodonUrl()
+    {
+        $page = $this->getPageMock();
+
+        $outbox = [
+            'version' => 2,
+            'webmentions' => [],
+            'posts' => [
+                [
+                    'url' => 'https://mastodon.example.com',
+                    'status' => 'success',
+                    'target' => 'mastodon',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
+                [
+                    'url' => 'https://bluesky.example.com',
+                    'status' => 'success',
+                    'target' => 'bluesky',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
+            ],
+        ];
+
+        $this->senderUtilsMock->shouldReceive('readOutbox')->andReturn($outbox);
+
+        $result = $this->senderUtilsMock->getPostTargetUrl('mastodon', $page);
+
+        $this->assertEquals($result, 'https://mastodon.example.com');
+    }
+
+    /**
+     * @group mastodonSender
+     * @testdox getPostTargetUrl - should get Bluesky URL
+     */
+    public function testShouldGetblueskyUrl()
+    {
+        $page = $this->getPageMock();
+
+        $outbox = [
+            'version' => 2,
+            'webmentions' => [],
+            'posts' => [
+                [
+                    'url' => 'https://mastodon.example.com',
+                    'status' => 'success',
+                    'target' => 'mastodon',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
+                [
+                    'url' => 'https://bluesky.example.com',
+                    'status' => 'success',
+                    'target' => 'bluesky',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
+            ],
+        ];
+
+        $this->senderUtilsMock->shouldReceive('readOutbox')->andReturn($outbox);
+
+        $result = $this->senderUtilsMock->getPostTargetUrl('bluesky', $page);
+
+        $this->assertEquals($result, 'https://bluesky.example.com');
+    }
 }

@@ -20,6 +20,8 @@ class BlueskySender extends Sender
         private ?UrlChecks $urlChecks = null,
         private ?PageChecks $pageChecks = null
     ) {
+        parent::__construct();
+
         $this->textfield = $textfield ?? option('mauricerenck.indieConnector.post.textfield', 'description');
         $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
 
@@ -57,6 +59,10 @@ class BlueskySender extends Sender
         }
 
         if (!$this->pageChecks->pageHasEnabledExternalPosting($page)) {
+            return false;
+        }
+
+        if ($this->alreadySentToTarget('bluesky', $page)) {
             return false;
         }
 
@@ -115,6 +121,7 @@ class BlueskySender extends Sender
 
             $response = $bluesky->request('POST', 'com.atproto.repo.createRecord', $args);
 
+            $this->updatePosts($response->uri, 200, $page);
             return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -181,5 +188,10 @@ class BlueskySender extends Sender
     {
         $urlLength = Str::length($url);
         return $this->maxPostLength - $urlLength - 2;
+    }
+
+    public function updatePosts($url, $statusCode, $page)
+    {
+        return $this->updateExternalPosts($url, $statusCode, 'bluesky', $page);
     }
 }

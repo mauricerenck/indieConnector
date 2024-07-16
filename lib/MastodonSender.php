@@ -83,6 +83,10 @@ class MastodonSender extends Sender
             return false;
         }
 
+        if ($this->alreadySentToTarget('mastodon', $page)) {
+            return false;
+        }
+
         try {
             $pageUrl = $page->url();
             $trimTextPosition = $this->calculatePostTextLength($page->url());
@@ -195,22 +199,6 @@ class MastodonSender extends Sender
 
     public function updatePosts($url, $statusCode, $page)
     {
-        $outbox = $this->readOutbox($page);
-
-        $status = $statusCode === 200 ? 'success' : 'error';
-        $newPost = [
-            'url' => $url,
-            'status' => $status,
-            'target' => 'mastodon',
-            'date' => date('Y-m-d H:i:s'),
-            'retries' => 0,
-        ];
-
-        $newPosts = array_merge([$newPost], $outbox['posts']);
-        $outbox['posts'] = $newPosts;
-
-        $this->writeOutbox($outbox, $page);
-
-        return $outbox;
+        return $this->updateExternalPosts($url, $statusCode, 'mastodon', $page);
     }
 }
