@@ -19,4 +19,5 @@ Kirby::plugin('mauricerenck/indieConnector', [
         'indieconnector/fields/webmentions' => __DIR__ . '/blueprints/fields/block-webmentions.yml',
     ],
     'routes' => require_once __DIR__ . '/plugin/routes.php',
+    'pageMethods' => require_once __DIR__ . '/plugin/page-methods.php',
 ]);

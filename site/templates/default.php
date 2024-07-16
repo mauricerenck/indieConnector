@@ -17,6 +17,10 @@
     <?= $page->text()->kt() ?>
 </div>
 
+<div>
+    <?= $page->icGetMastodonUrl() ?>
+</div>
+
 <main>
     <div class="h-entry">
       <p class="p-name">Post content goes here...</p>
