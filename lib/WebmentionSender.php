@@ -3,7 +3,6 @@
 namespace mauricerenck\IndieConnector;
 
 use IndieWeb\MentionClient;
-use Kirby\Data\Json;
 use Exception;
 
 class WebmentionSender extends Sender
@@ -14,7 +13,6 @@ class WebmentionSender extends Sender
         private ?bool $activeWebmentions = null,
         private ?int $maxRetries = null,
         private ?int $markDeletedPages = null,
-        private ?string $outboxFilename = null,
 
         private $mentionClient = null,
         private ?UrlChecks $urlChecks = null,
@@ -26,8 +24,6 @@ class WebmentionSender extends Sender
         $this->activeWebmentions = $activeWebmentions ?? option('mauricerenck.indieConnector.send.enabled', true);
         $this->maxRetries = $maxRetries ?? option('mauricerenck.indieConnector.send.maxRetries', 3);
         $this->markDeletedPages = $markDeletedPages ?? option('mauricerenck.indieConnector.send.markDeleted', false);
-        $this->outboxFilename =
-            $outboxFilename ?? option('mauricerenck.indieConnector.send.outboxFilename', 'indieConnector.json');
 
         $this->mentionClient = new MentionClient();
         $this->urlChecks = $urlChecks ?? new UrlChecks();
@@ -37,10 +33,6 @@ class WebmentionSender extends Sender
         // backwards compatibility
         if (!$activeWebmentions && option('mauricerenck.indieConnector.sendWebmention', false)) {
             $this->activeWebmentions = option('mauricerenck.indieConnector.sendWebmention');
-        }
-
-        if (!$outboxFilename && option('mauricerenck.indieConnector.outboxFilename', false)) {
-            $this->outboxFilename = option('mauricerenck.indieConnector.outboxFilename');
         }
     }
 
@@ -80,7 +72,7 @@ class WebmentionSender extends Sender
         }
 
         $this->mergeUrlsWithOutbox($processedUrls, $page);
-        $this->writeOutbox($processedUrls, $page);
+        $this->updateWebmentions($processedUrls, $page);
 
         if (option('mauricerenck.indieConnector.stats.enabled', false)) {
             $urls = array_map(function ($url) {
@@ -156,8 +148,8 @@ class WebmentionSender extends Sender
 
     public function getProcessedUrls($page)
     {
-        $urls = $this->readOutbox($page);
-        return $this->convertProcessedUrlsToV2($urls);
+        $outbox = $this->readOutbox($page);
+        return $outbox['webmentions'] ?? [];
     }
 
     public function cleanupUrls($urls, $processedUrls)
@@ -213,45 +205,14 @@ class WebmentionSender extends Sender
         return $mergedUrls;
     }
 
-    public function readOutbox($page): array
+    public function updateWebmentions($urls, $page)
     {
-        $outboxFile = $page->file($this->outboxFilename);
+        $outbox = $this->readOutbox($page);
+        $outbox['webmentions'] = $urls;
 
-        if (is_null($outboxFile)) {
-            return [];
-        }
+        $this->writeOutbox($outbox, $page);
 
-        if (!$outboxFile->exists()) {
-            return [];
-        }
-
-        return Json::read($outboxFile->root());
-    }
-
-    public function writeOutbox($urls, $page)
-    {
-        $outboxFile = $page->file($this->outboxFilename);
-
-        $filePath = is_null($outboxFile) ? $page->root() . '/' . $this->outboxFilename : $outboxFile->root();
-
-        Json::write($filePath, $urls);
-    }
-
-    public function convertProcessedUrlsToV2($processedUrls)
-    {
-        $processedUrlsV1 = [];
-        foreach ($processedUrls as $url) {
-            $processedUrlsV1[] = !is_array($url)
-                ? [
-                    'url' => $url,
-                    'date' => date('Y-m-d H:i:s'),
-                    'status' => 'success',
-                    'retries' => 0,
-                ]
-                : $url;
-        }
-
-        return $processedUrlsV1;
+        return $outbox;
     }
 
     public function markPageAsDeleted($page)

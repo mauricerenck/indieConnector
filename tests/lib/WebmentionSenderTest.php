@@ -63,106 +63,6 @@ final class WebmentionSenderTest extends TestCaseMocked
 
     /**
      * @group sendWebmentions
-     * @testdox convertProcessedUrlsToV2 - should convert an array of urls
-     */
-    public function testConvertProcessedUrlV2()
-    {
-        $urls = ['https://processed-url.tld', 'https://processed-url-2.tld'];
-
-        $expect = [
-            [
-                'url' => 'https://processed-url.tld',
-                'status' => 'success',
-                'date' => date('Y-m-d H:i:s'),
-                'retries' => 0,
-            ],
-            [
-                'url' => 'https://processed-url-2.tld',
-                'status' => 'success',
-                'date' => date('Y-m-d H:i:s'),
-                'retries' => 0,
-            ],
-        ];
-
-        $result = $this->senderUtilsMock->convertProcessedUrlsToV2($urls);
-        $this->assertEquals($expect, $result);
-    }
-
-    /**
-     * @group sendWebmentions
-     * @testdox convertProcessedUrlsToV2 - should convert an array of urls in old and new format
-     */
-    public function testConvertProcessedUrlV2Mixed()
-    {
-        $urls = [
-            'https://processed-url.tld',
-            [
-                'url' => 'https://processed-url-2.tld',
-                'status' => 'success',
-                'date' => date('Y-m-d H:i:s'),
-                'retries' => 0,
-            ],
-        ];
-
-        $expect = [
-            [
-                'url' => 'https://processed-url.tld',
-                'status' => 'success',
-                'date' => date('Y-m-d H:i:s'),
-                'retries' => 0,
-            ],
-            [
-                'url' => 'https://processed-url-2.tld',
-                'status' => 'success',
-                'date' => date('Y-m-d H:i:s'),
-                'retries' => 0,
-            ],
-        ];
-
-        $result = $this->senderUtilsMock->convertProcessedUrlsToV2($urls);
-        $this->assertEquals($expect, $result);
-    }
-
-    /**
-     * @group sendWebmentions
-     * @testdox convertProcessedUrlsToV2 - should handle new formats only
-     */
-    public function testConvertProcessedUrlV2New()
-    {
-        $expect = [
-            [
-                'url' => 'https://processed-url.tld',
-                'status' => 'success',
-                'date' => date('Y-m-d H:i:s'),
-                'retries' => 0,
-            ],
-            [
-                'url' => 'https://processed-url-2.tld',
-                'status' => 'success',
-                'date' => date('Y-m-d H:i:s'),
-                'retries' => 0,
-            ],
-        ];
-
-        $result = $this->senderUtilsMock->convertProcessedUrlsToV2($expect);
-        $this->assertEquals($expect, $result);
-    }
-
-    /**
-     * @group sendWebmentions
-     * @testdox convertProcessedUrlsToV2 - should handle empty array
-     */
-    public function testConvertProcessedUrlV2Empty()
-    {
-        $urls = [];
-        $expect = [];
-
-        $result = $this->senderUtilsMock->convertProcessedUrlsToV2($urls);
-        $this->assertEquals($expect, $result);
-    }
-
-    /**
-     * @group sendWebmentions
      * @testdox getProcessedUrls - should return 2 processed url
      */
     public function testGetProcessedUrls()
@@ -185,12 +85,21 @@ final class WebmentionSenderTest extends TestCaseMocked
         $pageMock = $this->getPageMock();
 
         $outboxData = [
-            'https://processed-url.tld',
-            [
-                'url' => 'https://processed-url-2.tld',
-                'status' => 'success',
-                'date' => date('Y-m-d H:i:s'),
-                'retries' => 0,
+            'version' => 2,
+            'posts' => [],
+            'webmentions' => [
+                [
+                    'url' => 'https://processed-url.tld',
+                    'status' => 'success',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
+                [
+                    'url' => 'https://processed-url-2.tld',
+                    'status' => 'success',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
             ],
         ];
 
@@ -457,5 +366,83 @@ final class WebmentionSenderTest extends TestCaseMocked
 
         $result = $this->senderUtilsMock->markPageAsDeleted($pageMock);
         $this->assertTrue($result);
+    }
+
+    /**
+     * @group outbox
+     * @testdox updateWebmentions - should only update webmention part
+     */
+    public function testUpdateWebmentions()
+    {
+        $pageMock = $this->getPageMock();
+
+        $outboxData = [
+            'version' => '2',
+            'webmentions' => [
+                [
+                    'url' => 'https://processed-url.tld',
+                    'status' => 'success',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
+            ],
+            'posts' => [
+                [
+                    'url' => 'https://mastodon.instance/@user/1234567890',
+                    'status' => 'success',
+                    'target' => 'mastodon',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
+            ],
+        ];
+
+        $newUrls = [
+            [
+                'url' => 'https://processed-url.tld',
+                'status' => 'error',
+                'date' => date('Y-m-d H:i:s'),
+                'retries' => 1,
+            ],
+            [
+                'url' => 'https://un-processed-url.tld',
+                'status' => 'success',
+                'date' => date('Y-m-d H:i:s'),
+                'retries' => 0,
+            ],
+        ];
+
+        $expectedData = [
+            'version' => '2',
+            'webmentions' => [
+                [
+                    'url' => 'https://processed-url.tld',
+                    'status' => 'error',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 1,
+                ],
+                [
+                    'url' => 'https://un-processed-url.tld',
+                    'status' => 'success',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
+            ],
+            'posts' => [
+                [
+                    'url' => 'https://mastodon.instance/@user/1234567890',
+                    'status' => 'success',
+                    'target' => 'mastodon',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
+            ],
+        ];
+
+        $this->senderUtilsMock->shouldReceive('readOutbox')->andReturn($outboxData);
+        $this->senderUtilsMock->shouldReceive('writeOutbox');
+
+        $result = $this->senderUtilsMock->updateWebmentions($newUrls, $pageMock);
+        $this->assertEquals($expectedData, $result);
     }
 }

@@ -19,6 +19,8 @@ class MastodonSender extends Sender
         private ?UrlChecks $urlChecks = null,
         private ?PageChecks $pageChecks = null
     ) {
+        parent::__construct();
+
         $this->textfield = $textfield ?? option('mauricerenck.indieConnector.post.textfield', 'description');
         $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
 
@@ -106,11 +108,16 @@ class MastodonSender extends Sender
                 $requestBody['media_ids'] = [$mediaId];
             }
 
-            Remote::request($this->instanceUrl . '/api/v1/statuses', [
+            $response = Remote::request($this->instanceUrl . '/api/v1/statuses', [
                 'method' => 'POST',
                 'headers' => $headers,
                 'data' => json_encode($requestBody),
             ]);
+
+            $result = $response->json();
+
+            $url = $result['url'] ?? null;
+            $this->updatePosts($url, $response->code(), $page);
 
             return true;
         } catch (Exception $e) {
@@ -184,5 +191,26 @@ class MastodonSender extends Sender
     {
         $urlLength = Str::length($url);
         return $this->tootMaxLength - $urlLength - 2;
+    }
+
+    public function updatePosts($url, $statusCode, $page)
+    {
+        $outbox = $this->readOutbox($page);
+
+        $status = $statusCode === 200 ? 'success' : 'error';
+        $newPost = [
+            'url' => $url,
+            'status' => $status,
+            'target' => 'mastodon',
+            'date' => date('Y-m-d H:i:s'),
+            'retries' => 0,
+        ];
+
+        $newPosts = array_merge([$newPost], $outbox['posts']);
+        $outbox['posts'] = $newPosts;
+
+        $this->writeOutbox($outbox, $page);
+
+        return $outbox;
     }
 }

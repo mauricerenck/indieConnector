@@ -3,12 +3,17 @@
 namespace mauricerenck\IndieConnector;
 
 use IndieWeb\MentionClient;
+use Kirby\Data\Json;
 
 class Sender
 {
+    private $outboxVersion = 2;
+
     public function __construct(
         private ?array $fieldsToParseUrls = null,
         private ?bool $activityPubBridge = null,
+        private ?string $outboxFilename = null,
+
         private ?UrlChecks $urlChecks = null
     ) {
         $this->fieldsToParseUrls =
@@ -16,10 +21,16 @@ class Sender
             option('mauricerenck.indieConnector.send.url-fields', ['text:text', 'description:text', 'intro:text']);
         $this->activityPubBridge = $activityPubBridge ?? option('mauricerenck.indieConnector.activityPubBridge', false);
         $this->urlChecks = $urlChecks ?? new UrlChecks();
+        $this->outboxFilename =
+            $outboxFilename ?? option('mauricerenck.indieConnector.send.outboxFilename', 'indieConnector.json');
 
         // backwards compatibility
         if (!$fieldsToParseUrls && option('mauricerenck.indieConnector.send-mention-url-fields', false)) {
             $this->fieldsToParseUrls = option('mauricerenck.indieConnector.send-mention-url-fields');
+        }
+
+        if (!$outboxFilename && option('mauricerenck.indieConnector.outboxFilename', false)) {
+            $this->outboxFilename = option('mauricerenck.indieConnector.outboxFilename');
         }
     }
 
@@ -100,5 +111,82 @@ class Sender
         }
 
         return join('', $htmlParts);
+    }
+
+    public function convertProcessedUrlsToV2($processedUrls)
+    {
+        $processedUrlsV2 = [];
+        foreach ($processedUrls as $url) {
+            $processedUrlsV2[] = !is_array($url)
+                ? [
+                    'url' => $url,
+                    'date' => date('Y-m-d H:i:s'),
+                    'status' => 'success',
+                    'retries' => 0,
+                ]
+                : $url;
+        }
+
+        return $processedUrlsV2;
+    }
+
+    public function getOutboxVersion($outbox)
+    {
+        if (!isset($outbox['version'])) {
+            return 1;
+        }
+
+        return $outbox['version'];
+    }
+
+    public function createOutbox($page): array
+    {
+        $data = [
+            'version' => $this->outboxVersion,
+            'webmentions' => [],
+            'posts' => [],
+        ];
+
+        $this->writeOutbox($data, $page);
+        return $data;
+    }
+
+    public function convertOutboxToV2($outbox)
+    {
+        $convertedOutbox = [
+            'version' => $this->outboxVersion,
+            'webmentions' => $this->convertProcessedUrlsToV2($outbox),
+            'posts' => [],
+        ];
+        return $convertedOutbox;
+    }
+
+    public function readOutbox($page): array
+    {
+        $outboxFile = $page->file($this->outboxFilename);
+
+        if (is_null($outboxFile)) {
+            return $this->createOutbox($page);
+        }
+
+        if (!$outboxFile->exists()) {
+            return $this->createOutbox($page);
+        }
+
+        $outbox = Json::read($outboxFile->root());
+
+        if ($this->getOutboxVersion($outbox) === 1) {
+            return $this->convertOutboxToV2($outbox);
+        }
+
+        return $outbox;
+    }
+
+    public function writeOutbox($outboxData, $page)
+    {
+        $outboxFile = $page->file($this->outboxFilename);
+        $filePath = is_null($outboxFile) ? $page->root() . '/' . $this->outboxFilename : $outboxFile->root();
+
+        Json::write($filePath, $outboxData);
     }
 }

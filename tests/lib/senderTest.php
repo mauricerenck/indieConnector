@@ -1,6 +1,5 @@
 <?php
 
-use Kirby\Cms\File;
 use mauricerenck\IndieConnector\Sender;
 use mauricerenck\IndieConnector\TestCaseMocked;
 
@@ -183,5 +182,125 @@ final class senderTest extends TestCaseMocked
         $this->assertCount(count($expectedUrls), $urls);
         $this->assertContains($expectedUrls[0], $urls);
         $this->assertContains($expectedUrls[1], $urls);
+    }
+
+    /**
+     * @group outbox
+     * @testdox createOutbox - should create a new outbox
+     */
+    public function testShouldCreateEmptyOutbox()
+    {
+        $page = $this->getPageMock();
+        $this->senderUtilsMock->shouldReceive('writeOutbox');
+
+        $expected = [
+            'version' => 2,
+            'webmentions' => [],
+            'posts' => [],
+        ];
+
+        $result = $this->senderUtilsMock->createOutbox($page);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @group sendWebmentions
+     * @testdox convertProcessedUrlsToV2 - should convert an array of urls
+     */
+    public function testConvertProcessedUrlV2()
+    {
+        $urls = ['https://processed-url.tld', 'https://processed-url-2.tld'];
+
+        $expect = [
+            [
+                'url' => 'https://processed-url.tld',
+                'status' => 'success',
+                'date' => date('Y-m-d H:i:s'),
+                'retries' => 0,
+            ],
+            [
+                'url' => 'https://processed-url-2.tld',
+                'status' => 'success',
+                'date' => date('Y-m-d H:i:s'),
+                'retries' => 0,
+            ],
+        ];
+
+        $result = $this->senderUtilsMock->convertProcessedUrlsToV2($urls);
+        $this->assertEquals($expect, $result);
+    }
+
+    /**
+     * @group sendWebmentions
+     * @testdox convertProcessedUrlsToV2 - should convert an array of urls in old and new format
+     */
+    public function testConvertProcessedUrlV2Mixed()
+    {
+        $urls = [
+            'https://processed-url.tld',
+            [
+                'url' => 'https://processed-url-2.tld',
+                'status' => 'success',
+                'date' => date('Y-m-d H:i:s'),
+                'retries' => 0,
+            ],
+        ];
+
+        $expect = [
+            [
+                'url' => 'https://processed-url.tld',
+                'status' => 'success',
+                'date' => date('Y-m-d H:i:s'),
+                'retries' => 0,
+            ],
+            [
+                'url' => 'https://processed-url-2.tld',
+                'status' => 'success',
+                'date' => date('Y-m-d H:i:s'),
+                'retries' => 0,
+            ],
+        ];
+
+        $result = $this->senderUtilsMock->convertProcessedUrlsToV2($urls);
+        $this->assertEquals($expect, $result);
+    }
+
+    /**
+     * @group sendWebmentions
+     * @testdox convertProcessedUrlsToV2 - should handle new formats only
+     */
+    public function testConvertProcessedUrlV2New()
+    {
+        $expect = [
+            [
+                'url' => 'https://processed-url.tld',
+                'status' => 'success',
+                'date' => date('Y-m-d H:i:s'),
+                'retries' => 0,
+            ],
+            [
+                'url' => 'https://processed-url-2.tld',
+                'status' => 'success',
+                'date' => date('Y-m-d H:i:s'),
+                'retries' => 0,
+            ],
+        ];
+
+        $result = $this->senderUtilsMock->convertProcessedUrlsToV2($expect);
+        $this->assertEquals($expect, $result);
+    }
+
+    /**
+     * @group sendWebmentions
+     * @testdox convertProcessedUrlsToV2 - should handle empty array
+     */
+    public function testConvertProcessedUrlV2Empty()
+    {
+        $urls = [];
+        $expect = [];
+
+        $result = $this->senderUtilsMock->convertProcessedUrlsToV2($urls);
+        $this->assertEquals($expect, $result);
     }
 }
