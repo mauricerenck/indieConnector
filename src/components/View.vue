@@ -9,9 +9,12 @@
             </div>
 
             <DetailsByMonth :summary="summary" />
-            <Targets :targets="targets" />
             <Sources :sources="sources" />
-            <Sent :outbox="sent" />
+
+            <k-grid style="gap: 0.25rem; --columns: 2">
+                <Sent :outbox="sent" />
+                <Targets :targets="targets" />
+            </k-grid>
         </k-view>
     </k-inside>
 </template>
@@ -57,8 +60,16 @@ export default {
         margin-top: var(--spacing-6);
     }
 
-    .k-icon {
-        margin-right: 0.5em;
+    .source-icon {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+    }
+
+    .action-icon {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
     }
 
     .k-link-centered {
@@ -69,7 +80,6 @@ export default {
 
     .avatar {
         width: 30px;
-        margin-right: 0.5em;
     }
 
     .dimmed {
@@ -82,20 +92,50 @@ export default {
     }
 
     tr:nth-child(even) {
-        background-color: #f2f2f2;
+        background-color: white;
+    }
+
+    tr:nth-child(odd) {
+        background-color: var(--color-gray-100);
+    }
+
+    tr.main-source {
+        background-color: var(--color-blue-200);
+        font-weight: var(--font-bold);
+    }
+
+    tr:hover {
+        background-color: var(--color-gray-100);
     }
 
     th {
         text-align: left;
     }
 
-    td {
-        width: 10%;
-        padding: 7px 5px;
+    td.title {
+        width: 33%;
     }
 
-    td:first-child {
-        /* width: 50%; */
+    td.icon {
+        width: 50px !important;
+
+        svg {
+            display: inline-block;
+        }
+    }
+
+    td.author {
+        width: 200px;
+
+        a {
+            display: flex;
+            vertical-align: middle;
+            align-items: center;
+        }
+    }
+
+    td.action {
+        color: var(--color-gray-600);
     }
 
     td div {
@@ -104,12 +144,12 @@ export default {
         align-items: center;
     }
 
-    .shortened-link {
-        display: inline-block;
+    .shortened-text {
+        display: block;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 50%;
+        max-width: 80ch;
     }
 }
 </style>

@@ -62,7 +62,7 @@ return [
 
                         $summary = $stats->getSummaryByMonth($year, $month);
                         $targets = $stats->getTargets($year, $month);
-                        $sources = $stats->getSources($year, $month);
+                        $sources = $stats->getSourceHosts($year, $month);
                         $sent = $stats->getSentMentions($year, $month);
 
                         return [

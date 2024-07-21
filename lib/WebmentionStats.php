@@ -66,21 +66,38 @@ class WebmentionStats
         }
     }
 
-    public function updateOutbox(string $pageUuid, string $target)
+    public function updateOutbox(string $pageUuid, array $target)
     {
-        if ($this->doNotTrackHost($target)) {
+        if ($this->doNotTrackHost($target['url'])) {
             return false;
         }
-
         $mentionDate = $this->indieDb->getFormattedDate();
 
         try {
-            $uniqueHash = md5($target . $pageUuid . $mentionDate);
+            $uniqueHash = md5($target['url'] . $pageUuid);
+
+            $existingEntry = $this->indieDb->select(
+                'outbox',
+                ['id','updates', 'page_uuid'],
+                'WHERE page_uuid = "' . $pageUuid . '" AND target = "' . $target['url'] . '"'
+            );
+
+            if (count($existingEntry->data) > 0) {
+                $newCount = $existingEntry->data[0]->updates + 1;
+
+                $this->indieDb->update(
+                    'outbox',
+                    ['updated_at', 'updates', 'status'],
+                    [$mentionDate, $newCount, $target['status']],
+                    'WHERE id = "' . $existingEntry->data[0]->id . '"'
+                );
+                return true;
+            }
 
             $this->indieDb->insert(
-                'webmention_outbox',
-                ['id', 'page_uuid', 'sent_date', 'target'],
-                [$uniqueHash, $pageUuid, $mentionDate, $target]
+                'outbox',
+                ['id', 'page_uuid', 'created_at', 'target', 'updates', 'status'],
+                [$uniqueHash, $pageUuid, $mentionDate, $target['url'], 1, $target['status']]
             );
 
             return true;
@@ -260,6 +277,72 @@ class WebmentionStats
         }
     }
 
+    public function getSourceHosts(int $year, int $month)
+    {
+        try {
+            $month = (int) $month;
+            $month = $month < 10 ? '0' . $month : $month;
+
+            $result = $this->indieDb->select(
+                'webmentions',
+                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions, author, title'],
+                'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_source, mention_type;'
+            );
+
+            $sources = [];
+
+            foreach ($result->data as $webmention) {
+                $host = parse_url($webmention->mention_source, PHP_URL_HOST);
+                $userHandle = $host;
+
+                if($host === 'brid-gy.appspot.com' || $host === 'brid.gy') {
+                    $path = parse_url($webmention->mention_source, PHP_URL_PATH);
+                    $pathParts = explode('/', $path);
+                    $host = $pathParts[2];
+                    $userHandle = $pathParts[3];
+                }
+
+                if (!isset($sources[$host])) {
+                    $sources[$host] = [
+                        'summary' => [
+                            'likes' => 0,
+                            'replies' => 0,
+                            'reposts' => 0,
+                            'mentions' => 0,
+                            'bookmarks' => 0,
+                        ],
+                        'entries' => []
+                    ];
+                }
+
+                $webmentionEntry = [
+                    'source' => $webmention->mention_source,
+                    'title' => $webmention->title,
+                    'author' => !empty($webmention->author) ? $webmention->author : $userHandle,
+                    'image' => $webmention->mention_image,
+                    'host' => $host,
+                    'likes' => 0,
+                    'replies' => 0,
+                    'reposts' => 0,
+                    'mentions' => 0,
+                    'bookmarks' => 0,
+                    'sum' => 0
+                ];
+                $mentionType = $this->mentionTypeToJsonType($webmention->mention_type);
+                $webmentionEntry[$mentionType] = $webmention->mentions;
+                $webmentionEntry['sum'] += $webmention->mentions;
+
+                $sources[$host]['summary'][$mentionType] += $webmention->mentions;
+                $sources[$host]['entries'][] = $webmentionEntry;
+            }
+
+            return $sources;
+        } catch (Exception $e) {
+            // echo 'Could not connect to Database: ', $e->getMessage(), "\n"; FIXME results in panel output before header
+            return false;
+        }
+    }
+
     public function getSentMentions(int $year, int $month)
     {
         try {
@@ -267,32 +350,41 @@ class WebmentionStats
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->indieDb->select(
-                'webmention_outbox',
-                ['page_uuid', 'target'],
-                'WHERE sent_date LIKE "' . $year . '-' . $month . '-%";'
+                'outbox',
+                ['page_uuid', 'target', 'status', 'updates'],
+                'WHERE created_at LIKE "' . $year . '-' . $month . '-%" ORDER BY created_at DESC;'
             );
 
             $targets = [];
-
             foreach ($result->data as $webmention) {
                 $page = page('page://' . $webmention->page_uuid);
 
-                if (is_null($page)) {
-                    $targets[] = [
-                        'target' => $webmention->target,
-                        'title' => $webmention->page_uuid,
-                        'pageUrl' => '#',
-                        'panelUrl' => '#',
-                    ];
-                    continue;
+                $pageTitle = $webmention->page_uuid;
+                $pageUrl = '#';
+                $panelUrl = '#';
+
+                if(isset($page)) {
+                    $pageTitle = $page->title()->value();
+                    $pageUrl = $page->url();
+                    $panelUrl = $page->panel()->url();
                 }
 
-                $targets[] = [
-                    'target' => $webmention->target,
-                    'title' => $page->title()->value(),
-                    'pageUrl' => $page->url(),
-                    'panelUrl' => $page->panel()->url(),
-                ];
+                if (!isset($targets[$webmention->page_uuid])) {
+                    $targets[$webmention->page_uuid] = [
+                        'page' => [
+                            'source' => $webmention->page_uuid,
+                            'target' => $webmention->target,
+                            'title' =>  $pageTitle,
+                            'pageUrl' => $pageUrl,
+                            'panelUrl' => $panelUrl,
+                        ],
+                        'entries' => []
+                    ];
+                }
+
+                $targets[$webmention->page_uuid]['entries'][] = [
+                'url' => $webmention->target, 'status' => $webmention->status, 'updates' => $webmention->updates];
+
             }
 
             return $targets;

@@ -75,12 +75,8 @@ class WebmentionSender extends Sender
         $this->updateWebmentions($processedUrls, $page);
 
         if (option('mauricerenck.indieConnector.stats.enabled', false)) {
-            $urls = array_map(function ($url) {
-                return $url['url'];
-            }, $processedUrls);
-
             $stats = new WebmentionStats();
-            $stats->trackOutgoingWebmentions($urls, $page);
+            $stats->trackOutgoingWebmentions($processedUrls, $page);
         }
 
         return $processedUrls;

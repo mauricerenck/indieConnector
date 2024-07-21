@@ -10,32 +10,32 @@
                         ><span v-else-if="summary.summary === 1">Webmention</span>
                     </td>
                     <td>
-                        <div v-bind:class="{ dimmed: summary.likes === 0 }">
-                            <k-icon type="shape-icon-fav" />
+                        <div>
+                            <k-icon type="heart-filled" style="color: var(--color-red-700);" />
                             {{ summary.likes }}
                         </div>
                     </td>
                     <td>
-                        <div v-bind:class="{ dimmed: summary.replies === 0 }">
-                            <k-icon type="shape-icon-reply" />
+                        <div>
+                            <k-icon type="chat" style="color: var(--color-yellow-700);" />
                             {{ summary.replies }}
                         </div>
                     </td>
                     <td>
-                        <div v-bind:class="{ dimmed: summary.reposts === 0 }">
-                            <k-icon type="shape-icon-repost" />
+                        <div>
+                            <k-icon type="indie-repost" style="color: var(--color-green-700);" />
                             {{ summary.reposts }}
                         </div>
                     </td>
                     <td>
-                        <div v-bind:class="{ dimmed: summary.mentions === 0 }">
-                            <k-icon type="shape-icon-mention" />
+                        <div>
+                            <k-icon type="indie-mention" style="color: var(--color-blue-700);" />
                             {{ summary.mentions }}
                         </div>
                     </td>
                     <td>
-                        <div v-bind:class="{ dimmed: summary.bookmarks === 0 }">
-                            <k-icon type="shape-icon-bookmark" />
+                        <div>
+                            <k-icon type="bookmark" style="color: var(--color-purple-700);" />
                             {{ summary.bookmarks }}
                         </div>
                     </td>

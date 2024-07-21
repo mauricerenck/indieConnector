@@ -4,47 +4,94 @@
         <k-line-field />
 
         <table>
-            <tr v-for="source in this.sortedSources" :key="source.id">
-                <td>
-                    <k-link :to="source.source" :title="source.source" class="k-link-centered">
-                        <img :src="source.image" class="avatar" v-if="source.image !== null" />
-                        <span class="shortened-link">{{ source.author }}</span>
-                    </k-link>
-                </td>
-                <td>
-                    {{ source.title }}
-                </td>
-                <td>
-                    <div v-bind:class="{ dimmed: source.likes === 0 }">
-                        <k-icon type="shape-icon-fav" />
-                        {{ source.likes }}
-                    </div>
-                </td>
-                <td>
-                    <div v-bind:class="{ dimmed: source.replies === 0 }">
-                        <k-icon type="shape-icon-reply" />
-                        {{ source.replies }}
-                    </div>
-                </td>
-                <td>
-                    <div v-bind:class="{ dimmed: source.reposts === 0 }">
-                        <k-icon type="shape-icon-repost" />
-                        {{ source.reposts }}
-                    </div>
-                </td>
-                <td>
-                    <div v-bind:class="{ dimmed: source.mentions === 0 }">
-                        <k-icon type="shape-icon-mention" />
-                        {{ source.mentions }}
-                    </div>
-                </td>
-                <td>
-                    <div v-bind:class="{ dimmed: source.bookmarks === 0 }">
-                        <k-icon type="shape-icon-bookmark" />
-                        {{ source.bookmarks }}
-                    </div>
-                </td>
-            </tr>
+            <template v-for="(sources, index) in this.sortedSources" class="j">
+                <tr class="main-source">
+                    <td class="icon" colspan="3">
+                        <div>
+                            <k-icon
+                                :type="
+                                    (icon = ['twitter', 'mastodon'].includes(index)
+                                        ? `indie-${index}`
+                                        : 'indie-website')
+                                "
+                                class="source-icon"
+                            />
+                            {{ index }}
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <k-icon type="heart-filled" style="color: var(--color-red-700);" />
+                            {{ sources.summary.likes }}
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <k-icon type="chat" style="color: var(--color-yellow-700);" /> {{ sources.summary.replies }}
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <k-icon type="indie-repost" style="color: var(--color-green-700);" />
+                            {{ sources.summary.reposts }}
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <k-icon type="indie-mention" style="color: var(--color-blue-700);" />
+                            {{ sources.summary.mentions }}
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <k-icon type="bookmark" style="color: var(--color-purple-700);" />
+                            {{ sources.summary.bookmarks }}
+                        </div>
+                    </td>
+                </tr>
+
+                <tr v-for="(source, index) in sources.entries">
+                    <td>&nbsp;</td>
+                    <td class="author">
+                        <a :href="source.source" target="_blank">
+                            <img
+                                :src="source.image"
+                                class="avatar"
+                                v-if="source.image !== null"
+                                width="30px"
+                                height="30px"
+                            />
+                            {{ source.author }}
+                        </a>
+                    </td>
+                    <td class="title">
+                        <span class="shortened-text">{{ source.title || '&nbsp;' }}</span>
+                    </td>
+                    <td class="action">
+                        <div>
+                            <k-icon type="heart-filled" style="color: var(--color-red-400);" /> {{ source.likes }}
+                        </div>
+                    </td>
+                    <td class="action">
+                        <div><k-icon type="chat" style="color: var(--color-yellow-400);" /> {{ source.replies }}</div>
+                    </td>
+                    <td class="action">
+                        <div>
+                            <k-icon type="indie-repost" style="color: var(--color-green-400);" /> {{ source.reposts }}
+                        </div>
+                    </td>
+                    <td class="action">
+                        <div>
+                            <k-icon type="indie-mention" style="color: var(--color-blue-400);" /> {{ source.mentions }}
+                        </div>
+                    </td>
+                    <td class="action">
+                        <div>
+                            <k-icon type="bookmark" style="color: var(--color-purple-400);" /> {{ source.bookmarks }}
+                        </div>
+                    </td>
+                </tr>
+            </template>
         </table>
     </div>
 </template>
