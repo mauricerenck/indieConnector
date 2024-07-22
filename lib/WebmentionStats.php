@@ -223,6 +223,9 @@ class WebmentionStats
                 $targets[$targetHash]['sum'] += $webmention->mentions;
             }
 
+            // flatten array, and remove hash, so we have an array in the panel
+            $targets = array_values($targets);
+
             return $targets;
         } catch (Exception $e) {
             // echo 'Could not connect to Database: ', $e->getMessage(), "\n"; FIXME results in panel output before header
@@ -305,11 +308,13 @@ class WebmentionStats
                 if (!isset($sources[$host])) {
                     $sources[$host] = [
                         'summary' => [
+                            'host' => $host,
                             'likes' => 0,
                             'replies' => 0,
                             'reposts' => 0,
                             'mentions' => 0,
                             'bookmarks' => 0,
+                            'sum' => 0
                         ],
                         'entries' => []
                     ];
@@ -333,8 +338,11 @@ class WebmentionStats
                 $webmentionEntry['sum'] += $webmention->mentions;
 
                 $sources[$host]['summary'][$mentionType] += $webmention->mentions;
+                $sources[$host]['summary']['sum']++;
                 $sources[$host]['entries'][] = $webmentionEntry;
             }
+
+            $sources = array_values($sources);
 
             return $sources;
         } catch (Exception $e) {
@@ -384,9 +392,9 @@ class WebmentionStats
 
                 $targets[$webmention->page_uuid]['entries'][] = [
                 'url' => $webmention->target, 'status' => $webmention->status, 'updates' => $webmention->updates];
-
             }
 
+            $targets = array_values($targets);
             return $targets;
         } catch (Exception $e) {
             // echo 'Could not connect to Database: ', $e->getMessage(), "\n"; FIXME results in panel output before header

@@ -1,98 +1,43 @@
 <template>
     <div class="wrapper">
-        <k-headline size="large">Sources</k-headline>
-        <k-line-field />
+        <k-headline tag="h2">Sources</k-headline>
 
-        <table>
-            <template v-for="(sources, index) in this.sortedSources" class="j">
-                <tr class="main-source">
-                    <td class="icon" colspan="3">
-                        <div>
-                            <k-icon
-                                :type="
-                                    (icon = ['twitter', 'mastodon'].includes(index)
-                                        ? `indie-${index}`
-                                        : 'indie-website')
-                                "
-                                class="source-icon"
-                            />
-                            {{ index }}
-                        </div>
-                    </td>
-                    <td>
-                        <div>
-                            <k-icon type="heart-filled" style="color: var(--color-red-700);" />
-                            {{ sources.summary.likes }}
-                        </div>
-                    </td>
-                    <td>
-                        <div>
-                            <k-icon type="chat" style="color: var(--color-yellow-700);" /> {{ sources.summary.replies }}
-                        </div>
-                    </td>
-                    <td>
-                        <div>
-                            <k-icon type="indie-repost" style="color: var(--color-green-700);" />
-                            {{ sources.summary.reposts }}
-                        </div>
-                    </td>
-                    <td>
-                        <div>
-                            <k-icon type="indie-mention" style="color: var(--color-blue-700);" />
-                            {{ sources.summary.mentions }}
-                        </div>
-                    </td>
-                    <td>
-                        <div>
-                            <k-icon type="bookmark" style="color: var(--color-purple-700);" />
-                            {{ sources.summary.bookmarks }}
-                        </div>
-                    </td>
-                </tr>
-
-                <tr v-for="(source, index) in sources.entries">
-                    <td>&nbsp;</td>
-                    <td class="author">
-                        <a :href="source.source" target="_blank">
-                            <img
-                                :src="source.image"
-                                class="avatar"
-                                v-if="source.image !== null"
-                                width="30px"
-                                height="30px"
-                            />
-                            {{ source.author }}
-                        </a>
-                    </td>
-                    <td class="title">
-                        <span class="shortened-text">{{ source.title || '&nbsp;' }}</span>
-                    </td>
-                    <td class="action">
-                        <div>
-                            <k-icon type="heart-filled" style="color: var(--color-red-400);" /> {{ source.likes }}
-                        </div>
-                    </td>
-                    <td class="action">
-                        <div><k-icon type="chat" style="color: var(--color-yellow-400);" /> {{ source.replies }}</div>
-                    </td>
-                    <td class="action">
-                        <div>
-                            <k-icon type="indie-repost" style="color: var(--color-green-400);" /> {{ source.reposts }}
-                        </div>
-                    </td>
-                    <td class="action">
-                        <div>
-                            <k-icon type="indie-mention" style="color: var(--color-blue-400);" /> {{ source.mentions }}
-                        </div>
-                    </td>
-                    <td class="action">
-                        <div>
-                            <k-icon type="bookmark" style="color: var(--color-purple-400);" /> {{ source.bookmarks }}
-                        </div>
-                    </td>
-                </tr>
+        <k-table
+            :columns="{
+                source: { label: 'Source', type: 'html' },
+                title: { label: 'Title / Summary', type: 'html' },
+                likes: { label: 'likes', type: 'html', width: '40px', align: 'center' },
+                replies: { label: 'replies', type: 'html', width: '40px', align: 'center' },
+                reposts: { label: 'reposts', type: 'html', width: '40px', align: 'center' },
+                mentions: { label: 'mentions', type: 'html', width: '40px', align: 'center' },
+                bookmarks: { label: 'bookmarks', type: 'html', width: '40px', align: 'center' },
+            }"
+            :index="false"
+            :rows="sourceList"
+        >
+            <template #header="{ columnIndex, label}">
+                <span>
+                    <k-icon v-if="columnIndex === 'likes'" type="heart-filled" style="color: var(--color-red-700);" />
+                    <k-icon v-else-if="columnIndex === 'replies'" type="chat" style="color: var(--color-yellow-700);" />
+                    <k-icon
+                        v-else-if="columnIndex === 'reposts'"
+                        type="indie-repost"
+                        style="color: var(--color-green-700);"
+                    />
+                    <k-icon
+                        v-else-if="columnIndex === 'mentions'"
+                        type="indie-mention"
+                        style="color: var(--color-blue-700);"
+                    />
+                    <k-icon
+                        v-else-if="columnIndex === 'bookmarks'"
+                        type="bookmark"
+                        style="color: var(--color-purple-700);"
+                    />
+                    <span v-else>{{ label }}</span>
+                </span>
             </template>
-        </table>
+        </k-table>
     </div>
 </template>
 
@@ -101,28 +46,55 @@ export default {
     props: {
         sources: Object,
     },
-    data() {
-        return {
-            sortedSources: [],
-        }
-    },
-    created() {
-        this.getSources()
-    },
     methods: {
-        getSources() {
-            this.sortedSources = Object.entries(this.sources)
-                .sort((a, b) => {
-                    return a[1].sum < b[1].sum
+        printNumberValue(value) {
+            const className = value === 0 ? 'muted' : ''
+            return `<span class="${className}">${value}</span>`
+        },
+    },
+    computed: {
+        sourceList() {
+            const sourcesList = []
+            this.sources.forEach(source => {
+                const newSource = {
+                    source: `<strong>${source.summary.host}</strong>`,
+                    likes: this.printNumberValue(source.summary.likes),
+                    replies: this.printNumberValue(source.summary.replies),
+                    reposts: this.printNumberValue(source.summary.reposts),
+                    mentions: this.printNumberValue(source.summary.mentions),
+                    bookmarks: this.printNumberValue(source.summary.bookmarks),
+                }
+                sourcesList.push(newSource)
+
+                Object.values(source.entries).forEach(entry => {
+                    const newSource = {
+                        source: `<a href="${entry.source}" class="source-entry"><img src="${entry.image}" width="40px" height="40px" />${entry.author}</a>`,
+                        icon: ``,
+                        title: `<span class="shortened-text">${entry.title}</span>`,
+                        likes: this.printNumberValue(entry.likes),
+                        replies: this.printNumberValue(entry.replies),
+                        reposts: this.printNumberValue(entry.reposts),
+                        mentions: this.printNumberValue(entry.mentions),
+                        bookmarks: this.printNumberValue(entry.bookmarks),
+                    }
+
+                    sourcesList.push(newSource)
                 })
-                .reduce(
-                    (_sortedObj, [k, v]) => ({
-                        ..._sortedObj,
-                        [k]: v,
-                    }),
-                    {}
-                )
+            })
+
+            return sourcesList
         },
     },
 }
 </script>
+<style lang="scss">
+.k-webmentions-view {
+    .source-entry {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        color: var(--color-black);
+        text-decoration: none;
+    }
+}
+</style>

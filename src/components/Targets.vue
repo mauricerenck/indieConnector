@@ -1,56 +1,72 @@
 <template>
     <div class="wrapper">
-        <k-headline size="large">Targets</k-headline>
-        <k-line-field />
+        <k-headline tag="h2">Targets</k-headline>
 
-        <div class="k-table">
-            <table>
-                <tbody>
-                    <tr v-for="target in targets" :key="target.id">
-                        <td>
-                            <k-link :to="target.panelUrl" :title="target.slug">{{ target.title }}</k-link>
-                        </td>
-                        <td>
-                            <div>
-                                <k-icon type="heart-filled" style="color: var(--color-red-700);" />
-                                {{ target.likes }}
-                            </div>
-                        </td>
-                        <td>
-                            <div>
-                                <k-icon type="chat" style="color: var(--color-yellow-700);" />
-                                {{ target.replies }}
-                            </div>
-                        </td>
-                        <td>
-                            <div>
-                                <k-icon type="indie-repost" style="color: var(--color-green-700);" />
-                                {{ target.reposts }}
-                            </div>
-                        </td>
-                        <td>
-                            <div>
-                                <k-icon type="indie-mention" style="color: var(--color-blue-700);" />
-                                {{ target.mentions }}
-                            </div>
-                        </td>
-                        <td>
-                            <div>
-                                <k-icon type="bookmark" style="color: var(--color-purple-700);" />
-                                {{ target.bookmarks }}
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <k-table
+            :columns="{
+                title: { label: 'Page', type: 'html' },
+                likes: { label: 'likes', type: 'html', width: '40px', align: 'center' },
+                replies: { label: 'replies', type: 'html', width: '40px', align: 'center' },
+                reposts: { label: 'reposts', type: 'html', width: '40px', align: 'center' },
+                mentions: { label: 'mentions', type: 'html', width: '40px', align: 'center' },
+                bookmarks: { label: 'bookmarks', type: 'html', width: '40px', align: 'center' },
+            }"
+            :index="false"
+            :rows="targetList"
+        >
+            <template #header="{ columnIndex, label}">
+                <span>
+                    <k-icon v-if="columnIndex === 'likes'" type="heart-filled" style="color: var(--color-red-700);" />
+                    <k-icon v-else-if="columnIndex === 'replies'" type="chat" style="color: var(--color-yellow-700);" />
+                    <k-icon
+                        v-else-if="columnIndex === 'reposts'"
+                        type="indie-repost"
+                        style="color: var(--color-green-700);"
+                    />
+                    <k-icon
+                        v-else-if="columnIndex === 'mentions'"
+                        type="indie-mention"
+                        style="color: var(--color-blue-700);"
+                    />
+                    <k-icon
+                        v-else-if="columnIndex === 'bookmarks'"
+                        type="bookmark"
+                        style="color: var(--color-purple-700);"
+                    />
+                    <span v-else>{{ label }}</span>
+                </span>
+            </template>
+        </k-table>
     </div>
 </template>
 
 <script>
 export default {
     props: {
-        targets: Object,
+        targets: {
+            type: Array,
+            default: () => [],
+        },
+    },
+    methods: {
+        printNumberValue(value) {
+            const className = value === 0 ? 'muted' : ''
+            return `<span class="${className}">${value}</span>`
+        },
+    },
+    computed: {
+        targetList() {
+            return this.targets.map(target => {
+                return {
+                    title: `<a href="${target.url}" target="_blank">${target.title}</k-link>`,
+                    likes: this.printNumberValue(target.likes),
+                    replies: this.printNumberValue(target.replies),
+                    reposts: this.printNumberValue(target.reposts),
+                    mentions: this.printNumberValue(target.mentions),
+                    bookmarks: this.printNumberValue(target.bookmarks),
+                }
+            })
+        },
     },
 }
 </script>

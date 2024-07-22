@@ -1,50 +1,28 @@
 <template>
     <div class="wrapper">
-        <k-headline size="large">Sent Webmentions</k-headline>
-        <k-line-field />
-        <table border="0">
-            <template v-for="sources in outbox">
-                <tr class="main-source">
-                    <td class="icon">
-                        <k-icon type="indie-website" class="source-icon" />
-                    </td>
-                    <td colspan="2">
-                        <div>
-                            <a :href="sources.page.panelUrl">
-                                {{ sources.page.title }}
-                            </a>
-                        </div>
-                    </td>
+        <k-headline tag="h2">Sent Webmentions</k-headline>
 
-                    <td class="">
-                        <div title="webmention targets">
-                            <k-icon type="live" style="color: var(--color-purple-700);" />
-                            {{ sources.entries.length }}
-                        </div>
-                    </td>
-                </tr>
-
-                <tr v-for="target in sources.entries">
-                    <td class="">&nbsp;</td>
-                    <td class="icon">
-                        <k-icon type="check" style="color: var(--color-green-700);" v-if="target.status == 'success'" />
-                        <k-icon type="cancel" style="color: var(--color-red-700);" v-else />
-                    </td>
-
-                    <td>
-                        <a :href="target.url" target="_blank">
-                            {{ target.url }}
-                        </a>
-                    </td>
-                    <td class="icon" colspan="1">
-                        <div title="updates">
-                            <k-icon type="refresh" style="color: var(--color-purple-400);" />
-                            {{ target.updates }}
-                        </div>
-                    </td>
-                </tr>
+        <k-table
+            :columns="{
+                title: { label: 'Page / Target', type: 'html' },
+                updates: { label: 'Updates', type: 'text', width: '40px', align: 'center' },
+                status: { label: 'Status', type: 'html', width: '40px', align: 'center' },
+            }"
+            :index="false"
+            :rows="sentList"
+        >
+            <template #header="{ columnIndex, label}">
+                <span :title="label">
+                    <k-icon v-if="columnIndex === 'status'" type="live" style="color: var(--color-purple-700);" />
+                    <k-icon
+                        v-else-if="columnIndex === 'updates'"
+                        type="refresh"
+                        style="color: var(--color-purple-700);"
+                    />
+                    <span v-else>{{ label }}</span>
+                </span>
             </template>
-        </table>
+        </k-table>
     </div>
 </template>
 
@@ -53,5 +31,53 @@ export default {
     props: {
         outbox: Array,
     },
+    computed: {
+        sentList() {
+            const data = []
+            this.outbox.forEach(source => {
+                var entryCount = 0
+
+                const newEntry = {
+                    title: `<a href="${source.page.panelUrl}" class="source" >${source.page.title}</a>`,
+                    panelUrl: source.page.panelUrl,
+                    webmentions: source.entries.length,
+                    url: null,
+                    status: null,
+                    updates: null,
+                }
+                data.push(newEntry)
+
+                source.entries.forEach(entry => {
+                    const newEntry = {
+                        title: `<a href="${entry.url}" class="target" target="_blank">${source.page.target}</a>`,
+                        panelUrl: null,
+                        webmentions: null,
+                        url: entry.url,
+                        status:
+                            entry.status === 'success'
+                                ? '<svg aria-hidden="true" data-type="check" class="k-icon" style="color: var(--color-green-700);"><use xlink:href="#icon-check"></use></svg>'
+                                : '<svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: var(--color-red-700);"><use xlink:href="#icon-cancel"></use></svg>',
+                        updates: entry.updates,
+                    }
+                    data.push(newEntry)
+                    entryCount++
+                })
+            })
+
+            return data
+        },
+    },
 }
 </script>
+<style lang="scss">
+.k-webmentions-view {
+    .target {
+        margin-left: 20px;
+    }
+    .source {
+        font-weight: bold;
+        color: var(--color-black);
+        text-decoration: none;
+    }
+}
+</style>
