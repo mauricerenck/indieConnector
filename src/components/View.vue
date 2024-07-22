@@ -11,7 +11,7 @@
             <DetailsByMonth :summary="summary" />
             <Sources :sources="sources" />
 
-            <k-grid style="gap: 0.25rem; --columns: 2">
+            <k-grid style="gap: 2rem; --columns: 2">
                 <Sent :outbox="sent" />
                 <Targets :targets="targets" />
             </k-grid>
@@ -70,7 +70,7 @@ export default {
 
     h2 {
         font-size: var(--text-3xl);
-        margin-bottom: 1rem;
+        margin: 2em 0 1em 0;
     }
 
     .center-icon {

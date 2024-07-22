@@ -1,5 +1,5 @@
 <template>
-    <div class="wrapper">
+    <div>
         <k-headline tag="h2">Sent Webmentions</k-headline>
 
         <k-table

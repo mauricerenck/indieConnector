@@ -1,5 +1,5 @@
 <template>
-    <div class="wrapper">
+    <div>
         <k-headline tag="h2">Targets</k-headline>
 
         <k-table
@@ -58,7 +58,7 @@ export default {
         targetList() {
             return this.targets.map(target => {
                 return {
-                    title: `<a href="${target.panelUrl}" target="_blank">${target.title}</k-link>`,
+                    title: `<a href="${target.panelUrl}">${target.title}</k-link>`,
                     likes: this.printNumberValue(target.likes),
                     replies: this.printNumberValue(target.replies),
                     reposts: this.printNumberValue(target.reposts),
