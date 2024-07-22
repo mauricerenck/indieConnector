@@ -38,7 +38,7 @@ export default {
                 var entryCount = 0
 
                 const newEntry = {
-                    title: `<a href="${source.page.panelUrl}" class="source" >${source.page.title}</a>`,
+                    title: `<a href="${source.page.panelUrl}" class="source group-label" >${source.page.title}</a>`,
                     panelUrl: source.page.panelUrl,
                     webmentions: source.entries.length,
                     url: null,
@@ -73,10 +73,10 @@ export default {
 .k-webmentions-view {
     .target {
         margin-left: 20px;
+        color: var(--color-gray-700);
     }
     .source {
         font-weight: bold;
-        color: var(--color-black);
         text-decoration: none;
     }
 }

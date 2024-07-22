@@ -81,5 +81,12 @@ export default {
             display: inline-block;
         }
     }
+
+    .group-label {
+        background-color: var(--color-blue-800);
+        color: var(--color-white);
+        padding: 2px 5px;
+        border-radius: var(--rounded-md);
+    }
 }
 </style>

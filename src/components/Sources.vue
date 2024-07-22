@@ -57,7 +57,7 @@ export default {
             const sourcesList = []
             this.sources.forEach(source => {
                 const newSource = {
-                    source: `<strong>${source.summary.host}</strong>`,
+                    source: `<strong class="group-label">${source.summary.host}</strong>`,
                     likes: this.printNumberValue(source.summary.likes),
                     replies: this.printNumberValue(source.summary.replies),
                     reposts: this.printNumberValue(source.summary.reposts),
