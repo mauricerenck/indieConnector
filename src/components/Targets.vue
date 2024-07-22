@@ -58,7 +58,7 @@ export default {
         targetList() {
             return this.targets.map(target => {
                 return {
-                    title: `<a href="${target.url}" target="_blank">${target.title}</k-link>`,
+                    title: `<a href="${target.panelUrl}" target="_blank">${target.title}</k-link>`,
                     likes: this.printNumberValue(target.likes),
                     replies: this.printNumberValue(target.replies),
                     reposts: this.printNumberValue(target.reposts),
