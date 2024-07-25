@@ -49,7 +49,7 @@ export default {
 
                 source.entries.forEach(entry => {
                     const newEntry = {
-                        title: `<a href="${entry.url}" class="target" target="_blank">${source.page.target}</a>`,
+                        title: `<a href="${entry.url}" class="target" target="_blank">${entry.url}</a>`,
                         panelUrl: null,
                         webmentions: null,
                         url: entry.url,

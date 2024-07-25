@@ -55,31 +55,34 @@ class WebmentionSender extends Sender
         }
 
         $processedUrls = [];
+        $sentUrls = [];
         foreach ($urls as $url) {
             if (!$this->isValidTarget($url)) {
                 continue;
             }
 
             $sent = $this->send($url, $page->url());
+            $sentUrls[] = $url;
 
             $status = $sent ? 'success' : 'error';
             $processedUrls[] = [
                 'url' => $url,
                 'date' => date('Y-m-d H:i:s'),
                 'status' => $status,
-                'retries' => $status === 'error' ? 1 : 0,
+                'retries' => 0,
             ];
+
         }
 
-        $this->mergeUrlsWithOutbox($processedUrls, $page);
-        $this->updateWebmentions($processedUrls, $page);
+        $mergedUrls = $this->mergeUrlsWithOutbox($processedUrls, $page);
+        $this->updateWebmentions($sentUrls, $page);
 
         if (option('mauricerenck.indieConnector.stats.enabled', false)) {
             $stats = new WebmentionStats();
-            $stats->trackOutgoingWebmentions($processedUrls, $page);
+            $stats->trackOutgoingWebmentions($mergedUrls, $page);
         }
 
-        return $processedUrls;
+        return $mergedUrls;
     }
 
     public function send(string $targetUrl, string $sourceUrl)
@@ -176,26 +179,32 @@ class WebmentionSender extends Sender
 
         $mergedUrls = [];
         foreach ($newEntries as $newEntry) {
-            $existingEntries = array_map(function ($entry) use ($newEntry) {
-                if ($entry['url'] === $newEntry) {
-                    return $entry;
-                }
-            }, $outbox);
+            $existingEntries = array_filter($outbox, function ($processedUrl) use ($newEntry) {
+                return $processedUrl['url'] === $newEntry['url'];
+            });
 
             $existingEntry =
-                !is_null($existingEntries) || empty($existingEntries)
-                    ? [
-                        'url' => $newEntry,
-                        'date' => null,
-                        'status' => null,
-                        'retries' => 1,
-                    ]
-                    : $existingEntries[0];
+                count($existingEntries) === 0
+                    ? $newEntry
+                    : array_shift($existingEntries);
 
             $mergedEntry = array_merge($existingEntry, $newEntry);
-            $mergedEntry['retries'] += $newEntry['retries'];
+
+            if($mergedEntry['status'] === 'error') {
+                $mergedEntry['retries'] = $existingEntry['retries'] + 1;
+            }
 
             $mergedUrls[] = $mergedEntry;
+        }
+
+        foreach ($outbox as $processedUrl) {
+            $existingEntries = array_filter($mergedUrls, function ($mergedUrl) use ($processedUrl) {
+                return $mergedUrl['url'] === $processedUrl['url'];
+            });
+
+            if (count($existingEntries) === 0) {
+                $mergedUrls[] = $processedUrl;
+            }
         }
 
         return $mergedUrls;

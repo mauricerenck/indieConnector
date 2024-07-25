@@ -11,7 +11,7 @@ sections:
             description:
                 type: textarea
                 label: description
-            text:
+            textfield:
                 type: textarea
                 label: Text
             layouteditor:
