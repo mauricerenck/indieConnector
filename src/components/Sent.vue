@@ -10,6 +10,13 @@
             }"
             :index="false"
             :rows="sentList"
+            :pagination="{
+                page: pagination.page,
+                limit: pagination.limit,
+                total: pagination.total,
+                details: true,
+            }"
+            @paginate="pagination.page = $event.page"
         >
             <template #header="{ columnIndex, label}">
                 <span :title="label">
@@ -31,9 +38,23 @@ export default {
     props: {
         outbox: Array,
     },
+    data() {
+        return {
+            pagination: {
+                page: 1,
+                limit: 20,
+                total: 0,
+            },
+        }
+    },
     computed: {
+        index() {
+            return (this.pagination.page - 1) * this.pagination.limit + 1
+        },
         sentList() {
             const data = []
+            this.pagination.total = 0
+
             this.outbox.forEach(source => {
                 var entryCount = 0
 
@@ -46,6 +67,7 @@ export default {
                     updates: null,
                 }
                 data.push(newEntry)
+                this.pagination.total++
 
                 source.entries.forEach(entry => {
                     const newEntry = {
@@ -61,10 +83,10 @@ export default {
                     }
                     data.push(newEntry)
                     entryCount++
+                    this.pagination.total++
                 })
             })
-
-            return data
+            return data.slice(this.index - 1, this.pagination.limit * this.pagination.page)
         },
     },
 }

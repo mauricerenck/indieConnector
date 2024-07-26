@@ -13,6 +13,13 @@
             }"
             :index="false"
             :rows="targetList"
+            :pagination="{
+                page: pagination.page,
+                limit: pagination.limit,
+                total: pagination.total,
+                details: true,
+            }"
+            @paginate="pagination.page = $event.page"
         >
             <template #header="{ columnIndex, label}">
                 <span>
@@ -48,6 +55,15 @@ export default {
             default: () => [],
         },
     },
+    data() {
+        return {
+            pagination: {
+                page: 1,
+                limit: 20,
+                total: 0,
+            },
+        }
+    },
     methods: {
         printNumberValue(value) {
             const className = value === 0 ? 'muted' : ''
@@ -55,8 +71,12 @@ export default {
         },
     },
     computed: {
+        index() {
+            return (this.pagination.page - 1) * this.pagination.limit + 1
+        },
         targetList() {
-            return this.targets.map(target => {
+            this.pagination.total = this.targets.length
+            const targets = this.targets.map(target => {
                 return {
                     title: `<a href="${target.panelUrl}">${target.title}</k-link>`,
                     likes: this.printNumberValue(target.likes),
@@ -66,6 +86,8 @@ export default {
                     bookmarks: this.printNumberValue(target.bookmarks),
                 }
             })
+
+            return targets.slice(this.index - 1, this.pagination.limit * this.pagination.page)
         },
     },
 }

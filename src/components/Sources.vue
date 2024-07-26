@@ -12,8 +12,15 @@
                 mentions: { label: 'mentions', type: 'html', width: '40px', align: 'center' },
                 bookmarks: { label: 'bookmarks', type: 'html', width: '40px', align: 'center' },
             }"
-            :index="false"
+            :index="true"
             :rows="sourceList"
+            :pagination="{
+                page: pagination.page,
+                limit: pagination.limit,
+                total: pagination.total,
+                details: true,
+            }"
+            @paginate="pagination.page = $event.page"
         >
             <template #header="{ columnIndex, label}">
                 <span>
@@ -46,6 +53,15 @@ export default {
     props: {
         sources: Object,
     },
+    data() {
+        return {
+            pagination: {
+                page: 1,
+                limit: 10,
+                total: 0,
+            },
+        }
+    },
     methods: {
         printNumberValue(value) {
             const className = value === 0 ? 'muted' : ''
@@ -53,8 +69,13 @@ export default {
         },
     },
     computed: {
+        index() {
+            return (this.pagination.page - 1) * this.pagination.limit + 1
+        },
         sourceList() {
             const sourcesList = []
+            this.pagination.total = 0
+
             this.sources.forEach(source => {
                 const newSource = {
                     source: `<strong class="group-label">${source.summary.host}</strong>`,
@@ -65,6 +86,7 @@ export default {
                     bookmarks: this.printNumberValue(source.summary.bookmarks),
                 }
                 sourcesList.push(newSource)
+                this.pagination.total++
 
                 Object.values(source.entries).forEach(entry => {
                     const newSource = {
@@ -79,10 +101,11 @@ export default {
                     }
 
                     sourcesList.push(newSource)
+                    this.pagination.total++
                 })
             })
 
-            return sourcesList
+            return sourcesList.slice(this.index - 1, this.pagination.limit * this.pagination.page)
         },
     },
 }
