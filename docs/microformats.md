@@ -1,6 +1,6 @@
 # Microformats
 
-IndieConnector supports sending webmentions for different types of microformats. Those types are defined by [microformats](https://microformats.org/wiki/microformats2) and are used to describe different types of content.
+You can enrich your webmentions by using microformats. Those formats are defined by [microformats](https://microformats.org/wiki/microformats2) and are used to describe different types of content.
 
 ## Tell who you are
 
@@ -23,13 +23,13 @@ This h-card can be placed in your footer, header or any other place on your page
 
 ## Format your content
 
-To inform the receiver about your content, the content should be within a h-entry. This is a simple example of a h-entry:
+To inform the receiver about your content, the content should be within an h-entry. This is a simple example of an h-entry:
 
 ```html
 <article class="h-entry">
   <h1 class="p-name">Hello World</h1>
   <p class="p-summary">This is my first post.</p>
-  <p class="e-content">This is the full text of my blog post.</p>
+  <p class="e-content">This is the <strong>full</strong> text of my blog post.</p>
   <a class="u-url" href="https://example.org/hello-world">Permalink</a>
 </article>
 ```

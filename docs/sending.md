@@ -2,11 +2,11 @@
 
 IndieConnector automatically sends webmentions from your site.
 
-A page has to fullfil some criteria before sending a webmention. It has to be
+A page has to fullfil some criteria before a webmention is sent. It has to be
 
-1. Unlisted or listed (no draft)
-2. On the allow list or
-3. Not on the block list
+- No draft
+- On the allow list 
+- Not on the block list
 
 After saving a page fullfilling this criteria, IndieConnector looks for Urls in your content and tries to send a webmention to those urls. If it doesn't find a webmention endpoint on the target page, it tries to send a pingback.
 
@@ -27,8 +27,8 @@ By default IndieConnector searches for urls in three fields: `text`, `descriptio
 ```
 'mauricerenck.indieConnector.send.url-fields' => [
     'textfield:text',
-    'layouteditor:layout',
-    'blockeditor:block'
+    'layoutfield:layout',
+    'blockfield:block'
 ]
 ```
 
@@ -56,7 +56,7 @@ You can restrict sending webmention to certain templates, via allow or block lis
 IndieConnector first looks if the template is blocked and stops then.
 If it's not blocked, it'll go on and see if it's allowed.
 
-**Be aware!** Adding a template to the blocklist, will result in blocking only this template and sending webmention for all the other templates. Adding a template to the allowlist, will result in sending webmention *only* for the allowed templates.
+**Be aware!** Adding a template to the blocklist, will result in blocking only this template and sending webmention for *all* the other templates. Adding a template to the allowlist, will result in sending webmention *only* for the allowed templates.
 
 You can combine both options, but I recommend using the allow list *or* the block list.
 
@@ -71,19 +71,19 @@ indieConnetor:
     extends: indieconnector/fields/webmentions
 ```
 
-This will show a new toggle (enabled by default). When disabling the toggle, no webmention will be sent after updating or publishing the page.
-This way you can decide for every page you publish if it should send webmentions or not.
+This will show a toggle (enabled by default). When disabling the toggle, no webmention will be sent after updating or publishing the page.
 
 ## Mark pages as deleted
 
 When you delete a page in Kirby, accessing the page after that will result in a `404`. If your page included a webmention you may want to inform the receiver, that the page has been deleted. In this case Kirby has to return a `410 Gone` status code. Therefore IndieConnector will store deleted pages in a sqlite database and return a `410` status code for those pages.
+
 To enable this feature you have to set the following option:
 
 ```php
 'mauricerenck.indieConnector.send.markDeleted' => true
 ```
 
-You also have to configure the path to the sqlite database, as described in the [panel view](panel-view.md) documentation.
+You also have to configure the path to the sqlite database, as described in the [database](database.md) documentation.
 
 **Be aware* that this will result in a database lookup for *every* page request. It would be good thing to inform receivers about deleted pages, but it may slow down your site. So use this feature with caution.
 
@@ -124,6 +124,6 @@ You can send different types of webmentions. For some of them IndieConnector com
 (repost: https://example.com)
 ```
 
-All those tags function as the default Kirby link Kirbytag and will simply add a specific tag to it. You can use all the other options of the link tag as well. See https://getkirby.com/docs/reference/text/kirbytags/link
+All those tags function as the default Kirby link Kirbytag and will simply add a specific microformats to it. You can use all the other options of the link tag as well. See https://getkirby.com/docs/reference/text/kirbytags/link
 
 You can send even more different kinds of webmentions. [Have a look at the Microformats you can use](microformats.md).

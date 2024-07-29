@@ -1,17 +1,19 @@
-# Posting to Mastodon or Bluesky
+# Posting to Mastodon / Bluesky
 
-You can enable automatically posting to Mastodon or Bluesky when a new page is published. IndieConnector will then create a post with a short description and a link to the page.
+You can enable automatically posting to Mastodon and/or Bluesky when a new page is published. IndieConnector will then create a post with a short description and a link to the page.
 
 ## General setup
 
-In order to post to Mastodon or Bluesky, you have to setup some fields in your `config.php`. The textfield is the field that will be used as the text for the post. And if you want to also post an image, you have to define an image field:
+In order to post to Mastodon or Bluesky, you have to setup some fields in your `config.php`. The **textfield** is the field that will be used as the text for the post. And if you want to also post an image, you have to define an **imagefield**. Use the same name as in your blueprint:
 
 ```php
 'mauricerenck.indieConnector.post.textfield' => 'description',
 'mauricerenck.indieConnector.post.imagefield' => 'postImage',
 ```
 
-The image field must be of type `files` and can only inlcude one image. The image will be uploaded to Mastodon or Bluesky:
+The image field must be of type `files` and can only include one image. The image will be uploaded to Mastodon or Bluesky:
+
+Example for the image field:
 
 ```yaml
 postImage:
@@ -38,6 +40,14 @@ Depending on your Mastodon instance the text length may vary. The default is 500
 
 ```php
 'mauricerenck.indieConnector.post.mastodon.text-length' => 500,
+```
+
+### Get the URL of the post
+
+If you want to display te URL of your Mastodon post on your page, so that people can use it to interact with your post, you can use the following page method:
+
+```php
+<?= $page->icGetMastodonUrl(); ?>
 ```
 
 ## Bluesky
@@ -80,4 +90,4 @@ fields:
     extends: indieconnector/fields/webmentions
 ```
 
-This will show toggle in the panel that allows you to disable posting for this page.
+This will show a toggle in the panel that allows you to disable posting for this page.

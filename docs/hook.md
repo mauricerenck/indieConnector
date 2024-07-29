@@ -19,7 +19,7 @@ When the hook is fired you get the webmention data as an php array, which looks 
 
 ```php
 [
-'type' => STRING // one of the webmention types
+'type' => string // one of the webmention types
 'target' => 'target url',
 'source' => 'source url',
 'published' => 'publication date',
@@ -44,3 +44,9 @@ A webmention previously received by IndieConnector was deleted.
     }
 ],
 ```
+
+## Types of webmentions:
+
+There can be different types of webmentions, those are:
+
+'like-of', 'repost-of', 'bookmark-of', 'in-reply-to', 'rsvp', 'mention-of', 'invite'

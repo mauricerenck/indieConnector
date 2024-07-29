@@ -5,9 +5,7 @@
 To "connect" this plugin to webmention.io you have to set a callback secret in your config.php
 
 ```
-[
-    'mauricerenck.indieConnector.secret' => 'my-secret',
-]
+'mauricerenck.indieConnector.secret' => 'my-secret',
 ```
 
 This could be any string, think of it as a sort of password.
@@ -29,16 +27,3 @@ In order to be allowed to use webmention hooks, you have to receive at least one
 -   Go to your webmention.io account -> Webhooks.
 -   Enter the IndieConnector endpoint: `https://your-url.tld/indieconnector/webhook/webmentionio`
 -   Enter the callback secret you set in your config.php
-
-## Enable panel overview
-
-_This feature required sqlite to be available by your hoster. Most hosters support this by default, but you might want to make sure it's enabled._
-
-IndieConnector comes with a nice overview of all your received webmentions. To enable this feature, set the `stats` option in your `config.php` to true and set a path where the database file should be stored. **Make sure this path exists, it will not be created**. The path is relative to your kirby root.
-
-Example setup:
-
-```
-'mauricerenck.indieConnector.stats.enabled' => true,
-'mauricerenck.indieConnector.sqlitePath' => 'content/.sqlite/',
-```
