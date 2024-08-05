@@ -4,7 +4,7 @@ fields:
         label: Webmentions
         type: toggle
         default: true
-        width: 1/2
+        width: 1/3
         text:
             - en: Webmentions deactivated
               de: Webmentions deaktiviert
@@ -14,9 +14,13 @@ fields:
         label: External Posting
         type: toggle
         default: true
-        width: 1/2
+        width: 1/3
         text:
             - en: Posting deactivated
               de: Nicht woanders posten
             - en: Posting enabled
               de: Woanders posten
+    mastodonStatusUrl:
+        label: Mastodon URL
+        type: url
+        width: 1/3

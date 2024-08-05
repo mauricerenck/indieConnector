@@ -5,6 +5,6 @@ namespace mauricerenck\IndieConnector;
 return [
     'icGetMastodonUrl' => function () {
         $mastodonSender = new MastodonSender();
-        return $mastodonSender->getPostTargetUrl('mastodon', $this);
+        return ($this->mastodonStatusUrl()->isNotEmpty()) ? $this->mastodonStatusUrl()->value() : $mastodonSender->getPostTargetUrl('mastodon', $this);
     },
 ];
