@@ -115,6 +115,11 @@ class Sender
 
     public function getPostTargetUrl($target, $page)
     {
+
+        if($page->mastodonStatusUrl()->isNotEmpty()) {
+            return $page->mastodonStatusUrl()->value();
+        }
+
         $outbox = $this->readOutbox($page);
 
         $posts = array_filter($outbox['posts'], function ($post) use ($target) {

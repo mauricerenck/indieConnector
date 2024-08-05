@@ -342,6 +342,72 @@ final class senderTest extends TestCaseMocked
 
     /**
      * @group mastodonSender
+     * @testdox getPostTargetUrl - should get Mastodon URL from field
+     */
+    public function testShouldGetMastodonUrlField()
+    {
+        $contentWithMastodonUrl = ['mastodonStatusUrl' => 'https://fieldurl.example.com'];
+        $page = $this->getPageMock(content: $contentWithMastodonUrl);
+
+        $outbox = [
+            'version' => 2,
+            'webmentions' => [],
+            'posts' => [
+                [
+                    'url' => 'https://mastodon.example.com',
+                    'status' => 'success',
+                    'target' => 'mastodon',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
+                [
+                    'url' => 'https://bluesky.example.com',
+                    'status' => 'success',
+                    'target' => 'bluesky',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
+            ],
+        ];
+
+        $this->senderUtilsMock->shouldReceive('readOutbox')->andReturn($outbox);
+
+        $result = $this->senderUtilsMock->getPostTargetUrl('mastodon', $page);
+
+        $this->assertEquals('https://fieldurl.example.com', $result);
+    }
+
+    /**
+     * @group mastodonSender
+     * @testdox getPostTargetUrl - should return null on empty data
+     */
+    public function testShouldGetMastodonUrlNull()
+    {
+        $page = $this->getPageMock();
+
+        $outbox = [
+            'version' => 2,
+            'webmentions' => [],
+            'posts' => [
+                [
+                    'url' => 'https://bluesky.example.com',
+                    'status' => 'success',
+                    'target' => 'bluesky',
+                    'date' => date('Y-m-d H:i:s'),
+                    'retries' => 0,
+                ],
+            ],
+        ];
+
+        $this->senderUtilsMock->shouldReceive('readOutbox')->andReturn($outbox);
+
+        $result = $this->senderUtilsMock->getPostTargetUrl('mastodon', $page);
+
+        $this->assertEquals(null, $result);
+    }
+
+    /**
+     * @group mastodonSender
      * @testdox getPostTargetUrl - should get Bluesky URL
      */
     public function testShouldGetblueskyUrl()
