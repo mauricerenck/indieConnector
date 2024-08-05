@@ -13,8 +13,9 @@ class Migrations
     {
         $statsEnabled = option('mauricerenck.indieConnector.stats.enabled', false);
         $queueEnabled = option('mauricerenck.indieConnector.queue.enabled', false);
+        $disableMigrations = option('mauricerenck.indieConnector.disableMigrations', false);
 
-        if ($statsEnabled || $queueEnabled) {
+        if (($statsEnabled || $queueEnabled) && !$disableMigrations) {
             $pluginPath = str_replace('lib', '', __DIR__);
             $migrationPath = $pluginPath . '/migrations/';
 
