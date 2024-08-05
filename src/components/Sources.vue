@@ -12,7 +12,7 @@
                 mentions: { label: 'mentions', type: 'html', width: '40px', align: 'center' },
                 bookmarks: { label: 'bookmarks', type: 'html', width: '40px', align: 'center' },
             }"
-            :index="true"
+            :index="false"
             :rows="sourceList"
             :pagination="{
                 page: pagination.page,
