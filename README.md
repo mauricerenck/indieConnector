@@ -43,9 +43,14 @@ Use one of these three methods to install the plugin:
 
 ## Roadmap
 
-- [ ] Send Webmentions and Posts asynchronously
+- [ ] Queue for sending webmentions
+- [ ] Queue for sending mastodon posts
+- [ ] Queue for sending bluesky posts
 - [ ] Nested indieweb replies
 - [ ] Blocklist for users on Mastodon and Bluesky
 - [ ] Manual post to Mastodon and Bluesky
 - [ ] Manual queue cleanup
 - [ ] Block hosts from within the panel
+- [ ] Post complete texts to Mastodon and Bluesky splitted in threads
+- [ ] Option for using Kirby UUID permalinks in Mastodon/Bluesky posts
+- [ ] Get replies from Mastodon and Bluesky without brid.gy
