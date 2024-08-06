@@ -41,3 +41,4 @@
 /~
 /content/phpunit/.lock
 /.ddev
+/site/config/config.indieconnector.ddev.site.php

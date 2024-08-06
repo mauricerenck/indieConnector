@@ -7,25 +7,37 @@ return [
         'basicAuth' => true,
     ],
     'languages' => true,
-    'mauricerenck.indieConnector.sendWebmention' => true,
-    'mauricerenck.indieConnector.debug' => true,
+
+    'mauricerenck.indieConnector.localhosts' => [],
     'mauricerenck.indieConnector.secret' => 'my-secret',
-    'mauricerenck.indieConnector.stats' => [
+    'mauricerenck.indieConnector.stats.enabled' => true,
+
+    'mauricerenck.indieConnector.send' => [
         'enabled' => true,
+        'markDeleted' => true,
+        'maxRetries' => 3,
+        'skipSameHost' => true,
+        'allowedTemplates' => ['phpunit', 'default'],
+        'blockedTemplates' => ['blocked-template'],
+        'url-fields' => ['text:text','textfield:text', 'layouteditor:layout', 'blockeditor:block'],
     ],
+
     'mauricerenck.indieConnector.receive' => [
-        'useHtmlContent' => false,
-    ],
-    'mauricerenck.indieConnector.queue' => [
         'enabled' => true,
+        'useHtmlContent' => false,
+        'blockedSources' => [],
+    ],
+
+    'mauricerenck.indieConnector.queue' => [
+        'enabled' => false,
         'maxRetries' => 5,
     ],
     'mauricerenck.indieConnector.sqlitePath' => '.sqlite/',
-    'mauricerenck.indieConnector.allowedTemplates' => ['phpunit'],
-    'mauricerenck.indieConnector.blockedTemplates' => ['blocked-template'],
-    'mauricerenck.indieConnector.send-mention-url-fields' => [
-        'textfield:text',
-        'layouteditor:layout',
-        'blockeditor:block',
+
+    'mauricerenck.indieConnector.post' => [
+        'textfield' => 'description',
+        'imagefield' => 'mastodonimage',
+        'allowedTemplates' => ['phpunit', 'default'],
+        'blockedTemplates' => ['blocked-template'],
     ],
 ];
