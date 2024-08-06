@@ -1,3 +1,103 @@
+# [2.0.0](https://github.com/mauricerenck/indieConnector/compare/v1.10.0...v2.0.0) (2024-08-06)
+
+
+### Features
+
+* native webmentions ([#13](https://github.com/mauricerenck/indieConnector/issues/13)) ([38321f6](https://github.com/mauricerenck/indieConnector/commit/38321f648b828795d807e7a8f286dedfa2f08448))
+
+
+### BREAKING CHANGES
+
+* - rewrite of receive classes and tests
+
+* feat: stats enabled option
+* the configuration stats = true has been moved to stats.enabled = true
+
+* feat: split data into webmention hooks
+
+* feat: webmention queue
+
+* feat: process queue
+
+* feat: urlcheck class
+
+* feat: page checks class
+
+* feat: database class
+
+* feat: outsourced webmention io specific code
+
+* feat: mastodon posting
+
+* feat: post images
+
+* feat: block templates
+
+* feat: disable per page
+
+* feat: configure status length
+
+* feat: handle deleted pages
+
+* feat: paginated tables in panel view
+
+* feat: disable migrations
+
+* feat: mastodon url panel field
+
+* feat: block source urls in config
+
+* feat: check for disabled webmentions on page level
+
+* feat: kirbytags for like, bookmark, repost, reply
+
+* feat: disable posting to mastodon on page level
+
+* feat: post to bluesky
+
+* feat: endpoint snippet
+
+* feat: updated outbox format
+* feat: save status of external posts
+
+* feat: mastodon url page method
+
+* feat: check bsky and mastodon urls and do not send again
+
+* feat: stat view updates
+
+* fix: stats option keeping donottrack in mind
+
+* fix: localurl checks
+
+* fix: use uri instead of slug for full path
+
+* fix: 410 route
+
+* fix: mastodon sender enable had wrong init value
+
+* fix: adapt to webmentions.rock tests
+
+* improvement: hook - detect urls once
+
+* improvement: microformat detection and tests
+
+* improvement: robust author field getters
+
+* improvement: show author and page title in stats
+
+* improvement: stats now check if the webmention is an update and doesnt count twice
+
+* improvement: mastodon sender with new options
+
+* improvement: new option structure
+
+* improvement: moved routes into separate file
+
+* improvement: stats
+
+* improvement: use ktable component
+
 # [1.10.0](https://github.com/mauricerenck/indieConnector/compare/v1.9.1...v1.10.0) (2023-12-30)
 
 
