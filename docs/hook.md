@@ -1,16 +1,10 @@
 # Hooks
 
-IndieConnector receives and Webmentions. But it doesn't "do" anything with it. It's function is to handle all the stuff around Webmentions and then normalize the format and trigger a hook. Other plugins can then subscribe to this hook and use the data.
+When IndieConnector receives a Webmention, it triggers a hook. This hook can be used by other plugins to do something with the received data.
 
-The [Komments plugin]() does this, for example.
+## Webmention received
 
-If you want to build your own plugin using Webmentions this is your starting point.
-
-## Usage
-
-Whenever a webmention ins received, IndieConnector will trigger a Kirby hook your plugin can subscribe to. To do this, you have to listen to the hook by setting it up in your plugins `index.php` file:
-
-```
+```php
 'hooks' => [
     'indieConnector.webmention.received' => function ($webmention, $targetPage) {
         // $webmention: webmention data, see below
@@ -21,16 +15,11 @@ Whenever a webmention ins received, IndieConnector will trigger a Kirby hook you
 ],
 ```
 
-You will then get the data of the webmention in a normalized format **and** the page object of the page the webmention was sent to. With this data you can now do whatever you want.
-
-
-## Data format
-
 When the hook is fired you get the webmention data as an php array, which looks like this:
 
-```
+```php
 [
-'type' => STRING // one of the webmention.io types, see https://webmention.io/settings/webhooks,
+'type' => string // one of the webmention types
 'target' => 'target url',
 'source' => 'source url',
 'published' => 'publication date',
@@ -43,3 +32,21 @@ When the hook is fired you get the webmention data as an php array, which looks 
 'content' => 'comment text or empty string'
 ]
 ```
+
+## Webmention deleted
+
+A webmention previously received by IndieConnector was deleted.
+
+```php
+'hooks' => [
+    'indieConnector.webmention.deleted' => function ($sourceUrl, $targetUrl) {
+        // YOUR CODE
+    }
+],
+```
+
+## Types of webmentions:
+
+There can be different types of webmentions, those are:
+
+'like-of', 'repost-of', 'bookmark-of', 'in-reply-to', 'rsvp', 'mention-of', 'invite'

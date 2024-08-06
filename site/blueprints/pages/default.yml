@@ -1,1 +1,30 @@
-fields:
+options:
+    changeSlug: false
+    update: true
+
+sections:
+    phpunit:
+        type: fields
+        fields:
+            indieConnetor:
+                extends: indieconnector/fields/webmentions
+            description:
+                type: textarea
+                label: description
+            textfield:
+                type: textarea
+                label: Text
+            layouteditor:
+                type: layout
+                label: Layout
+            blockeditor:
+                type: blocks
+                label: Blocks
+            mastodonimage:
+                type: files
+                max: 1
+                label: Mastodon image
+    mediathek:
+        type: files
+    subpages:
+        type: pages

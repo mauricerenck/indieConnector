@@ -1,0 +1,134 @@
+{
+    "items": [
+        {
+            "type": ["h-entry"],
+            "properties": {
+                "category": ["Kirby CMS"],
+                "summary": ["Das Podcaster-Plugin unterst\u00fctzt nun Transkripte"],
+                "bridgy-fed": ["https://fed.brid.gy/"],
+                "published": ["2024-02-01 09:30:00"],
+                "content": [
+                    {
+                        "html": "<header>\n            <div class=\"text-meta long\">\n    <div class=\"meta\">\n                <svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewbox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"w-6 h-6\">\n            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z\"></path>\n        </svg>\n\n        <time class=\"published date updated dt-published\" itemprop=\"datePublished\" datetime=\"2024-02-01 09:30:00\">01.02.2024</time>\n    </div>\n\n        \n        <div class=\"taxonomies\">\n            <svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewbox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"w-5 h-5 inline-block\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z\"></path>\n            </svg>\n            <span class=\"p-category\">\n                                                                    <a href=\"https://maurice-renck.de/de/category/kirby\">Kirby CMS</a>            </span>\n\n                    </div>\n                        <div class=\"vcard u-author h-card p-author\">\n            <svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewbox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"w-6 h-6\">\n                <path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10\"></path>\n            </svg>\n\n            <a class=\"p-name u-url\" href=\"https://maurice-renck.de\">Maurice Renck</a>\n        </div>\n    </div>                            <h1>Kirby Podcaster transcripts</h1>\n                <div class=\"subtitle p-summary\" itemprop=\"description\">Das Podcaster-Plugin unterst\u00fctzt nun Transkripte</div>\n                    </header>\n\n                    <div class=\"top-hero\">\n    <img src=\"https://maurice-renck.de/media/pages/blog/2024/kirby-podcaster-transcripts/4eb0a22d1f-1706721402/podcaster-transcripts-1000x.webp\" width=\"1000px\" loading=\"lazy\">\n    </div>\n\n\n    <p>Deine Podcasts sind jetzt ein wenig inklusiver. Apple f\u00fchrt automatische Transkripte ein, und das Podcaster-Plugin enth\u00e4lt jetzt auch eine neue Transkriptfunktion. Diese erm\u00f6glicht es dir, Transkriptdateien im VTT- oder SRT-Format hochzuladen und jedem Transkript eine Sprache zuzuweisen.</p>\n<p>Auf diese Weise kannst du Apple (und anderen) Transkripte bereitstellen, ohne auf deren automatische Generierung angewiesen zu sein. \u00d6ffne einfach den Episoden-Tab, und du findest ein neues Feld unter dem Audio-Upload. Sobald du ein Transkript hochl\u00e4dst, werden sie zu deinem RSS-Feed hinzugef\u00fcgt und stehen allen Playern zur Verf\u00fcgung, die diese Funktionalit\u00e4t unterst\u00fctzen.</p>\n<p>Das neueste Update ist \u00fcber Composer oder die <a href=\"https://podcaster-plugin.com/\">Podcaster-Website</a> verf\u00fcgbar.</p>\n<p>Viel Spa\u00df beim Podcasten!</p>\n\n        \n        <a class=\"u-bridgy-fed\" href=\"https://fed.brid.gy/\"></a>",
+                        "value": "01.02.2024 Kirby CMS Maurice Renck Kirby Podcaster transcripts Das Podcaster-Plugin unterst\u00fctzt nun Transkripte https://maurice-renck.de/media/pages/blog/2024/kirby-podcaster-transcripts/4eb0a22d1f-1706721402/podcaster-transcripts-1000x.webp\nDeine Podcasts sind jetzt ein wenig inklusiver. Apple f\u00fchrt automatische Transkripte ein, und das Podcaster-Plugin enth\u00e4lt jetzt auch eine neue Transkriptfunktion. Diese erm\u00f6glicht es dir, Transkriptdateien im VTT- oder SRT-Format hochzuladen und jedem Transkript eine Sprache zuzuweisen.\nAuf diese Weise kannst du Apple (und anderen) Transkripte bereitstellen, ohne auf deren automatische Generierung angewiesen zu sein. \u00d6ffne einfach den Episoden-Tab, und du findest ein neues Feld unter dem Audio-Upload. Sobald du ein Transkript hochl\u00e4dst, werden sie zu deinem RSS-Feed hinzugef\u00fcgt und stehen allen Playern zur Verf\u00fcgung, die diese Funktionalit\u00e4t unterst\u00fctzen.\nDas neueste Update ist \u00fcber Composer oder die Podcaster-Website verf\u00fcgbar.\nViel Spa\u00df beim Podcasten!"
+                    }
+                ],
+                "author": [
+                    {
+                        "type": ["h-card"],
+                        "properties": { "name": ["Maurice Renck"], "url": ["https://maurice-renck.de"] },
+                        "value": "Maurice Renck"
+                    }
+                ]
+            }
+        },
+        {
+            "type": ["h-card", "h-card-footer"],
+            "properties": {
+                "name": ["Maurice Renck"],
+                "note": [
+                    "Maurice entwickelt Ideen & Tools f\u00fcr digitales Storytelling und ein offenes Web. Er schreibt seit \u00fcber 25 Jahren ins Internet, podcastet seit 2005. Maurice gr\u00fcndete ein Startup und ein Print-Magazin. Er schreibt Texte, Musik und Code."
+                ],
+                "photo": [
+                    {
+                        "value": "https://indieconnector.tld/profile.jpg",
+                        "alt": "A photo of Maurice Renck"
+                    }
+                ],
+                "url": ["https://maurice-renck.de"]
+            }
+        }
+    ],
+    "rels": {
+        "alternate": [
+            "https://maurice-renck.de/de/feed.rss",
+            "https://maurice-renck.de/de/erzaehlen/feed",
+            "https://maurice-renck.de/de/hyb/feed",
+            "https://maurice-renck.de/en/feed.rss",
+            "https://maurice-renck.de/en/blog/2024/kirby-podcaster-transcripts"
+        ],
+        "icon": ["https://maurice-renck.de/favicon.ico", "https://maurice-renck.de/icon.svg"],
+        "apple-touch-icon": ["https://maurice-renck.de/apple-touch-icon.png"],
+        "manifest": ["https://maurice-renck.de/manifest.json"],
+        "pingback": ["https://webmention.io/maurice-renck.de/xmlrpc"],
+        "webmention": ["https://webmention.io/maurice-renck.de/webmention"],
+        "authorization_endpoint": ["https://indieauth.com/auth"],
+        "token_endpoint": ["https://tokens.indieauth.com/token"],
+        "micropub": ["https://maurice-renck.de/micropub"],
+        "me": [
+            "https://github.com/mauricerenck",
+            "https://twitter.com/mauricerenck",
+            "https://instagram.com/mauricerenck",
+            "https://mastodon.online/@mauricerenck"
+        ],
+        "pgpkey": ["https://maurice-renck.de/mauricerenck-gpg.pub"],
+        "stylesheet": [
+            "https://maurice-renck.de/assets/css/tailwind.css",
+            "https://maurice-renck.de/assets/css/style.css"
+        ],
+        "nofollow": [
+            "https://mastodon.social/@getkirby",
+            "https://social.romaricpascal.com/@romaric",
+            "https://mastodon.social/@AnthonyBaker",
+            "https://mastodon.social/@rudigermeyer",
+            "https://podcasts.social/@neugierig_fm",
+            "https://social.anoxinon.de/@trommelspeicher",
+            "https://typo.social/@Luke",
+            "https://chaos.social/@helhum",
+            "https://getkirby.com",
+            "https://all-inkl.com/PA4B04B2C0EA6FD"
+        ]
+    },
+    "rel-urls": {
+        "https://maurice-renck.de/de/feed.rss": {
+            "title": "Alle Beitr\u00e4ge",
+            "type": "application/json",
+            "rels": ["alternate"]
+        },
+        "https://maurice-renck.de/de/erzaehlen/feed": {
+            "title": "Erz\u00e4hlen Podcast",
+            "type": "application/json",
+            "rels": ["alternate"]
+        },
+        "https://maurice-renck.de/de/hyb/feed": {
+            "title": "Hack Your Business Podcast",
+            "type": "application/json",
+            "rels": ["alternate"]
+        },
+        "https://maurice-renck.de/en/feed.rss": {
+            "title": "All posts",
+            "type": "application/json",
+            "rels": ["alternate"]
+        },
+        "https://maurice-renck.de/favicon.ico": { "rels": ["icon"] },
+        "https://maurice-renck.de/icon.svg": { "type": "image/svg+xml", "rels": ["icon"] },
+        "https://maurice-renck.de/apple-touch-icon.png": { "rels": ["apple-touch-icon"] },
+        "https://maurice-renck.de/manifest.json": { "rels": ["manifest"] },
+        "https://maurice-renck.de/en/blog/2024/kirby-podcaster-transcripts": {
+            "hreflang": "en",
+            "rels": ["alternate"]
+        },
+        "https://webmention.io/maurice-renck.de/xmlrpc": { "rels": ["pingback"] },
+        "https://webmention.io/maurice-renck.de/webmention": { "rels": ["webmention"] },
+        "https://indieauth.com/auth": { "rels": ["authorization_endpoint"] },
+        "https://tokens.indieauth.com/token": { "rels": ["token_endpoint"] },
+        "https://maurice-renck.de/micropub": { "rels": ["micropub"] },
+        "https://github.com/mauricerenck": { "title": "github", "rels": ["me"] },
+        "https://twitter.com/mauricerenck": { "rels": ["me"] },
+        "https://instagram.com/mauricerenck": { "rels": ["me"] },
+        "https://mastodon.online/@mauricerenck": { "title": "mastodon", "rels": ["me"] },
+        "https://maurice-renck.de/mauricerenck-gpg.pub": { "rels": ["pgpkey"] },
+        "https://maurice-renck.de/assets/css/tailwind.css": { "rels": ["stylesheet"] },
+        "https://maurice-renck.de/assets/css/style.css": { "rels": ["stylesheet"] },
+        "https://mastodon.social/@getkirby": { "text": "\n    \n", "rels": ["nofollow"] },
+        "https://social.romaricpascal.com/@romaric": { "text": "\n    \n", "rels": ["nofollow"] },
+        "https://mastodon.social/@AnthonyBaker": { "text": "\n    \n", "rels": ["nofollow"] },
+        "https://mastodon.social/@rudigermeyer": { "text": "\n    \n", "rels": ["nofollow"] },
+        "https://podcasts.social/@neugierig_fm": { "text": "\n    \n", "rels": ["nofollow"] },
+        "https://social.anoxinon.de/@trommelspeicher": { "text": "\n    \n", "rels": ["nofollow"] },
+        "https://typo.social/@Luke": { "text": "\n    \n", "rels": ["nofollow"] },
+        "https://chaos.social/@helhum": { "text": "\n    \n", "rels": ["nofollow"] },
+        "https://getkirby.com": { "text": "Kirby", "rels": ["nofollow"] },
+        "https://all-inkl.com/PA4B04B2C0EA6FD": { "text": "all-inkl.com", "rels": ["nofollow"] }
+    }
+}

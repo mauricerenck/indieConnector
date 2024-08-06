@@ -1,6 +1,6 @@
 <template>
     <k-inside>
-        <k-view class="k-webmentions-view">
+        <div class="k-webmentions-view">
             <k-header>Webmentions</k-header>
             <div class="prev-next">
                 <button class="k-link k-button" v-on:click="goToPrevMonth"><k-icon type="angle-left" /></button>
@@ -9,10 +9,13 @@
             </div>
 
             <DetailsByMonth :summary="summary" />
-            <Targets :targets="targets" />
             <Sources :sources="sources" />
-            <Sent :outbox="sent" />
-        </k-view>
+
+            <k-grid style="gap: 2rem; --columns: 2">
+                <Sent :outbox="sent" />
+                <Targets :targets="targets" />
+            </k-grid>
+        </div>
     </k-inside>
 </template>
 
@@ -26,7 +29,7 @@ export default {
         prevYear: Number,
         prevMonth: Number,
         summary: Object,
-        targets: Array,
+        targets: { type: Array, default: [] },
         sources: Array,
         sent: Array,
     },
@@ -46,10 +49,6 @@ export default {
 
 <style lang="scss">
 .k-webmentions-view {
-    .spacer {
-        margin-top: var(--spacing-6);
-    }
-
     .wrapper {
         background: #fff;
         box-shadow: var(--box-shadow-item);
@@ -57,59 +56,37 @@ export default {
         margin-top: var(--spacing-6);
     }
 
-    .k-icon {
-        margin-right: 0.5em;
+    .muted {
+        color: var(--color-gray-600);
     }
 
-    .k-link-centered {
-        display: flex;
-        align-content: center;
-        line-height: 30px;
-    }
-
-    .avatar {
-        width: 30px;
-        margin-right: 0.5em;
-    }
-
-    .dimmed {
-        opacity: 0.5;
-    }
-
-    table {
-        width: 100%;
-        border: 0;
-    }
-
-    tr:nth-child(even) {
-        background-color: #f2f2f2;
-    }
-
-    th {
-        text-align: left;
-    }
-
-    td {
-        width: 10%;
-        padding: 7px 5px;
-    }
-
-    td:first-child {
-        width: 50%;
-    }
-
-    td div {
-        display: flex;
-        vertical-align: middle;
-        align-items: center;
-    }
-
-    .shortened-link {
-        display: inline-block;
+    .shortened-text {
+        display: block;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 50%;
+        max-width: 80ch;
+    }
+
+    h2 {
+        font-size: var(--text-3xl);
+        margin: 2em 0 1em 0;
+    }
+
+    .center-icon {
+        display: flex;
+        justify-content: center;
+
+        svg {
+            display: inline-block;
+        }
+    }
+
+    .group-label {
+        background-color: var(--color-blue-800);
+        color: var(--color-white);
+        padding: 2px 5px;
+        border-radius: var(--rounded-md);
     }
 }
 </style>

@@ -38,3 +38,6 @@
 /.sqlite
 /site/cache
 /content/phpunit-test
+/~
+/content/phpunit/.lock
+/.ddev

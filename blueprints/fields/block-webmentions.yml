@@ -1,11 +1,26 @@
 type: group
 fields:
-  webmentionsStatus:
-    label: Webmentions
-    type: toggle
-    default: true
-    text:
-      - en: Webmentions deactivated
-        de: Webmentions deaktiviert
-      - en: Webmentions active
-        de: Webmentions aktiviert
+    webmentionsStatus:
+        label: Webmentions
+        type: toggle
+        default: true
+        width: 1/3
+        text:
+            - en: Webmentions deactivated
+              de: Webmentions deaktiviert
+            - en: Webmentions active
+              de: Webmentions aktiviert
+    enableExternalPosting:
+        label: External Posting
+        type: toggle
+        default: true
+        width: 1/3
+        text:
+            - en: Posting deactivated
+              de: Nicht woanders posten
+            - en: Posting enabled
+              de: Woanders posten
+    mastodonStatusUrl:
+        label: Mastodon URL
+        type: url
+        width: 1/3

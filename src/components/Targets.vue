@@ -1,51 +1,94 @@
 <template>
-    <div class="wrapper">
-        <k-headline size="large">Targets</k-headline>
-        <k-line-field />
-        <table>
-            <tr v-for="target in targets" :key="target.id">
-                <td>
-                    <k-link :to="target.panelUrl" :title="target.slug">{{ target.title }}</k-link>
-                </td>
-                <td>
-                    <div v-bind:class="{ dimmed: target.likes === 0 }">
-                        <k-icon type="shape-icon-fav" />
-                        {{ target.likes }}
-                    </div>
-                </td>
-                <td>
-                    <div v-bind:class="{ dimmed: target.replies === 0 }">
-                        <k-icon type="shape-icon-reply" />
-                        {{ target.replies }}
-                    </div>
-                </td>
-                <td>
-                    <div v-bind:class="{ dimmed: target.reposts === 0 }">
-                        <k-icon type="shape-icon-repost" />
-                        {{ target.reposts }}
-                    </div>
-                </td>
-                <td>
-                    <div v-bind:class="{ dimmed: target.mentions === 0 }">
-                        <k-icon type="shape-icon-mention" />
-                        {{ target.mentions }}
-                    </div>
-                </td>
-                <td>
-                    <div v-bind:class="{ dimmed: target.bookmarks === 0 }">
-                        <k-icon type="shape-icon-bookmark" />
-                        {{ target.bookmarks }}
-                    </div>
-                </td>
-            </tr>
-        </table>
+    <div>
+        <k-headline tag="h2">Targets</k-headline>
+
+        <k-table
+            :columns="{
+                title: { label: 'Page', type: 'html' },
+                likes: { label: 'likes', type: 'html', width: '40px', align: 'center' },
+                replies: { label: 'replies', type: 'html', width: '40px', align: 'center' },
+                reposts: { label: 'reposts', type: 'html', width: '40px', align: 'center' },
+                mentions: { label: 'mentions', type: 'html', width: '40px', align: 'center' },
+                bookmarks: { label: 'bookmarks', type: 'html', width: '40px', align: 'center' },
+            }"
+            :index="false"
+            :rows="targetList"
+            :pagination="{
+                page: pagination.page,
+                limit: pagination.limit,
+                total: pagination.total,
+                details: true,
+            }"
+            @paginate="pagination.page = $event.page"
+        >
+            <template #header="{ columnIndex, label}">
+                <span>
+                    <k-icon v-if="columnIndex === 'likes'" type="heart-filled" style="color: var(--color-red-700);" />
+                    <k-icon v-else-if="columnIndex === 'replies'" type="chat" style="color: var(--color-yellow-700);" />
+                    <k-icon
+                        v-else-if="columnIndex === 'reposts'"
+                        type="indie-repost"
+                        style="color: var(--color-green-700);"
+                    />
+                    <k-icon
+                        v-else-if="columnIndex === 'mentions'"
+                        type="indie-mention"
+                        style="color: var(--color-blue-700);"
+                    />
+                    <k-icon
+                        v-else-if="columnIndex === 'bookmarks'"
+                        type="bookmark"
+                        style="color: var(--color-purple-700);"
+                    />
+                    <span v-else>{{ label }}</span>
+                </span>
+            </template>
+        </k-table>
     </div>
 </template>
 
 <script>
 export default {
     props: {
-        targets: Object,
+        targets: {
+            type: Array,
+            default: () => [],
+        },
+    },
+    data() {
+        return {
+            pagination: {
+                page: 1,
+                limit: 20,
+                total: 0,
+            },
+        }
+    },
+    methods: {
+        printNumberValue(value) {
+            const className = value === 0 ? 'muted' : ''
+            return `<span class="${className}">${value}</span>`
+        },
+    },
+    computed: {
+        index() {
+            return (this.pagination.page - 1) * this.pagination.limit + 1
+        },
+        targetList() {
+            this.pagination.total = this.targets.length
+            const targets = this.targets.map(target => {
+                return {
+                    title: `<a href="${target.panelUrl}">${target.title}</k-link>`,
+                    likes: this.printNumberValue(target.likes),
+                    replies: this.printNumberValue(target.replies),
+                    reposts: this.printNumberValue(target.reposts),
+                    mentions: this.printNumberValue(target.mentions),
+                    bookmarks: this.printNumberValue(target.bookmarks),
+                }
+            })
+
+            return targets.slice(this.index - 1, this.pagination.limit * this.pagination.page)
+        },
     },
 }
 </script>
