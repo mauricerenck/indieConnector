@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/mauricerenck/indieConnector/compare/v2.0.0...v2.0.1) (2024-08-10)
+
+
+### Bug Fixes
+
+* outbox version 2 format mixup ([73ef59e](https://github.com/mauricerenck/indieConnector/commit/73ef59e0dcc78cc0089000abd9350c8f3dc28740))
+
 # [2.0.0](https://github.com/mauricerenck/indieConnector/compare/v1.10.0...v2.0.0) (2024-08-06)
 
 
