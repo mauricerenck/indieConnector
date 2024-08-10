@@ -224,6 +224,11 @@ class Sender
             return $this->convertOutboxToV2($outbox);
         }
 
+        // fix for outbox format mismatch
+        if(count($outbox['webmentions']) > 0 && !isset($outbox['webmentions'][0]['url'])) {
+            $outbox['webmentions'] = $this->convertProcessedUrlsToV2($outbox['webmentions']);
+        }
+
         return $outbox;
     }
 

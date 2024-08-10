@@ -55,14 +55,12 @@ class WebmentionSender extends Sender
         }
 
         $processedUrls = [];
-        $sentUrls = [];
         foreach ($urls as $url) {
             if (!$this->isValidTarget($url)) {
                 continue;
             }
 
             $sent = $this->send($url, $page->url());
-            $sentUrls[] = $url;
 
             $status = $sent ? 'success' : 'error';
             $processedUrls[] = [
@@ -75,7 +73,7 @@ class WebmentionSender extends Sender
         }
 
         $mergedUrls = $this->mergeUrlsWithOutbox($processedUrls, $page);
-        $this->updateWebmentions($sentUrls, $page);
+        $this->updateWebmentions($mergedUrls, $page);
 
         if (option('mauricerenck.indieConnector.stats.enabled', false)) {
             $stats = new WebmentionStats();
