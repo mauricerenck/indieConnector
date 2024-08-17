@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/mauricerenck/indieConnector/compare/v2.0.1...v2.1.0) (2024-08-17)
+
+
+### Features
+
+* define multiple source fields for external posting ([0f9f04c](https://github.com/mauricerenck/indieConnector/commit/0f9f04c72a71cd6f1f526d70adc197dec788657f))
+
 ## [2.0.1](https://github.com/mauricerenck/indieConnector/compare/v2.0.0...v2.0.1) (2024-08-10)
 
 
