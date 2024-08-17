@@ -24,12 +24,12 @@ final class MastodonSenderTest extends TestCaseMocked
         $this->urlCheckMock->shouldReceive('isLocalUrl')->andReturn(false);
 
         $sender = new MastodonSender(
-            500,
-            'description',
-            null,
             'https://example.com',
             '1234567890',
             true,
+            500,
+            ['description'],
+            null,
             $this->urlCheckMock
         );
 
@@ -51,12 +51,12 @@ final class MastodonSenderTest extends TestCaseMocked
         $this->urlCheckMock->shouldReceive('isLocalUrl')->andReturn(false);
 
         $sender = new MastodonSender(
-            500,
-            'description',
-            null,
             'https://example.com',
             '1234567890',
             true,
+            500,
+            ['description'],
+            null,
             $this->urlCheckMock
         );
 
@@ -78,12 +78,12 @@ final class MastodonSenderTest extends TestCaseMocked
         $this->urlCheckMock->shouldReceive('isLocalUrl')->andReturn(false);
 
         $sender = new MastodonSender(
-            500,
-            'description',
-            null,
             'https://example.com',
             '1234567890',
             true,
+            500,
+            ['description'],
+            null,
             $this->urlCheckMock
         );
 

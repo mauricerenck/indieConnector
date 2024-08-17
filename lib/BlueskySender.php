@@ -2,44 +2,27 @@
 
 namespace mauricerenck\IndieConnector;
 
-use Kirby\Toolkit\Str;
 use Exception;
 use Kirby\Filesystem\F;
 use cjrasmussen\BlueskyApi\BlueskyApi;
 
-class BlueskySender extends Sender
+class BlueskySender extends ExternalPostSender
 {
-    private $maxPostLength = 300;
-
     public function __construct(
-        private ?string $textfield = null,
-        private ?string $imagefield = null,
         private ?string $handle = null,
         private ?string $password = null,
         private ?bool $enabled = null,
-        private ?UrlChecks $urlChecks = null,
-        private ?PageChecks $pageChecks = null
     ) {
         parent::__construct();
 
-        $this->textfield = $textfield ?? option('mauricerenck.indieConnector.post.textfield', 'description');
-        $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
-
+        $this->enabled = $enabled ?? option('mauricerenck.indieConnector.bluesky.enabled', false);
         $this->handle = $password ?? option('mauricerenck.indieConnector.bluesky.handle', false);
         $this->password = $password ?? option('mauricerenck.indieConnector.bluesky.password', false);
-        $this->enabled = $enabled ?? option('mauricerenck.indieConnector.bluesky.enabled', false);
-
-        $this->urlChecks = $urlChecks ?? new UrlChecks();
-        $this->pageChecks = $pageChecks ?? new PageChecks();
-
-        // backwards compatibility
-        if (!$textfield && option('mauricerenck.indieConnector.mastodon-text-field', false)) {
-            $this->textfield = option('mauricerenck.indieConnector.mastodon-text-field');
-        }
     }
 
     public function sendPost($page)
     {
+
         if (!$this->enabled) {
             return false;
         }
@@ -69,12 +52,9 @@ class BlueskySender extends Sender
         try {
             $pageUrl = $page->url();
             $trimTextPosition = $this->calculatePostTextLength($page->url());
-            $textfield = $this->textfield;
             $language = 'en';
 
-            $message = $page->$textfield()->isNotEmpty()
-                ? $page->$textfield()->value()
-                : Str::short($page->title(), $trimTextPosition);
+            $message = $this->getTextFieldContent($page, $trimTextPosition);
             $message .= "\n" . $pageUrl;
 
             if ($defaultLanguage = kirby()->defaultLanguage()) {
@@ -121,7 +101,7 @@ class BlueskySender extends Sender
 
             $response = $bluesky->request('POST', 'com.atproto.repo.createRecord', $args);
 
-            $this->updatePosts($response->uri, 200, $page);
+            $this->updatePosts($response->uri, 200, $page, 'bluesky');
             return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -182,16 +162,5 @@ class BlueskySender extends Sender
         } catch (Exception $e) {
             return false;
         }
-    }
-
-    public function calculatePostTextLength(string $url)
-    {
-        $urlLength = Str::length($url);
-        return $this->maxPostLength - $urlLength - 2;
-    }
-
-    public function updatePosts($url, $statusCode, $page)
-    {
-        return $this->updateExternalPosts($url, $statusCode, 'bluesky', $page);
     }
 }

@@ -60,6 +60,7 @@ class ComposerStaticInit84944e4200b9284446d234824c8e9dcc
         'Kirby\\ComposerInstaller\\PluginInstaller' => __DIR__ . '/..' . '/getkirby/composer-installer/src/ComposerInstaller/PluginInstaller.php',
         'cjrasmussen\\BlueskyApi\\BlueskyApi' => __DIR__ . '/..' . '/cjrasmussen/bluesky-api/src/BlueskyApi.php',
         'mauricerenck\\IndieConnector\\BlueskySender' => __DIR__ . '/../..' . '/lib/BlueskySender.php',
+        'mauricerenck\\IndieConnector\\ExternalPostSender' => __DIR__ . '/../..' . '/lib/ExternalPostSender.php',
         'mauricerenck\\IndieConnector\\IndieConnectorDatabase' => __DIR__ . '/../..' . '/lib/Database.php',
         'mauricerenck\\IndieConnector\\MastodonSender' => __DIR__ . '/../..' . '/lib/MastodonSender.php',
         'mauricerenck\\IndieConnector\\Microformats' => __DIR__ . '/../..' . '/lib/Microformats.php',

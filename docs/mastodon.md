@@ -4,10 +4,10 @@ You can enable automatically posting to Mastodon and/or Bluesky when a new page 
 
 ## General setup
 
-In order to post to Mastodon or Bluesky, you have to setup some fields in your `config.php`. The **textfield** is the field that will be used as the text for the post. And if you want to also post an image, you have to define an **imagefield**. Use the same name as in your blueprint:
+In order to post to Mastodon or Bluesky, you have to setup some fields in your `config.php`. The **textfields** is a list of fields that will be used as the text for the post, the first one found and not empty will be used. And if you want to also post an image, you have to define an **imagefield**. Use the same name as in your blueprint:
 
 ```php
-'mauricerenck.indieConnector.post.textfield' => 'description',
+'mauricerenck.indieConnector.post.textfields' => ['description'],
 'mauricerenck.indieConnector.post.imagefield' => 'postImage',
 ```
 

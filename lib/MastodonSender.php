@@ -2,45 +2,24 @@
 
 namespace mauricerenck\IndieConnector;
 
-use Kirby\Toolkit\Str;
 use Exception;
 use Kirby\Http\Remote;
 use Kirby\Filesystem\F;
 
-class MastodonSender extends Sender
+class MastodonSender extends ExternalPostSender
 {
     public function __construct(
-        private ?int $tootMaxLength = null,
-        private ?string $textfield = null,
-        private ?string $imagefield = null,
         private ?string $instanceUrl = null,
         private ?string $token = null,
         private ?bool $enabled = null,
-        private ?UrlChecks $urlChecks = null,
-        private ?PageChecks $pageChecks = null
     ) {
         parent::__construct();
-
-        $this->textfield = $textfield ?? option('mauricerenck.indieConnector.post.textfield', 'description');
-        $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
 
         $this->enabled = $enabled ?? option('mauricerenck.indieConnector.mastodon.enabled', false);
         $this->instanceUrl = $instanceUrl ?? option('mauricerenck.indieConnector.mastodon.instance-url', false);
         $this->token = $token ?? option('mauricerenck.indieConnector.mastodon.bearer', false);
-        $this->tootMaxLength = $tootMaxLength ?? option('mauricerenck.indieConnector.mastodon.text-length', 500);
-
-        $this->urlChecks = $urlChecks ?? new UrlChecks();
-        $this->pageChecks = $pageChecks ?? new PageChecks();
 
         // backwards compatibility
-        if (!$textfield && option('mauricerenck.indieConnector.mastodon-text-field', false)) {
-            $this->textfield = option('mauricerenck.indieConnector.mastodon-text-field');
-        }
-
-        if (!$tootMaxLength && option('mauricerenck.indieConnector.mastodon-text-length', false)) {
-            $this->tootMaxLength = option('mauricerenck.indieConnector.mastodon-text-length');
-        }
-
         if (!$instanceUrl && option('mauricerenck.indieConnector.mastodon-instance-url', false)) {
             $this->instanceUrl = option('mauricerenck.indieConnector.mastodon-instance-url');
         }
@@ -90,11 +69,8 @@ class MastodonSender extends Sender
         try {
             $pageUrl = $page->url();
             $trimTextPosition = $this->calculatePostTextLength($page->url());
-            $textfield = $this->textfield;
 
-            $message = $page->$textfield()->isNotEmpty()
-                ? $page->$textfield()->value()
-                : Str::short($page->title(), $trimTextPosition);
+            $message = $this->getTextFieldContent($page, $trimTextPosition);
             $message .= "\n" . $pageUrl;
 
             $headers = ['Authorization: Bearer ' . $this->token, 'Content-Type: application/json'];
@@ -121,7 +97,7 @@ class MastodonSender extends Sender
             $result = $response->json();
 
             $url = $result['url'] ?? null;
-            $this->updatePosts($url, $response->code(), $page);
+            $this->updatePosts($url, $response->code(), $page, 'mastodon');
 
             return true;
         } catch (Exception $e) {
@@ -191,14 +167,4 @@ class MastodonSender extends Sender
         }
     }
 
-    public function calculatePostTextLength(string $url)
-    {
-        $urlLength = Str::length($url);
-        return $this->tootMaxLength - $urlLength - 2;
-    }
-
-    public function updatePosts($url, $statusCode, $page)
-    {
-        return $this->updateExternalPosts($url, $statusCode, 'mastodon', $page);
-    }
 }

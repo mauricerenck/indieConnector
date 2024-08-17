@@ -35,7 +35,7 @@ return [
     'mauricerenck.indieConnector.sqlitePath' => '.sqlite/',
 
     'mauricerenck.indieConnector.post' => [
-        'textfield' => 'description',
+        'textfields' => ['description'],
         'imagefield' => 'mastodonimage',
         'allowedTemplates' => ['phpunit', 'default'],
         'blockedTemplates' => ['blocked-template'],

@@ -15,6 +15,7 @@ return array(
     'Kirby\\ComposerInstaller\\PluginInstaller' => $vendorDir . '/getkirby/composer-installer/src/ComposerInstaller/PluginInstaller.php',
     'cjrasmussen\\BlueskyApi\\BlueskyApi' => $vendorDir . '/cjrasmussen/bluesky-api/src/BlueskyApi.php',
     'mauricerenck\\IndieConnector\\BlueskySender' => $baseDir . '/lib/BlueskySender.php',
+    'mauricerenck\\IndieConnector\\ExternalPostSender' => $baseDir . '/lib/ExternalPostSender.php',
     'mauricerenck\\IndieConnector\\IndieConnectorDatabase' => $baseDir . '/lib/Database.php',
     'mauricerenck\\IndieConnector\\MastodonSender' => $baseDir . '/lib/MastodonSender.php',
     'mauricerenck\\IndieConnector\\Microformats' => $baseDir . '/lib/Microformats.php',
