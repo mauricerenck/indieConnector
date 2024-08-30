@@ -8,7 +8,7 @@ When IndieConnector receives a Webmention, it triggers a hook. This hook can be 
 'hooks' => [
     'indieConnector.webmention.received' => function ($webmention, $targetPage) {
         // $webmention: webmention data, see below
-        // $targetPage: a kirby page object
+        // $targetPage: a kirby page uuid with scheme
 
         // YOUR CODE
     }
