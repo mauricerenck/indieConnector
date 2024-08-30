@@ -20,7 +20,13 @@ class Microformats
     public function includesPageUrl(array|string $urls)
     {
         $urls = $this->returnArraySave($urls);
+        $url_validation_regex = "/^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$/";
+
         foreach ($urls as $url) {
+            if(preg_match($url_validation_regex, $url) !== 1) {
+                continue;
+            }
+
             $trimmedUrl = trim(Url::stripQuery($url));
             if ($trimmedUrl === $this->pageUrl) {
                 return true;

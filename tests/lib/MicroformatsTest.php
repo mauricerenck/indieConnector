@@ -558,6 +558,20 @@ final class MicroformatsTest extends TestCaseMocked
 
     /**
      * @group microformats
+     * @testdox includesPageUrl - should handle mastodon tag
+     */
+    public function testIncludesPageUrlWithTags()
+    {
+        $urls = ['tag:uuid', 'https://indie-connector.tld?param=value'];
+
+        $microformats = new Microformats('https://indie-connector.tld');
+        $result = $microformats->includesPageUrl($urls);
+
+        $this->assertTrue($result);
+    }
+
+    /**
+     * @group microformats
      * @testdox includesBaseUrl - should find matching url
      */
     public function testIncludesBaseUrl()
