@@ -1,3 +1,11 @@
+## [2.1.1](https://github.com/mauricerenck/indieConnector/compare/v2.1.0...v2.1.1) (2024-08-30)
+
+
+### Bug Fixes
+
+* handle non-url types in mastodon replies with hashtags ([eaf6bad](https://github.com/mauricerenck/indieConnector/commit/eaf6bad40fefb0c756c14485b90e17f9fc8d15e1))
+* webmention now sends uuid instead of page object ([ee93c5d](https://github.com/mauricerenck/indieConnector/commit/ee93c5d02622f44a2f254918cfbc1224549e57a1))
+
 # [2.1.0](https://github.com/mauricerenck/indieConnector/compare/v2.0.1...v2.1.0) (2024-08-17)
 
 
