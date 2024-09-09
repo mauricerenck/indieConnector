@@ -288,7 +288,7 @@ class Microformats
     public function getPublishDate(array $microformats)
     {
         if (empty($microformats['items'])) {
-            return null;
+            return date('Y-m-d\TH:i:sP', time());
         }
 
         foreach ($microformats['items'] as $item) {
@@ -301,6 +301,6 @@ class Microformats
             }
         }
 
-        return null;
+        return date('Y-m-d\TH:i:sP', time());
     }
 }
