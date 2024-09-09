@@ -1,3 +1,10 @@
+## [2.1.2](https://github.com/mauricerenck/indieConnector/compare/v2.1.1...v2.1.2) (2024-09-09)
+
+
+### Bug Fixes
+
+* always return a date, set one if not in data ([6e2d319](https://github.com/mauricerenck/indieConnector/commit/6e2d319096175ffd1d7af22326050e6019e6faad))
+
 ## [2.1.1](https://github.com/mauricerenck/indieConnector/compare/v2.1.0...v2.1.1) (2024-08-30)
 
 
