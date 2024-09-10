@@ -1,3 +1,10 @@
+## [2.1.3](https://github.com/mauricerenck/indieConnector/compare/v2.1.2...v2.1.3) (2024-09-10)
+
+
+### Bug Fixes
+
+* mastodon docs [#14](https://github.com/mauricerenck/indieConnector/issues/14) ([f4cd782](https://github.com/mauricerenck/indieConnector/commit/f4cd782d7ba843b2a76b901e9e32fdb3152a7987))
+
 ## [2.1.2](https://github.com/mauricerenck/indieConnector/compare/v2.1.1...v2.1.2) (2024-09-09)
 
 
