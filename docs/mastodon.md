@@ -27,9 +27,9 @@ postImage:
 If you want to create a Mastdon post when a new page is published, you can do so by setting the following options in your `config.php`:
 
 ```php
-'mauricerenck.indieConnector.post.mastodon.enabled' => true,
-'mauricerenck.indieConnector.post.mastodon.bearer' => 'YOUR-ACCESS-TOKEN',
-'mauricerenck.indieConnector.post.mastodon.instance-url' => 'https://mastodon.tld',
+'mauricerenck.indieConnector.mastodon.enabled' => true,
+'mauricerenck.indieConnector.mastodon.bearer' => 'YOUR-ACCESS-TOKEN',
+'mauricerenck.indieConnector.mastodon.instance-url' => 'https://mastodon.tld',
 ```
 
 Create your own access token by going to your Mastodon account settings and creating a new app. Set the app to write access and copy the token. The instance url is the url of your Mastodon instance.
@@ -39,7 +39,7 @@ Create your own access token by going to your Mastodon account settings and crea
 Depending on your Mastodon instance the text length may vary. The default is 500. You can set it via the following option:
 
 ```php
-'mauricerenck.indieConnector.post.mastodon.text-length' => 500,
+'mauricerenck.indieConnector.mastodon.text-length' => 500,
 ```
 
 ### Get the URL of the post
@@ -55,9 +55,9 @@ If you want to display te URL of your Mastodon post on your page, so that people
 If you want to create a Bluesky post when a new page is published, you can do so by setting the following options in your `config.php`:
 
 ```php
-'mauricerenck.indieConnector.post.mastodon.enabled' => true,
-'mauricerenck.indieConnector.post.mastodon.bluesky.handle' => 'USERNAME.bsky.social',
-'mauricerenck.indieConnector.post.mastodon.password' => 'YOUR-APP-PASSWORD',
+'mauricerenck.indieConnector.bluesky.enabled' => true,
+'mauricerenck.indieConnector.bluesky.handle' => 'USERNAME.bsky.social',
+'mauricerenck.indieConnector.bluesky.password' => 'YOUR-APP-PASSWORD',
 ```
 
 To get your app password, go to your Bluesky account settings and go to "App Passwords". Create a new password and copy it.
