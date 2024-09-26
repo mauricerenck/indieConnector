@@ -18,7 +18,11 @@
 </div>
 
 <div>
-    <?= $page->icGetMastodonUrl() ?>
+    <pre><?= $page->icGetMastodonUrl() ?></pre>
+</div>
+
+<div>
+    <pre><?= $page->icGetBlueskyUrl() ?></pre>
 </div>
 
 <main>
