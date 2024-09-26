@@ -1,8 +1,8 @@
 <?php return array(
     'root' => array(
         'name' => 'mauricerenck/indieconnector',
-        'pretty_version' => '2.1.0',
-        'version' => '2.1.0.0',
+        'pretty_version' => '2.1.3',
+        'version' => '2.1.3.0',
         'reference' => NULL,
         'type' => 'kirby-plugin',
         'install_path' => __DIR__ . '/../../',
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'cjrasmussen/bluesky-api' => array(
-            'pretty_version' => '2.0.1',
-            'version' => '2.0.1.0',
-            'reference' => 'ed8faf16139503a60f3960aa940760b49e89788c',
+            'pretty_version' => '2.1.5',
+            'version' => '2.1.5.0',
+            'reference' => '1487a71b351e5ec8d34361a3055369c0c39eb4a2',
             'type' => 'library',
             'install_path' => __DIR__ . '/../cjrasmussen/bluesky-api',
             'aliases' => array(),
@@ -38,8 +38,8 @@
             'dev_requirement' => false,
         ),
         'mauricerenck/indieconnector' => array(
-            'pretty_version' => '2.1.0',
-            'version' => '2.1.0.0',
+            'pretty_version' => '2.1.3',
+            'version' => '2.1.3.0',
             'reference' => NULL,
             'type' => 'kirby-plugin',
             'install_path' => __DIR__ . '/../../',
