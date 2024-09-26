@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/mauricerenck/indieConnector/compare/v2.1.3...v2.2.0) (2024-09-26)
+
+
+### Features
+
+* get bluesky url page method ([c86692c](https://github.com/mauricerenck/indieConnector/commit/c86692caebd5acafe7a4a4f28dbb39f148328bde))
+
 ## [2.1.3](https://github.com/mauricerenck/indieConnector/compare/v2.1.2...v2.1.3) (2024-09-10)
 
 
