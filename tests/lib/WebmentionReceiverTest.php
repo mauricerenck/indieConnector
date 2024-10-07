@@ -211,6 +211,7 @@ final class WebmentionReceiverTest extends TestCaseMocked
             'name' => 'Maurice Renck',
             'photo' => null,
             'url' => 'https://maurice-renck.de',
+            'note' => null,
         ];
 
         $webmentionReceiver = new WebmentionReceiver('https://sender.tld', 'https://indie-connector.tld');

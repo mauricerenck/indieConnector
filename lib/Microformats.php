@@ -52,7 +52,7 @@ class Microformats
         return false;
     }
 
-    public function getTypes(array $microformats): array
+    public function getTypes(array $microformats): array | null
     {
         if (empty($microformats['items'])) {
             return null;
@@ -149,6 +149,7 @@ class Microformats
             'name' => null,
             'url' => null,
             'photo' => null,
+            'note' => null,
         ];
 
         foreach ($microformats['items'] as $item) {
@@ -220,6 +221,17 @@ class Microformats
         return !isset($photo[0]['value']) ? null : $photo[0]['value'];
     }
 
+    public function getAuthorNote(array $hCard): string|null
+    {
+        if (!isset($hCard['properties']['note'])) {
+            return null;
+        }
+
+        $note = $this->returnArraySave($hCard['properties']['note']);
+
+        return !isset($note[0]) ? null : $note[0];
+    }
+
     public function getAuthorFromHCard(array $hCard)
     {
         if (!isset($hCard['properties'])) {
@@ -229,11 +241,13 @@ class Microformats
         $name = $this->getAuthorName($hCard);
         $url = $this->getAuthorUrl($hCard);
         $photo = $this->getAuthorPhoto($hCard);
+        $note = $this->getAuthorNote($hCard);
 
         return [
             'name' => $name,
             'url' => $url,
             'photo' => $photo,
+            'note' => $note,
         ];
     }
 

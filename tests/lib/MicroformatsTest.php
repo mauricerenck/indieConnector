@@ -622,6 +622,7 @@ final class MicroformatsTest extends TestCaseMocked
             'name' => 'Maurice Renck',
             'photo' => 'https://example.org/photo.png',
             'url' => 'https://maurice-renck.de',
+            'note' => null,
         ];
 
         $microformats = new Microformats();
@@ -665,6 +666,7 @@ final class MicroformatsTest extends TestCaseMocked
             'name' => 'Maurice Renck',
             'photo' => 'https://example.org/photo.png',
             'url' => 'https://maurice-renck.de',
+            'note' => null,
         ];
 
         $microformats = new Microformats();
@@ -702,6 +704,7 @@ final class MicroformatsTest extends TestCaseMocked
             'name' => 'Maurice Renck',
             'photo' => 'https://example.org/photo.png',
             'url' => 'https://maurice-renck.de',
+            'note' => null,
         ];
 
         $microformats = new Microformats();
@@ -765,6 +768,7 @@ final class MicroformatsTest extends TestCaseMocked
             'name' => 'Maurice Renck',
             'photo' => 'https://example.org/photo.png',
             'url' => 'https://maurice-renck.de',
+            'note' => null,
         ];
 
         $microformats = new Microformats();
@@ -793,6 +797,7 @@ final class MicroformatsTest extends TestCaseMocked
             'name' => 'Maurice Renck',
             'photo' => 'https://example.org/photo.png',
             'url' => 'https://maurice-renck.de',
+            'note' => null,
         ];
 
         $microformats = new Microformats();
@@ -821,6 +826,7 @@ final class MicroformatsTest extends TestCaseMocked
             'name' => 'Maurice Renck',
             'photo' => null,
             'url' => 'https://maurice-renck.de',
+            'note' => null,
         ];
 
         $microformats = new Microformats();
@@ -848,6 +854,7 @@ final class MicroformatsTest extends TestCaseMocked
             'name' => 'Maurice Renck',
             'photo' => null,
             'url' => 'https://maurice-renck.de',
+            'note' => null,
         ];
 
         $microformats = new Microformats();
@@ -920,6 +927,29 @@ final class MicroformatsTest extends TestCaseMocked
         $result = $microformats->getAuthorPhoto($hCard);
 
         $this->assertEquals('https://example.org/photo.png', $result);
+    }
+
+    /**
+     * @group microformats
+     * @testdox getAuthorNote - get author note from h-card
+     */
+    public function testGetAuthorNoteFromHCard()
+    {
+        $hCard = [
+            'type' => ['h-card'],
+            'properties' => [
+                'name' => ['Maurice Renck'],
+                'url' => ['https://maurice-renck.de'],
+                'photo' => [['value' => 'https://example.org/photo.png', 'alt' => '']],
+                'note' => ['This is a note'],
+            ],
+            'value' => 'Maurice Renck',
+        ];
+
+        $microformats = new Microformats();
+        $result = $microformats->getAuthorNote($hCard);
+
+        $this->assertEquals('This is a note', $result);
     }
 
     /**
