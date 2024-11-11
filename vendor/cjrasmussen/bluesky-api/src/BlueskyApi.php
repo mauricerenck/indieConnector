@@ -10,15 +10,13 @@ use RuntimeException;
  */
 class BlueskyApi
 {
-	private ?string $accountDid = null;
-	private ?string $apiKey = null;
-	private ?string $refreshToken = null;
-	private string $apiUri;
-	private ?array $lastResponseHeader = null;
+	private string $defaultApiHost;
+	private ?string $lastResponseHeader = null;
+	private ?object $activeSession = null;
 
-	public function __construct(string $api_uri = 'https://bsky.social/xrpc/')
+	public function __construct(string $api_host = 'bsky.social')
 	{
-		$this->apiUri = $api_uri;
+		$this->defaultApiHost = $this->sanitizeApiHost($api_host);
 	}
 
 	/**
@@ -41,14 +39,29 @@ class BlueskyApi
 		}
 
 		if ($data) {
-			$this->accountDid = $data->did;
-			$this->apiKey = $data->accessJwt;
-			$this->refreshToken = $data->refreshJwt;
-
 			return (bool)$data->did;
 		}
 
 		return false;
+	}
+
+	/**
+	 * Check to see if the current session is active
+	 *
+	 * @return object|null
+	 * @throws JsonException
+	 */
+	public function getSession(): ?object
+	{
+		$data = $this->request('GET', 'com.atproto.server.getSession');
+
+		if (empty($data->error)) {
+			$this->activeSession = $data;
+		} else {
+			$this->activeSession = null;
+		}
+
+		return $data;
 	}
 
 	/**
@@ -59,8 +72,26 @@ class BlueskyApi
 	 */
 	public function isSessionActive(): bool
 	{
-		$data = $this->request('GET', 'com.atproto.server.getSession');
-		return (($data !== null) && empty($data->error));
+		$this->getSession();
+		return ($this->activeSession !== null);
+	}
+
+	/**
+	 * Get the endpoint URI from the session if available
+	 *
+	 * @return ?string
+	 */
+	public function getSessionHost(): ?string
+	{
+		if (($this->activeSession) && (is_array($this->activeSession->didDoc->service))) {
+			foreach ($this->activeSession->didDoc->service AS $service) {
+				if (!empty($service->serviceEndpoint)) {
+					return $this->sanitizeApiHost($service->serviceEndpoint);
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -70,7 +101,11 @@ class BlueskyApi
 	 */
 	public function getAccountDid(): ?string
 	{
-		return $this->accountDid;
+		if ($this->activeSession) {
+			return $this->activeSession->did;
+		}
+
+		return null;
 	}
 
 	/**
@@ -80,15 +115,15 @@ class BlueskyApi
 	 */
 	public function getRefreshToken(): ?string
 	{
-		return $this->refreshToken;
+		return $this->activeSession->refreshJwt;
 	}
 
 	/**
-	 * Get the response headers from the most recent API request
+	 * Get the response header from the most recent API request
 	 *
-	 * @return ?array
+	 * @return ?string
 	 */
-	public function getLastResponseHeader(): ?array
+	public function getLastResponseHeader(): ?string
 	{
 		return $this->lastResponseHeader;
 	}
@@ -101,12 +136,18 @@ class BlueskyApi
 	 * @param array $args
 	 * @param string|null $body
 	 * @param string|null $content_type
+	 * @param string|null $endpoint_host
+	 * @param string|null $token
 	 * @return ?object
 	 * @throws JsonException
 	 */
-	public function request(string $type, string $request, array $args = [], ?string $body = null, string $content_type = null): ?object
+	public function request(string $type, string $request, array $args = [], ?string $body = null, ?string $content_type = null, ?string $endpoint_host = null, ?string $token = null): ?object
 	{
-		$url = $this->apiUri . $request;
+		if ($endpoint_host) {
+			$endpoint_host = $this->sanitizeApiHost($endpoint_host);
+		}
+
+		$url = $this->formatApiUri($endpoint_host ?: $this->getApiHost()) . $request;
 
 		if (($type === 'GET') && (count($args))) {
 			$url .= '?' . http_build_query($args);
@@ -115,9 +156,14 @@ class BlueskyApi
 		}
 
 		$headers = [];
-		if ($this->apiKey) {
-			$headers[] = 'Authorization: Bearer ' . $this->apiKey;
+
+		if ($token) {
+			$headers[] = 'Authorization: Bearer ' . $token;
+		} elseif ($this->activeSession) {
+			$headers[] = 'Authorization: Bearer ' . $this->activeSession->accessJwt;
 		}
+
+		$headers[] = 'Accept: application/json';
 
 		if ($content_type) {
 			$headers[] = 'Content-Type: ' . $content_type;
@@ -127,8 +173,6 @@ class BlueskyApi
 				$args = [];
 			}
 		}
-
-		$this->lastResponseHeader = [];
 
 		$c = curl_init();
 		curl_setopt($c, CURLOPT_URL, $url);
@@ -156,7 +200,7 @@ class BlueskyApi
 			curl_setopt($c, CURLOPT_POSTFIELDS, null);
 		}
 
-		curl_setopt($c, CURLOPT_HEADER, 0);
+		curl_setopt($c, CURLOPT_HEADER, 1);
 		curl_setopt($c, CURLOPT_VERBOSE, 0);
 		curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($c, CURLOPT_ENCODING, '');
@@ -164,15 +208,18 @@ class BlueskyApi
 		curl_setopt($c, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt($c, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		curl_setopt($c, CURLOPT_SSL_VERIFYPEER, 1);
-		curl_setopt($c, CURLOPT_HEADERFUNCTION, [$this, 'populateLastResponseHeader']);
-		$data = curl_exec($c);
+		$response = curl_exec($c);
+		$header_length = curl_getinfo($c, CURLINFO_HEADER_SIZE);
 		curl_close($c);
 
-		if (!$data) {
+		if (!$response) {
 			return null;
 		}
 
-		return json_decode($data, false, 512, JSON_THROW_ON_ERROR);
+		$this->lastResponseHeader = substr($response, 0, $header_length);
+		$body = substr($response, $header_length);
+
+		return json_decode($body, false, 512, JSON_THROW_ON_ERROR);
 	}
 
 	/**
@@ -185,7 +232,7 @@ class BlueskyApi
 	 */
 	private function startNewSession(string $handle, string $app_password): ?object
 	{
-		$this->apiKey = null;
+		$this->activeSession = null;
 
 		$args = [
 			'identifier' => $handle,
@@ -196,6 +243,8 @@ class BlueskyApi
 		if (($data !== null) && (!empty($data->error))) {
 			throw new RuntimeException($data->message);
 		}
+
+		$this->activeSession = $data;
 
 		return $data;
 	}
@@ -209,38 +258,61 @@ class BlueskyApi
 	 */
 	private function refreshSession(string $refresh_token): ?object
 	{
-		$this->apiKey = $refresh_token;
-		$data = $this->request('POST', 'com.atproto.server.refreshSession');
-		$this->apiKey = null;
+		$data = $this->request('POST', 'com.atproto.server.refreshSession', [], null, null, null, $refresh_token);
 
 		if (($data !== null) && (!empty($data->error))) {
 			throw new RuntimeException($data->message);
 		}
 
+		$this->activeSession = $data;
+
 		return $data;
 	}
 
 	/**
-	 * Populate an array with data from the
+	 * Determine the appropriate API host to use
 	 *
-	 * @param $c - cUrl handler, required but not used
-	 * @param string $header
-	 * @return int
+	 * @return string
 	 */
-	private function populateLastResponseHeader($c, string $header): int
+	private function getApiHost(): string
 	{
-		$header_length = strlen($header);
-		[$header_name, $header_value] = array_map('trim', explode(':', $header, 2));
-
-		if (!$header_value) {
-			return $header_length;
+		if ($this->activeSession) {
+			return $this->getSessionHost();
 		}
 
-		if (!array_key_exists($header_name, $this->lastResponseHeader)) {
-			$this->lastResponseHeader[$header_name] = [];
+		return $this->defaultApiHost;
+	}
+
+	/**
+	 * Sanitize a URI for use as an API host
+	 *
+	 * @param string $api_host
+	 * @return string|null
+	 */
+	private function sanitizeApiHost(string $api_host): ?string
+	{
+		$output = parse_url($api_host, PHP_URL_HOST);
+
+		if ($output === null) {
+			$api_host = 'https://' . $api_host;
+			$output = parse_url($api_host, PHP_URL_HOST);
 		}
 
-		$this->lastResponseHeader[$header_name][] = $header_value;
-		return $header_length;
+		if ($output === false) {
+			return null;
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Convert the API host into a proper API URI
+	 *
+	 * @param string $api_host
+	 * @return string
+	 */
+	private function formatApiUri(string $api_host): string
+	{
+		return 'https://' . $api_host . '/xrpc/';
 	}
 }
