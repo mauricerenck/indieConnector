@@ -1,3 +1,11 @@
+## [2.2.1](https://github.com/mauricerenck/indieConnector/compare/v2.2.0...v2.2.1) (2024-11-11)
+
+
+### Bug Fixes
+
+* add note to author info ([d37148a](https://github.com/mauricerenck/indieConnector/commit/d37148abed02a55dc7a31d243d78cd2298786d9b))
+* dependency updates ([0db3960](https://github.com/mauricerenck/indieConnector/commit/0db3960b0e5082ce3b706fa409020e4e19573913)), closes [#15](https://github.com/mauricerenck/indieConnector/issues/15)
+
 # [2.2.0](https://github.com/mauricerenck/indieConnector/compare/v2.1.3...v2.2.0) (2024-09-26)
 
 
