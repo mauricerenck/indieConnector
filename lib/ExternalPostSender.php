@@ -37,18 +37,19 @@ class ExternalPostSender extends Sender
         }
     }
 
-    public function getTextFieldContent($page, $trimTextPosition) {
-        if(is_array($this->textfields)) {
-            foreach($this->textfields as $field) {
-                if($page->$field()->exists() && $page->$field()->isNotEmpty()) {
-                    return $page->$field()->value();
+    public function getTextFieldContent($page, $trimTextPosition)
+    {
+        if (is_array($this->textfields)) {
+            foreach ($this->textfields as $field) {
+                if ($page->$field()->exists() && $page->$field()->isNotEmpty()) {
+                    return Str::short($page->$field()->value(), $trimTextPosition);
                 }
             }
         }
 
         $field = $this->textfields;
-        if(!is_array($this->textfields) && $page->$field()->isNotEmpty()) {
-            return $page->$field()->value();
+        if (!is_array($this->textfields) && $page->$field()->isNotEmpty()) {
+            return Str::short($page->$field()->value(), $trimTextPosition);
         }
 
         return Str::short($page->title(), $trimTextPosition);
