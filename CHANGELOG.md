@@ -1,3 +1,10 @@
+## [2.2.2](https://github.com/mauricerenck/indieConnector/compare/v2.2.1...v2.2.2) (2024-11-13)
+
+
+### Bug Fixes
+
+* shorten text when too long ([a9590aa](https://github.com/mauricerenck/indieConnector/commit/a9590aad45f122a7175eb669ee57a73810635965))
+
 ## [2.2.1](https://github.com/mauricerenck/indieConnector/compare/v2.2.0...v2.2.1) (2024-11-11)
 
 
