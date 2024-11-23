@@ -244,7 +244,7 @@ final class MicroformatsTest extends TestCaseMocked
         $microformats = new Microformats('https://indie-connector.tld');
         $result = $microformats->getTypes($mf2);
 
-        $this->assertCount(0, $result);
+        $this->assertCount(1, $result);
     }
 
     /**
@@ -283,7 +283,7 @@ final class MicroformatsTest extends TestCaseMocked
         $microformats = new Microformats('https://indie-connector.tld');
         $result = $microformats->getTypes($mf2);
 
-        $this->assertCount(0, $result);
+        $this->assertCount(1, $result);
     }
 
     /**

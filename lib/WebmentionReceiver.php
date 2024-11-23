@@ -15,8 +15,15 @@ class WebmentionReceiver extends Receiver
 
     public function processWebmention($sourceUrl, $targetUrl)
     {
-        try {
+        if (is_null($this->sourceUrl)) {
+            $this->sourceUrl = $sourceUrl;
+        }
 
+        if (is_null($this->targetUrl)) {
+            $this->targetUrl = $targetUrl;
+        }
+
+        try {
             $microformats = $this->getDataFromSource($sourceUrl);
             $webmention = $this->getWebmentionData($microformats);
 
