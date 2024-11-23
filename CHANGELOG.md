@@ -1,3 +1,11 @@
+## [2.3.1](https://github.com/mauricerenck/indieConnector/compare/v2.3.0...v2.3.1) (2024-11-23)
+
+
+### Bug Fixes
+
+* revert to mention-of if no type was detected ([7dbb53a](https://github.com/mauricerenck/indieConnector/commit/7dbb53a8d33cc133f006ec702e4e9e96261ef2cf))
+* set target and source urls if not set in constructor ([d932d81](https://github.com/mauricerenck/indieConnector/commit/d932d81b424bffea18bba4c9a9062afffd78a1d2))
+
 # [2.3.0](https://github.com/mauricerenck/indieConnector/compare/v2.2.2...v2.3.0) (2024-11-23)
 
 
