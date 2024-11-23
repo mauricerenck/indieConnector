@@ -70,7 +70,6 @@ return [
     'indieConnector.webmention.received' => function ($webmention, $targetPage) {
         if (option('mauricerenck.indieConnector.stats.enabled', false)) {
             $stats = new WebmentionStats();
-            $receiver = new Receiver();
             $page = page($targetPage);
 
             $stats->trackMention(
