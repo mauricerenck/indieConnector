@@ -44,7 +44,7 @@ final class QueueHandlerTest extends TestCaseMocked
             ->shouldReceive('select')
             ->with(
                 'queue',
-                ['id', 'sourceUrl', 'targetUrl', 'retries'],
+                ['id', 'sourceUrl', 'targetUrl', 'retries', 'queueStatus', 'processLog'],
                 'WHERE queueStatus = "queued" OR queueStatus = "error"'
             )
             ->once()
@@ -52,15 +52,17 @@ final class QueueHandlerTest extends TestCaseMocked
 
         $this->databaseMock
             ->shouldReceive('update')
-            ->with('queue', ['queueStatus', 'processLog'], ['failed', 'max retries reached'], 'WHERE id = "123"')
+            ->with('queue', ['id', 'queueStatus', 'processLog'], ['failed', 'max retries reached'], 'WHERE id = "123"')
             ->once()
             ->andReturn($dataCollection);
         $this->databaseMock->shouldReceive('delete')->with('queue', 'WHERE id = "123"')->once()->andReturn(true);
 
-        $expected = [
-            'status' => 'success',
-            'message' => 'webmention processed',
-        ];
+        $expected = [[
+            'id' => '123',
+            'queueStatus' => 'success',
+            'processLog' => 'done',
+            'retries' => 0,
+        ]];
 
         $result = $queueHandler->processQueue();
         $this->assertEquals($expected, $result);
@@ -95,7 +97,7 @@ final class QueueHandlerTest extends TestCaseMocked
             ->shouldReceive('select')
             ->with(
                 'queue',
-                ['id', 'sourceUrl', 'targetUrl', 'retries'],
+                ['id', 'sourceUrl', 'targetUrl', 'retries', 'queueStatus', 'processLog'],
                 'WHERE queueStatus = "queued" OR queueStatus = "error"'
             )
             ->once()
@@ -112,10 +114,12 @@ final class QueueHandlerTest extends TestCaseMocked
             ->once()
             ->andReturn(true);
 
-        $expected = [
-            'status' => 'error',
-            'message' => 'webmention processing error',
-        ];
+        $expected = [[
+            'id' => '123',
+            'queueStatus' => 'error',
+            'processLog' => 'webmention processing error',
+            'retries' => 2,
+        ]];
 
         $result = $queueHandler->processQueue();
 
@@ -135,7 +139,7 @@ final class QueueHandlerTest extends TestCaseMocked
             ->shouldReceive('select')
             ->with(
                 'queue',
-                ['id', 'sourceUrl', 'targetUrl', 'retries'],
+                ['id', 'sourceUrl', 'targetUrl', 'retries', 'queueStatus', 'processLog'],
                 'WHERE queueStatus = "queued" OR queueStatus = "error"'
             )
             ->once();

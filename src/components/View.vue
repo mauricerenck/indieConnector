@@ -1,7 +1,16 @@
 <template>
     <k-inside>
         <div class="k-webmentions-view">
-            <k-header>Webmentions</k-header>
+            <k-header>IndieConnector</k-header>
+            <k-tabs
+               	tab="webmentions"
+               	:tabs="[
+              		{ name: 'webmentions', label: 'Webmentions', link: '/webmentions' },
+              		{ name: 'queue', label: 'Queue', link: '/webmentions/queue', badge: itemsInQueue}
+               	]"
+                theme='warning'
+            />
+
             <div class="prev-next">
                 <button class="k-link k-button" v-on:click="goToPrevMonth"><k-icon type="angle-left" /></button>
                 {{ month }} / {{ year }}
@@ -32,6 +41,7 @@ export default {
         targets: { type: Array, default: [] },
         sources: Array,
         sent: Array,
+        itemsInQueue: Number,
     },
 
     methods: {

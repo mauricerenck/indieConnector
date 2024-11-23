@@ -8,6 +8,7 @@ use Kirby;
 @include_once __DIR__ . '/vendor/autoload.php';
 
 Kirby::plugin('mauricerenck/indieConnector', [
+    'api' => require_once __DIR__ . '/plugin/api.php',
     'hooks' => require_once __DIR__ . '/plugin/hooks.php',
     'areas' => require_once __DIR__ . '/plugin/areas.php',
     'snippets' => [

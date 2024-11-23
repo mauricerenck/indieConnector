@@ -3,14 +3,18 @@ import DetailsByMonth from './components/DetailsByMonth.vue'
 import Targets from './components/Targets.vue'
 import Sources from './components/Sources.vue'
 import Sent from './components/Sent.vue'
+import Queue from './components/Queue.vue'
+import QueueList from './components/QueueList.vue'
 
 panel.plugin('mauricerenck/indieConnector', {
     components: {
         'k-webmentions-view': View,
         Targets: Targets,
-        Sources: Sources,
         DetailsByMonth: DetailsByMonth,
+        Sources: Sources,
         Sent: Sent,
+        'k-webmentions-queue-view': Queue,
+        QueueList: QueueList,
     },
     icons: {
         'shape-icon-bookmark':

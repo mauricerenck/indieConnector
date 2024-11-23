@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bae3b732fb0a4dea06d32466a26af887",
+    "content-hash": "bc0961cb572b826a844663c369daf5b6",
     "packages": [
         {
             "name": "cjrasmussen/bluesky-api",
