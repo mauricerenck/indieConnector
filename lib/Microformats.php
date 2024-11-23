@@ -6,7 +6,7 @@ use Kirby\Http\Url;
 
 class Microformats
 {
-    private $urlTypes = ['like-of', 'repost-of', 'bookmark-of', 'in-reply-to'];
+    private $urlTypes = ['like-of', 'repost-of', 'bookmark-of', 'in-reply-to', 'mention-of'];
     public function __construct(private $pageUrl = null, private $contentHtml = null)
     {
         $this->contentHtml = $contentHtml ?? option('mauricerenck.indieConnector.receive.useHtmlContent', false);
@@ -23,7 +23,7 @@ class Microformats
         $url_validation_regex = "/^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$/";
 
         foreach ($urls as $url) {
-            if(preg_match($url_validation_regex, $url) !== 1) {
+            if (preg_match($url_validation_regex, $url) !== 1) {
                 continue;
             }
 
@@ -98,6 +98,10 @@ class Microformats
                     $types[] = 'invite';
                 }
             }
+        }
+
+        if (count($types) === 0) {
+            return ['mention-of'];
         }
 
         return $types;
