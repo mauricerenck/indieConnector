@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/mauricerenck/indieConnector/compare/v2.2.2...v2.3.0) (2024-11-23)
+
+
+### Features
+
+* process queue from panel ([0e5c460](https://github.com/mauricerenck/indieConnector/commit/0e5c460ff6e6cb0c2b4508e10d7e29e79f440e97))
+
 ## [2.2.2](https://github.com/mauricerenck/indieConnector/compare/v2.2.1...v2.2.2) (2024-11-13)
 
 
