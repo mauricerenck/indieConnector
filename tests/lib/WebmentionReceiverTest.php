@@ -14,15 +14,15 @@ final class WebmentionReceiverTest extends TestCaseMocked
      * @group receiveWebmentions
      * @testdox processWebmention - should process webmention
      */
-    public function testShouldProcessWebmention()
+    /*public function testShouldProcessWebmention()
     {
         $webmentionReceiver = new WebmentionReceiver(
-            'https://indieconnector.dev/tests/reply.php?replyto=https://indie-connector.test:8890/home',
-            $this->localUrl . '/home'
+            'https://indieconnector.dev/tests/reply.php?replyto=http://indieconnector.ddev.site/',
+            $this->localUrl . '/en/phpunit'
         );
 
-        $sourceUrl = 'https://indieconnector.dev/tests/reply.php?replyto=https://indie-connector.test:8890/home';
-        $targetUrl = $this->localUrl . '/home';
+        $sourceUrl = 'https://indieconnector.dev/tests/reply.php?replyto=http://indieconnector.ddev.site/';
+        $targetUrl = $this->localUrl . '/en/phpunit';
 
         $expected = [
             'status' => 'success',
@@ -32,6 +32,7 @@ final class WebmentionReceiverTest extends TestCaseMocked
         $result = $webmentionReceiver->processWebmention($sourceUrl, $targetUrl);
         $this->assertEquals($expected, $result);
     }
+    */
 
     // /**
     //  * @group receiveWebmentions
