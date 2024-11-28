@@ -1,3 +1,10 @@
+## [2.3.2](https://github.com/mauricerenck/indieConnector/compare/v2.3.1...v2.3.2) (2024-11-28)
+
+
+### Bug Fixes
+
+* webmention stats - allow empty image ([9c232c4](https://github.com/mauricerenck/indieConnector/commit/9c232c46ee0ebbdee25d5d46a3db6f7de724a0b4))
+
 ## [2.3.1](https://github.com/mauricerenck/indieConnector/compare/v2.3.0...v2.3.1) (2024-11-23)
 
 
