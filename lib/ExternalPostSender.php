@@ -9,6 +9,7 @@ class ExternalPostSender extends Sender
     public function __construct(
         public ?array $textfields = null,
         public ?string $imagefield = null,
+        public ?string $forceLanguage = null,
         private ?int $maxPostLength = null,
         public ?UrlChecks $urlChecks = null,
         public ?PageChecks $pageChecks = null
@@ -17,6 +18,7 @@ class ExternalPostSender extends Sender
 
         $this->textfields = $textfields ?? option('mauricerenck.indieConnector.post.textfields', ['description']);
         $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
+        $this->forceLanguage = $imagefield ?? option('mauricerenck.indieConnector.post.forceLanguage', false);
         $this->maxPostLength = $maxPostLength ?? 300;
 
         $this->urlChecks = $urlChecks ?? new UrlChecks();
@@ -39,20 +41,23 @@ class ExternalPostSender extends Sender
 
     public function getTextFieldContent($page, $trimTextPosition)
     {
+        $pageOfLanguage = $page->translation($this->forceLanguage);
+        $content = !is_null($pageOfLanguage) ? $pageOfLanguage->content() : $page->content()->toArray();
+
         if (is_array($this->textfields)) {
             foreach ($this->textfields as $field) {
-                if ($page->$field()->exists() && $page->$field()->isNotEmpty()) {
-                    return Str::short($page->$field()->value(), $trimTextPosition);
+                if (isset($content[$field]) && !empty($content[$field])) {
+                    return Str::short($content[$field], $trimTextPosition);
                 }
             }
         }
 
         $field = $this->textfields;
-        if (!is_array($this->textfields) && $page->$field()->isNotEmpty()) {
-            return Str::short($page->$field()->value(), $trimTextPosition);
+        if (!is_array($this->textfields) && isset($content[$field]) && !empty($content[$field])) {
+            return Str::short($content[$field], $trimTextPosition);
         }
 
-        return Str::short($page->title(), $trimTextPosition);
+        return Str::short($content['title'], $trimTextPosition);
     }
 
     public function calculatePostTextLength(string $url)

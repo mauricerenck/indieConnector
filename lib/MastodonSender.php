@@ -84,6 +84,10 @@ class MastodonSender extends ExternalPostSender
                 $requestBody['language'] = $defaultLanguage->code();
             }
 
+            if ($this->forceLanguage !== false) {
+                $requestBody['language'] = $this->forceLanguage;
+            }
+
             if ($mediaId = $this->uploadImage($page)) {
                 $requestBody['media_ids'] = [$mediaId];
             }
@@ -166,5 +170,4 @@ class MastodonSender extends ExternalPostSender
             return false;
         }
     }
-
 }
