@@ -1,3 +1,10 @@
+## [2.3.3](https://github.com/mauricerenck/indieConnector/compare/v2.3.2...v2.3.3) (2024-11-28)
+
+
+### Bug Fixes
+
+* allow empty author ([0f0d636](https://github.com/mauricerenck/indieConnector/commit/0f0d636a47907bdb9826f513a553a8b1a30853f9))
+
 ## [2.3.2](https://github.com/mauricerenck/indieConnector/compare/v2.3.1...v2.3.2) (2024-11-28)
 
 
