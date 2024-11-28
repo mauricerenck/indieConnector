@@ -1,3 +1,11 @@
+# [2.4.0](https://github.com/mauricerenck/indieConnector/compare/v2.3.4...v2.4.0) (2024-11-28)
+
+
+### Features
+
+* allow setting a language for posting to mastodon and bluesky ([be447c7](https://github.com/mauricerenck/indieConnector/commit/be447c71ad98e1b6e2e6bfd6195685f663a6e803))
+* set a prefered language for posting to mastodon or bluesky ([d86dac0](https://github.com/mauricerenck/indieConnector/commit/d86dac00f184937dfbe357a40b0b7934094779e5))
+
 ## [2.3.4](https://github.com/mauricerenck/indieConnector/compare/v2.3.3...v2.3.4) (2024-11-28)
 
 
