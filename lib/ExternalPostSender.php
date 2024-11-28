@@ -9,7 +9,7 @@ class ExternalPostSender extends Sender
     public function __construct(
         public ?array $textfields = null,
         public ?string $imagefield = null,
-        public ?string $forceLanguage = null,
+        public ?string $prefereLanguage = null,
         public ?bool $usePermalinkUrl = null,
         private ?int $maxPostLength = null,
         public ?UrlChecks $urlChecks = null,
@@ -19,7 +19,7 @@ class ExternalPostSender extends Sender
 
         $this->textfields = $textfields ?? option('mauricerenck.indieConnector.post.textfields', ['description']);
         $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
-        $this->forceLanguage = $forceLanguage ?? option('mauricerenck.indieConnector.post.forceLanguage', false);
+        $this->prefereLanguage = $prefereLanguage ?? option('mauricerenck.indieConnector.post.prefereLanguage', false);
         $this->usePermalinkUrl = $usePermalinkUrl ?? option('mauricerenck.indieConnector.post.usePermalinkUrl', false);
         $this->maxPostLength = $maxPostLength ?? 300;
 
@@ -43,7 +43,7 @@ class ExternalPostSender extends Sender
 
     public function getTextFieldContent($page, $trimTextPosition)
     {
-        $pageOfLanguage = $page->translation($this->forceLanguage);
+        $pageOfLanguage = $page->translation($this->prefereLanguage);
         $content = !is_null($pageOfLanguage) ? $pageOfLanguage->content() : $page->content()->toArray();
 
         if (is_array($this->textfields)) {
@@ -64,7 +64,7 @@ class ExternalPostSender extends Sender
 
     public function getPostUrl($page)
     {
-        $url = $page->url($this->forceLanguage);
+        $url = $page->url($this->prefereLanguage);
 
         if ($this->usePermalinkUrl) {
             $url = $page->permalink();

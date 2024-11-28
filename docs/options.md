@@ -62,12 +62,14 @@
 
 ## Posting to external services
 
-| Option                  | Default            | Description                                                 |
-| ----------------------- | ------------------ | ----------------------------------------------------------- |
-| `post.textfields`        | `['description']` | Text source fields for posting elsewhere                    |
-| `post.imagefield`       | `''`               | Image source field for posting elsewhere, must be one image |
-| `post.allowedTemplates` | `[]`               | Set templates allowed to send webmentions                   |
-| `post.blockedTemplates` | `[]`               | Block templates from sending webmentions                    |
+| Option                  | Default            | Description                                                          |
+| ----------------------- | ------------------ | -------------------------------------------------------------------- |
+| `post.prefereLanguage`  | `-`                | Use another language than your default language to use the text from |
+| `post.usePermalinkUrl`  | `false`            | Use the permalink url instead of the page url                        |
+| `post.textfields`       | `['description']`  | Text source fields for posting elsewhere                             |
+| `post.imagefield`       | `''`               | Image source field for posting elsewhere, must be one image          |
+| `post.allowedTemplates` | `[]`               | Set templates allowed to send webmentions                            |
+| `post.blockedTemplates` | `[]`               | Block templates from sending webmentions                             |
 
 
 ### Mastodon ([details](mastodon.md))

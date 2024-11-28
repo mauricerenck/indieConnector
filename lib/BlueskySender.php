@@ -60,8 +60,8 @@ class BlueskySender extends ExternalPostSender
                 $language = $defaultLanguage->code();
             }
 
-            if ($this->forceLanguage !== false) {
-                $language = $this->forceLanguage;
+            if ($this->prefereLanguage !== false) {
+                $language = $this->prefereLanguage;
             }
 
             $bluesky = new BlueskyApi();

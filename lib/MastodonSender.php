@@ -84,8 +84,8 @@ class MastodonSender extends ExternalPostSender
                 $requestBody['language'] = $defaultLanguage->code();
             }
 
-            if ($this->forceLanguage !== false) {
-                $requestBody['language'] = $this->forceLanguage;
+            if ($this->prefereLanguage !== false) {
+                $requestBody['language'] = $this->prefereLanguage;
             }
 
             if ($mediaId = $this->uploadImage($page)) {

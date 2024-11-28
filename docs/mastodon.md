@@ -42,6 +42,27 @@ Depending on your Mastodon instance the text length may vary. The default is 500
 'mauricerenck.indieConnector.mastodon.text-length' => 500,
 ```
 
+### Setting a language
+
+If you want to use another language than your default language to use the text from, you can set the following option:
+
+```php
+'mauricerenck.indieConnector.post.prefereLanguage' => 'en',
+```
+
+This might be handy if your default language is for example German but you only want to post in English on Mastodon or Bluesky. This way the english translation is used as a source for the text or title.
+
+### Use the permalink URL
+
+If you want to use the permalink URL instead of the page URL, you can set the following option:
+
+```php
+'mauricerenck.indieConnector.post.usePermalinkUrl' => true,
+```
+
+This url will never change, even if you change the slug of the page. This way you can ensure that the link in your Mastodon post will always work.
+
+
 ### Get the URL of the post
 
 If you want to display te URL of your Mastodon post on your page, so that people can use it to interact with your post, you can use the following page method:
