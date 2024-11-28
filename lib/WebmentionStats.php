@@ -23,7 +23,7 @@ class WebmentionStats
         string $source,
         string $type,
         ?string $image,
-        string $author,
+        ?string $author,
         string $title
     ) {
         if ($this->doNotTrackHost($source)) {
@@ -35,6 +35,10 @@ class WebmentionStats
         }
 
         $mentionDate = $this->indieDb->getFormattedDate();
+
+        if (is_null($author)) {
+            $author = '';
+        }
 
         if (is_null($image)) {
             $image = '';
