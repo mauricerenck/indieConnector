@@ -22,7 +22,7 @@ class WebmentionStats
         string $target,
         string $source,
         string $type,
-        string $image,
+        ?string $image,
         string $author,
         string $title
     ) {
@@ -35,6 +35,10 @@ class WebmentionStats
         }
 
         $mentionDate = $this->indieDb->getFormattedDate();
+
+        if (is_null($image)) {
+            $image = '';
+        }
 
         try {
             $uniqueHash = md5($target . $source . $type . $mentionDate);
@@ -78,7 +82,7 @@ class WebmentionStats
 
             $existingEntry = $this->indieDb->select(
                 'outbox',
-                ['id','updates', 'page_uuid'],
+                ['id', 'updates', 'page_uuid'],
                 'WHERE page_uuid = "' . $pageUuid . '" AND target = "' . $target['url'] . '"'
             );
 
@@ -298,7 +302,7 @@ class WebmentionStats
                 $host = parse_url($webmention->mention_source, PHP_URL_HOST);
                 $userHandle = $host;
 
-                if($host === 'brid-gy.appspot.com' || $host === 'brid.gy') {
+                if ($host === 'brid-gy.appspot.com' || $host === 'brid.gy') {
                     $path = parse_url($webmention->mention_source, PHP_URL_PATH);
                     $pathParts = explode('/', $path);
                     $host = $pathParts[2];
@@ -371,7 +375,7 @@ class WebmentionStats
                 $pageUrl = '#';
                 $panelUrl = '#';
 
-                if(isset($page)) {
+                if (isset($page)) {
                     $pageTitle = $page->title()->value();
                     $pageUrl = $page->url();
                     $panelUrl = $page->panel()->url();
@@ -391,7 +395,10 @@ class WebmentionStats
                 }
 
                 $targets[$webmention->page_uuid]['entries'][] = [
-                'url' => $webmention->target, 'status' => $webmention->status, 'updates' => $webmention->updates];
+                    'url' => $webmention->target,
+                    'status' => $webmention->status,
+                    'updates' => $webmention->updates
+                ];
             }
 
             $targets = array_values($targets);
