@@ -24,7 +24,7 @@ class WebmentionStats
         string $type,
         ?string $image,
         ?string $author,
-        string $title
+        ?string $title
     ) {
         if ($this->doNotTrackHost($source)) {
             return false;
@@ -42,6 +42,10 @@ class WebmentionStats
 
         if (is_null($image)) {
             $image = '';
+        }
+
+        if (is_null($title)) {
+            $title = '';
         }
 
         try {
