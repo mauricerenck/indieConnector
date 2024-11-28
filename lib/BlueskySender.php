@@ -22,7 +22,6 @@ class BlueskySender extends ExternalPostSender
 
     public function sendPost($page)
     {
-
         if (!$this->enabled) {
             return false;
         }
@@ -50,8 +49,8 @@ class BlueskySender extends ExternalPostSender
         }
 
         try {
-            $pageUrl = $page->url();
-            $trimTextPosition = $this->calculatePostTextLength($page->url());
+            $pageUrl = $this->getPostUrl($page);
+            $trimTextPosition = $this->calculatePostTextLength($pageUrl);
             $language = 'en';
 
             $message = $this->getTextFieldContent($page, $trimTextPosition);
@@ -59,6 +58,10 @@ class BlueskySender extends ExternalPostSender
 
             if ($defaultLanguage = kirby()->defaultLanguage()) {
                 $language = $defaultLanguage->code();
+            }
+
+            if ($this->forceLanguage !== false) {
+                $language = $this->forceLanguage;
             }
 
             $bluesky = new BlueskyApi();

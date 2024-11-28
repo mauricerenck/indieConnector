@@ -10,6 +10,7 @@ class ExternalPostSender extends Sender
         public ?array $textfields = null,
         public ?string $imagefield = null,
         public ?string $forceLanguage = null,
+        public ?bool $usePermalinkUrl = null,
         private ?int $maxPostLength = null,
         public ?UrlChecks $urlChecks = null,
         public ?PageChecks $pageChecks = null
@@ -18,7 +19,8 @@ class ExternalPostSender extends Sender
 
         $this->textfields = $textfields ?? option('mauricerenck.indieConnector.post.textfields', ['description']);
         $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
-        $this->forceLanguage = $imagefield ?? option('mauricerenck.indieConnector.post.forceLanguage', false);
+        $this->forceLanguage = $forceLanguage ?? option('mauricerenck.indieConnector.post.forceLanguage', false);
+        $this->usePermalinkUrl = $usePermalinkUrl ?? option('mauricerenck.indieConnector.post.usePermalinkUrl', false);
         $this->maxPostLength = $maxPostLength ?? 300;
 
         $this->urlChecks = $urlChecks ?? new UrlChecks();
@@ -58,6 +60,17 @@ class ExternalPostSender extends Sender
         }
 
         return Str::short($content['title'], $trimTextPosition);
+    }
+
+    public function getPostUrl($page)
+    {
+        $url = $page->url($this->forceLanguage);
+
+        if ($this->usePermalinkUrl) {
+            $url = $page->permalink();
+        }
+
+        return $url;
     }
 
     public function calculatePostTextLength(string $url)

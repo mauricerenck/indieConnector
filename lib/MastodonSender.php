@@ -67,8 +67,8 @@ class MastodonSender extends ExternalPostSender
         }
 
         try {
-            $pageUrl = $page->url();
-            $trimTextPosition = $this->calculatePostTextLength($page->url());
+            $pageUrl = $this->getPostUrl($page);
+            $trimTextPosition = $this->calculatePostTextLength($pageUrl);
 
             $message = $this->getTextFieldContent($page, $trimTextPosition);
             $message .= "\n" . $pageUrl;
