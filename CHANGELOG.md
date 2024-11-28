@@ -1,3 +1,10 @@
+## [2.3.4](https://github.com/mauricerenck/indieConnector/compare/v2.3.3...v2.3.4) (2024-11-28)
+
+
+### Bug Fixes
+
+* allow empty title ([88dd5e5](https://github.com/mauricerenck/indieConnector/commit/88dd5e5066edb099adc7676ee3ac57810f273d4d))
+
 ## [2.3.3](https://github.com/mauricerenck/indieConnector/compare/v2.3.2...v2.3.3) (2024-11-28)
 
 
