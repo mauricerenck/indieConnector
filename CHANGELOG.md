@@ -1,3 +1,10 @@
+## [2.4.1](https://github.com/mauricerenck/indieConnector/compare/v2.4.0...v2.4.1) (2024-12-29)
+
+
+### Bug Fixes
+
+* shorter toggle labels ([9af1d17](https://github.com/mauricerenck/indieConnector/commit/9af1d179ded8c9917941133eb73d1be26494022e))
+
 # [2.4.0](https://github.com/mauricerenck/indieConnector/compare/v2.3.4...v2.4.0) (2024-11-28)
 
 
