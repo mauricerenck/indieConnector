@@ -60,7 +60,7 @@ class BlueskySender extends ExternalPostSender
                 $language = $defaultLanguage->code();
             }
 
-            if ($this->prefereLanguage !== false) {
+            if ($this->prefereLanguage !== false && !empty($this->prefereLanguage)) {
                 $language = $this->prefereLanguage;
             }
 
@@ -104,7 +104,13 @@ class BlueskySender extends ExternalPostSender
 
             $response = $bluesky->request('POST', 'com.atproto.repo.createRecord', $args);
 
+            if (isset($response->error)) {
+                throw new Exception($response->message);
+                return false;
+            }
+
             $this->updatePosts($response->uri, 200, $page, 'bluesky');
+
             return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

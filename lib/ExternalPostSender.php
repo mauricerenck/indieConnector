@@ -43,7 +43,7 @@ class ExternalPostSender extends Sender
 
     public function getTextFieldContent($page, $trimTextPosition)
     {
-        $pageOfLanguage = $page->translation($this->prefereLanguage);
+        $pageOfLanguage = !$this->prefereLanguage ? null : $page->translation($this->prefereLanguage);
         $content = !is_null($pageOfLanguage) ? $pageOfLanguage->content() : $page->content()->toArray();
 
         if (is_array($this->textfields)) {
