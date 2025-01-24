@@ -1,3 +1,15 @@
+# [2.5.0](https://github.com/mauricerenck/indieConnector/compare/v2.4.1...v2.5.0) (2025-01-24)
+
+
+### Bug Fixes
+
+* handle bluesky posting when preferedLanguage is empty ([2f63a4f](https://github.com/mauricerenck/indieConnector/commit/2f63a4fb4760f63a601c5360f14c1cda6371b5ad))
+
+
+### Features
+
+* kirby 5 compatibility ([ae1575c](https://github.com/mauricerenck/indieConnector/commit/ae1575c3a387e34705db2c790617179540da9aa8))
+
 ## [2.4.1](https://github.com/mauricerenck/indieConnector/compare/v2.4.0...v2.4.1) (2024-12-29)
 
 
