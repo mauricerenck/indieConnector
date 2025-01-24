@@ -116,7 +116,7 @@ class Sender
     public function getPostTargetUrl($target, $page)
     {
 
-        if($page->mastodonStatusUrl()->isNotEmpty()) {
+        if ($page->mastodonStatusUrl()->isNotEmpty()) {
             return $page->mastodonStatusUrl()->value();
         }
 
@@ -225,7 +225,7 @@ class Sender
         }
 
         // fix for outbox format mismatch
-        if(count($outbox['webmentions']) > 0 && !isset($outbox['webmentions'][0]['url'])) {
+        if (count($outbox['webmentions']) > 0 && !isset($outbox['webmentions'][0]['url'])) {
             $outbox['webmentions'] = $this->convertProcessedUrlsToV2($outbox['webmentions']);
         }
 

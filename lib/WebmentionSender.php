@@ -69,10 +69,10 @@ class WebmentionSender extends Sender
                 'status' => $status,
                 'retries' => 0,
             ];
-
         }
 
         $mergedUrls = $this->mergeUrlsWithOutbox($processedUrls, $page);
+
         $this->updateWebmentions($mergedUrls, $page);
 
         if (option('mauricerenck.indieConnector.stats.enabled', false)) {
@@ -183,12 +183,12 @@ class WebmentionSender extends Sender
 
             $existingEntry =
                 count($existingEntries) === 0
-                    ? $newEntry
-                    : array_shift($existingEntries);
+                ? $newEntry
+                : array_shift($existingEntries);
 
             $mergedEntry = array_merge($existingEntry, $newEntry);
 
-            if($mergedEntry['status'] === 'error') {
+            if ($mergedEntry['status'] === 'error') {
                 $mergedEntry['retries'] = $existingEntry['retries'] + 1;
             }
 

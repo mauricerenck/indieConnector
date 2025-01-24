@@ -1,35 +1,36 @@
 <template>
-    <k-inside>
+    <k-panel-inside>
         <div class="k-webmentions-queue-view">
             <k-header>IndieConnector</k-header>
             <k-tabs
-               	tab="queue"
-               	:tabs="[
-              		{ name: 'webmentions', label: 'Webmentions', link: '/webmentions' },
-              		{ name: 'queue', label: 'Queue', link: '/webmentions/queue', badge: itemsInQueue }
-               	]"
-                theme='warning'
-
+                tab="queue"
+                :tabs="[
+                    { name: 'webmentions', label: 'Webmentions', link: '/webmentions' },
+                    { name: 'queue', label: 'Queue', link: '/webmentions/queue', badge: itemsInQueue },
+                ]"
+                theme="warning"
             />
 
-            <k-info-field v-if="disabled" label="Queue disabled" text="The queue feature is disabled. Configure it in your config.php" />
+            <k-info-field
+                v-if="disabled"
+                label="Queue disabled"
+                text="The queue feature is disabled. Configure it in your config.php"
+            />
 
             <QueueList :queuedItems="queuedItems" />
         </div>
-    </k-inside>
+    </k-panel-inside>
 </template>
 
 <script>
 export default {
     props: {
-      disabled: Boolean,
-      queuedItems: Object,
-      itemsInQueue: Number
+        disabled: Boolean,
+        queuedItems: Object,
+        itemsInQueue: Number,
     },
 
-    methods: {
-
-    },
+    methods: {},
 }
 </script>
 

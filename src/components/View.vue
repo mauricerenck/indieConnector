@@ -1,14 +1,14 @@
 <template>
-    <k-inside>
+    <k-panel-inside>
         <div class="k-webmentions-view">
             <k-header>IndieConnector</k-header>
             <k-tabs
-               	tab="webmentions"
-               	:tabs="[
-              		{ name: 'webmentions', label: 'Webmentions', link: '/webmentions' },
-              		{ name: 'queue', label: 'Queue', link: '/webmentions/queue', badge: itemsInQueue}
-               	]"
-                theme='warning'
+                tab="webmentions"
+                :tabs="[
+                    { name: 'webmentions', label: 'Webmentions', link: '/webmentions' },
+                    { name: 'queue', label: 'Queue', link: '/webmentions/queue', badge: itemsInQueue },
+                ]"
+                theme="warning"
             />
 
             <div class="prev-next">
@@ -25,7 +25,7 @@
                 <Targets :targets="targets" />
             </k-grid>
         </div>
-    </k-inside>
+    </k-panel-inside>
 </template>
 
 <script>
