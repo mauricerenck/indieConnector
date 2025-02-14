@@ -19,7 +19,7 @@ return [
         'skipSameHost' => true,
         'allowedTemplates' => ['phpunit', 'default'],
         'blockedTemplates' => ['blocked-template'],
-        'url-fields' => ['text:text','textfield:text', 'layouteditor:layout', 'blockeditor:block'],
+        'url-fields' => ['text:text', 'textfield:text', 'layouteditor:layout', 'blockeditor:block'],
     ],
 
     'mauricerenck.indieConnector.receive' => [
