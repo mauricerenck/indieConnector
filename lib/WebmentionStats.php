@@ -4,6 +4,7 @@ namespace mauricerenck\IndieConnector;
 
 use Exception;
 use Kirby\Http\Url;
+use Kirby\Toolkit\Str;
 
 class WebmentionStats
 {
@@ -308,61 +309,94 @@ class WebmentionStats
 
             foreach ($result->data as $webmention) {
                 $host = parse_url($webmention->mention_source, PHP_URL_HOST);
-                $userHandle = $host;
+                $sourceType = 'web';
 
                 if ($host === 'brid-gy.appspot.com' || $host === 'brid.gy') {
                     $path = parse_url($webmention->mention_source, PHP_URL_PATH);
                     $pathParts = explode('/', $path);
-                    $host = $pathParts[2];
-                    $userHandle = $pathParts[3];
+                    $sourceType = $pathParts[2];
                 }
 
-                if (!isset($sources[$host])) {
-                    $sources[$host] = [
-                        'summary' => [
-                            'host' => $host,
-                            'likes' => 0,
-                            'replies' => 0,
-                            'reposts' => 0,
-                            'mentions' => 0,
-                            'bookmarks' => 0,
-                            'sum' => 0
-                        ],
-                        'entries' => []
+                if (!isset($sources[$sourceType])) {
+                    $sources[$sourceType] = [
+                        'sourceType' => ucfirst($sourceType),
+                        'likes' => 0,
+                        'replies' => 0,
+                        'reposts' => 0,
+                        'mentions' => 0,
+                        'bookmarks' => 0,
+                        'sum' => 0
                     ];
                 }
 
-                $webmentionEntry = [
-                    'source' => $webmention->mention_source,
-                    'title' => $webmention->title,
-                    'author' => !empty($webmention->author) ? $webmention->author : $userHandle,
-                    'image' => $webmention->mention_image,
-                    'host' => $host,
-                    'likes' => 0,
-                    'replies' => 0,
-                    'reposts' => 0,
-                    'mentions' => 0,
-                    'bookmarks' => 0,
-                    'sum' => 0
-                ];
                 $mentionType = $this->mentionTypeToJsonType($webmention->mention_type);
-                $webmentionEntry[$mentionType] = $webmention->mentions;
-                $webmentionEntry['sum'] += $webmention->mentions;
-
-                $sources[$host]['summary'][$mentionType] += $webmention->mentions;
-                $sources[$host]['summary']['sum']++;
-                $sources[$host]['entries'][] = $webmentionEntry;
+                $sources[$sourceType][$mentionType] += $webmention->mentions;
+                $sources[$sourceType]['sum'] += $webmention->mentions;
             }
 
             $sources = array_values($sources);
 
             return $sources;
         } catch (Exception $e) {
+            return false;
+        }
+    }
+    public function getSourceAuthors(int $year, int $month)
+    {
+        try {
+            $month = (int) $month;
+            $month = $month < 10 ? '0' . $month : $month;
+
+            $result = $this->indieDb->select(
+                'webmentions',
+                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions, author, title'],
+                'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY author, mention_source, mention_type;'
+            );
+
+            $authors = [];
+
+            foreach ($result->data as $webmention) {
+                $host = parse_url($webmention->mention_source, PHP_URL_HOST);
+                $sourceType = 'web';
+                $userHandle = !empty($webmention->author) ? $webmention->author : $host;
+                $index = Str::slug($userHandle);
+
+                if ($host === 'brid-gy.appspot.com' || $host === 'ap.brid.gy' || $host === 'brid.gy') {
+                    $path = parse_url($webmention->mention_source, PHP_URL_PATH);
+                    $pathParts = explode('/', $path);
+                    $sourceType = $pathParts[2];
+                }
+
+                // TODO hier nach author aufsplitten
+                if (!isset($authors[$index])) {
+                    $authors[$index] = [
+                        'host' => $host,
+                        'sourceType' => $sourceType,
+                        'source' => $webmention->mention_source,
+                        'author' => $userHandle,
+                        'image' => $webmention->mention_image,
+                        'host' => $host,
+                        'likes' => 0,
+                        'replies' => 0,
+                        'reposts' => 0,
+                        'mentions' => 0,
+                        'bookmarks' => 0,
+                        'sum' => 0
+                    ];
+                }
+
+                $mentionType = $this->mentionTypeToJsonType($webmention->mention_type);
+                $authors[$index][$mentionType] += $webmention->mentions;
+            }
+
+            $authors = array_values($authors);
+
+            return $authors;
+        } catch (Exception $e) {
             // echo 'Could not connect to Database: ', $e->getMessage(), "\n"; FIXME results in panel output before header
             return false;
         }
     }
-
     public function getSentMentions(int $year, int $month)
     {
         try {

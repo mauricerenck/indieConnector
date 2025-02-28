@@ -69,6 +69,7 @@ return [
                         $summary = $stats->getSummaryByMonth($year, $month);
                         $targets = $stats->getTargets($year, $month);
                         $sources = $stats->getSourceHosts($year, $month);
+                        $authors = $stats->getSourceAuthors($year, $month);
                         $sent = $stats->getSentMentions($year, $month);
 
                         return [
@@ -84,6 +85,7 @@ return [
                                 'summary' => $summary,
                                 'targets' => $targets,
                                 'sources' => $sources,
+                                'authors' => $authors,
                                 'sent' => $sent,
                                 'itemsInQueue' => $itemsInQueue ?? 0
                             ],

@@ -6,7 +6,7 @@
     "author": "Maurice Renck",
     "private": true,
     "scripts": {
-        "dev": "npx -y kirbyup serve src/index.js",
+        "dev": "npx -y kirbyup src/index.js --watch",
         "build": "npx -y kirbyup src/index.js"
     },
     "posthtml": {
@@ -18,7 +18,7 @@
     },
     "devDependencies": {
         "@ambimax/semantic-release-composer": "github:ambimax/semantic-release-composer",
-        "@semantic-release/changelog": "^6.0.1",
+        "@semantic-release/changelog": "^6.0.3",
         "@semantic-release/git": "^10.0.1",
         "@vue/component-compiler-utils": "^3.2.2",
         "cssnano": "^5.0.6",

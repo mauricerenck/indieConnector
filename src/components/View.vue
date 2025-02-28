@@ -18,7 +18,7 @@
             </div>
 
             <DetailsByMonth :summary="summary" />
-            <Sources :sources="sources" />
+            <Sources :sources="sources" :authors="authors" />
 
             <k-grid style="gap: 2rem; --columns: 2">
                 <Sent :outbox="sent" />
@@ -40,6 +40,7 @@ export default {
         summary: Object,
         targets: { type: Array, default: [] },
         sources: Array,
+        authors: Array,
         sent: Array,
         itemsInQueue: Number,
     },
