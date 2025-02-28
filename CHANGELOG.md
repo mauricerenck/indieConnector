@@ -1,3 +1,10 @@
+# [2.6.0](https://github.com/mauricerenck/indieConnector/compare/v2.5.0...v2.6.0) (2025-02-28)
+
+
+### Features
+
+* source view splitted into sources and users ([d609310](https://github.com/mauricerenck/indieConnector/commit/d609310e76f2c7b1ad32583370f215af6ee0c46e))
+
 # [2.5.0](https://github.com/mauricerenck/indieConnector/compare/v2.4.1...v2.5.0) (2025-01-24)
 
 
