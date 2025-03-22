@@ -1,6 +1,5 @@
 # Options
 
-
 ## General settings
 
 | Option           | Default                     | Description                                                                              |
@@ -14,6 +13,7 @@
 | Option                    | Default                                                        | Description                                                                                                        |
 | ------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `send.enabled`            | `true`                                                         | Enable sending webmentions                                                                                         |
+| `send.hook.enabled`       | `false`                                                        | Allow sending webmentions from Kirby hook triggered by other plugins                                               |
 | `send.maxRetries`         | `3`                                                            | How often should indieconnector try to send a mention if it failes                                                 |
 | `send.markDeleted`        | `false`                                                        | When you delete a page, mark it as gone, so webmention targets can get informed about that - **Needs a database!** |
 | `send.skipSameHost`       | `true`                                                         | Skip sending webmentions to yourself                                                                               |
@@ -28,7 +28,6 @@
 | `blockedTemplates`        | `[]`                                                           | **DEPRECATED** see `send.blockedTemplates`                                                                         |
 | `send-mention-url-fields` | `['textfield:text','layouteditor:layout','blockeditor:block']` | **DEPRECATED** see `send.url-fields`                                                                               |
 
-
 ## Settings for receiving webmentions ([details](receiving.md))
 
 | Option                   | Default | Description                                                                    |
@@ -37,13 +36,12 @@
 | `receive.useHtmlContent` | `false` | Set to true if you want to show html content from the sender (not recommended) |
 | `receive.blockedSources` | `[]`    | An array of source URLs to block, remove the path to block the entire host     |
 
-
 ## Settings for the queue ([details](receiving.md))
+
 | Option          | Default | Description                                                    |
 | --------------- | ------- | -------------------------------------------------------------- |
 | `queue.enabled` | `false` | Queue all incoming webmentions before processing them          |
 | `queue.retries` | `5`     | Retry `n` times to process the webmention if there is an error |
-
 
 ## Settings for statistics in the panel
 
@@ -59,18 +57,16 @@
 | `sqlitePath`        | `'content/.sqlite/'` | Relative path to where the sqlite file should be stored (directory must exist) |
 | `disableMigrations` | `false`              | Disable automatic migrations (may lead to errors)                              |
 
-
 ## Posting to external services
 
-| Option                  | Default            | Description                                                          |
-| ----------------------- | ------------------ | -------------------------------------------------------------------- |
-| `post.prefereLanguage`  | `-`                | Use another language than your default language to use the text from |
-| `post.usePermalinkUrl`  | `false`            | Use the permalink url instead of the page url                        |
-| `post.textfields`       | `['description']`  | Text source fields for posting elsewhere                             |
-| `post.imagefield`       | `''`               | Image source field for posting elsewhere, must be one image          |
-| `post.allowedTemplates` | `[]`               | Set templates allowed to send webmentions                            |
-| `post.blockedTemplates` | `[]`               | Block templates from sending webmentions                             |
-
+| Option                  | Default           | Description                                                          |
+| ----------------------- | ----------------- | -------------------------------------------------------------------- |
+| `post.prefereLanguage`  | `-`               | Use another language than your default language to use the text from |
+| `post.usePermalinkUrl`  | `false`           | Use the permalink url instead of the page url                        |
+| `post.textfields`       | `['description']` | Text source fields for posting elsewhere                             |
+| `post.imagefield`       | `''`              | Image source field for posting elsewhere, must be one image          |
+| `post.allowedTemplates` | `[]`              | Set templates allowed to send webmentions                            |
+| `post.blockedTemplates` | `[]`              | Block templates from sending webmentions                             |
 
 ### Mastodon ([details](mastodon.md))
 
@@ -93,7 +89,6 @@
 | `bluesky.enabled`  | `false` | Enable posting to bluesky on publish |
 | `bluesky.handle`   | `‘‘`    | Your user handle                     |
 | `bluesky.password` | `‘‘`    | Your bluesky app password            |
-
 
 ## ActivityPub beta ([details](activitiypub.md))
 

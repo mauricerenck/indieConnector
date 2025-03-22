@@ -82,4 +82,11 @@ return [
             );
         }
     },
+
+    'indieConnector.webmention.send' => function ($page, $targetUrl, $sourceUrl) {
+        if (option('mauricerenck.indieConnector.send.hook.enabled', false)) {
+            $webmentions = new WebmentionSender();
+            $webmentions->sendWebmentionFromHook($page, $targetUrl, $sourceUrl);
+        }
+    },
 ];

@@ -83,6 +83,38 @@ class WebmentionSender extends Sender
         return $mergedUrls;
     }
 
+    public function sendWebmentionFromHook($page, $targetUrl, $sourceUrl)
+    {
+        // global config
+        if (!$this->activeWebmentions) {
+            return false;
+        }
+
+        $processedUrls = [];
+
+        $sent = $this->send($targetUrl, $sourceUrl);
+
+        $status = $sent ? 'success' : 'error';
+        $processedUrls[] = [
+            'url' => $targetUrl,
+            'date' => date('Y-m-d H:i:s'),
+            'status' => $status,
+            'retries' => 0,
+        ];
+
+        $mergedUrls = $this->mergeUrlsWithOutbox($processedUrls, $page);
+
+        $this->updateWebmentions($mergedUrls, $page);
+
+        if (option('mauricerenck.indieConnector.stats.enabled', false)) {
+            $stats = new WebmentionStats();
+            $stats->trackOutgoingWebmentions($mergedUrls, $page);
+        }
+
+        return $mergedUrls;
+    }
+
+
     public function send(string $targetUrl, string $sourceUrl)
     {
         $endpoint = $this->mentionClient->discoverWebmentionEndpoint($targetUrl);
