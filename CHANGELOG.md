@@ -1,3 +1,10 @@
+## [2.7.1](https://github.com/mauricerenck/indieConnector/compare/v2.7.0...v2.7.1) (2025-04-04)
+
+
+### Bug Fixes
+
+* autoload ([e66d406](https://github.com/mauricerenck/indieConnector/commit/e66d40643dc1ac6f18f84fce1edfffb109a03717))
+
 # [2.7.0](https://github.com/mauricerenck/indieConnector/compare/v2.6.0...v2.7.0) (2025-04-04)
 
 
