@@ -48,8 +48,9 @@ class ExternalPostSender extends Sender
 
         if (is_array($this->textfields)) {
             foreach ($this->textfields as $field) {
-                if (isset($content[$field]) && !empty($content[$field])) {
-                    return Str::short($content[$field], $trimTextPosition);
+                $lowercaseField = strtolower($field);
+                if (isset($content[$lowercaseField]) && !empty($content[$lowercaseField])) {
+                    return Str::short($content[$lowercaseField], $trimTextPosition);
                 }
             }
         }
