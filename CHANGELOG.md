@@ -1,3 +1,15 @@
+# [2.7.0](https://github.com/mauricerenck/indieConnector/compare/v2.6.0...v2.7.0) (2025-04-04)
+
+
+### Bug Fixes
+
+* transforms the field name to lowercase [#16](https://github.com/mauricerenck/indieConnector/issues/16) ([d837bdd](https://github.com/mauricerenck/indieConnector/commit/d837bdd381a952fbf50f298f1f6c2f2d838dfbd4))
+
+
+### Features
+
+* send webmentions via triggered hook ([9c0c7aa](https://github.com/mauricerenck/indieConnector/commit/9c0c7aade870cc4d0bea4ce7c2869645fab2207d))
+
 # [2.6.0](https://github.com/mauricerenck/indieConnector/compare/v2.5.0...v2.6.0) (2025-02-28)
 
 
