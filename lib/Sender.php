@@ -116,7 +116,7 @@ class Sender
     public function getPostTargetUrl($target, $page)
     {
 
-        if ($page->mastodonStatusUrl()->isNotEmpty()) {
+        if ($target === 'mastodon' && $page->mastodonStatusUrl()->isNotEmpty()) {
             return $page->mastodonStatusUrl()->value();
         }
 
@@ -137,21 +137,33 @@ class Sender
         return !is_null($post);
     }
 
-    public function updateExternalPosts($url, $statusCode, $target, $page)
+    public function updateExternalPosts($posts, $page)
     {
         $outbox = $this->readOutbox($page);
 
-        $status = $statusCode === 200 ? 'success' : 'error';
-        $newPost = [
-            'url' => $url,
-            'status' => $status,
-            'target' => $target,
-            'date' => date('Y-m-d H:i:s'),
-            'retries' => 0,
-        ];
+        $retries = [];
+        foreach ($outbox['posts'] as $post) {
+            if (isset($post['target'])) {
+                $retries[$post['target']] = $post['retries'];
+            }
+        }
 
-        $newPosts = array_merge([$newPost], $outbox['posts']);
-        $outbox['posts'] = $newPosts;
+        $newPosts = [];
+
+        foreach ($posts as $post) {
+            $status = $post['status'] === 200 ? 'success' : 'error';
+            $newPosts[] = [
+                'id' => $post['id'],
+                'url' => $post['uri'],
+                'status' => $status,
+                'target' => $post['target'],
+                'date' => date('Y-m-d H:i:s'),
+                'retries' => 0,
+            ];
+        }
+
+        $processedPosts = array_merge($newPosts, $outbox['posts']);
+        $outbox['posts'] = $processedPosts;
 
         $this->writeOutbox($outbox, $page);
 

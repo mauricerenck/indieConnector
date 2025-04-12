@@ -35,7 +35,12 @@ final class MastodonSenderTest extends TestCaseMocked
 
         $result = $sender->sendPost($page);
 
-        $this->assertTrue($result);
+        $this->assertEquals([
+            "id" => null,
+            "uri" => null,
+            "status" => 200,
+            "target" => "mastodon"
+        ], $result);
     }
 
     /**

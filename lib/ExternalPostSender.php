@@ -80,8 +80,8 @@ class ExternalPostSender extends Sender
         return $this->maxPostLength - $urlLength - 2;
     }
 
-    public function updatePosts($url, $statusCode, $page, $target)
+    public function updatePosts($id, $url, $statusCode, $page, $target)
     {
-        return $this->updateExternalPosts($url, $statusCode, $target, $page);
+        return $this->updateExternalPosts($id, $url, $statusCode, $target, $page);
     }
 }

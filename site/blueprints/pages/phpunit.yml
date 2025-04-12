@@ -1,19 +1,25 @@
 options:
-  changeSlug: false
-  update: true
+    changeSlug: false
+    update: true
 
 sections:
-  phpunit:
-    type: fields
-    fields:
-      indieConnetor:
-        extends: indieconnector/fields/webmentions
-      textfield:
-        type: textarea
-        label: Text
-      layouteditor:
-        type: layout
-        label: Layout
-      blockeditor:
-        type: blocks
-        label: Blocks
+    phpunit:
+        type: fields
+        fields:
+            indieConnetor:
+                extends: indieconnector/fields/webmentions
+            mastoText:
+                type: textarea
+                label: Mastodon Text
+            mastodonimage:
+                type: files
+                label: Mastodon Image
+            textfield:
+                type: textarea
+                label: Text
+            layouteditor:
+                type: layout
+                label: Layout
+            blockeditor:
+                type: blocks
+                label: Blocks

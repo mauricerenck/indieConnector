@@ -13,11 +13,23 @@ return [
         $webmentions->sendWebmentions($newPage);
 
         if (!$newPage->isDraft() && $oldPage->isDraft()) {
+
+            $postResults = [];
+
             $mastodonSender = new MastodonSender();
-            $mastodonSender->sendPost($newPage);
+            $mastodonPost = $mastodonSender->sendPost($newPage);
+            if ($mastodonPost !== false) {
+                $postResults[] = $mastodonPost;
+            }
 
             $blueskySender = new BlueskySender();
-            $blueskySender->sendPost($newPage);
+            $blueskyPost = $blueskySender->sendPost($newPage);
+
+            if ($blueskyPost !== false) {
+                $postResults[] = $blueskyPost;
+            }
+
+            $mastodonSender->updateExternalPosts($postResults, $newPage);
         }
     },
 

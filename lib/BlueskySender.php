@@ -94,6 +94,10 @@ class BlueskySender extends ExternalPostSender
                         [
                             'alt' => $page->title()->value(),
                             'image' => $image,
+                            'aspectRatio' => [
+                                'width'  => $mediaAttachment['width'],
+                                'height' => $mediaAttachment['height'],
+                            ],
                         ],
                     ],
                 ];
@@ -105,13 +109,20 @@ class BlueskySender extends ExternalPostSender
             $response = $bluesky->request('POST', 'com.atproto.repo.createRecord', $args);
 
             if (isset($response->error)) {
-                throw new Exception($response->message);
-                return false;
+                return [
+                    'id' => null,
+                    'uri' => null,
+                    'status' => 500,
+                    'target' => 'bluesky'
+                ];
             }
 
-            $this->updatePosts($response->uri, 200, $page, 'bluesky');
-
-            return true;
+            return [
+                'id' => $response->cid,
+                'uri' => $response->uri,
+                'status' => 200,
+                'target' => 'bluesky'
+            ];
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
             return false;
@@ -152,17 +163,21 @@ class BlueskySender extends ExternalPostSender
                 $imagefield = $this->imagefield;
                 $image = $page->$imagefield();
 
+
                 if (!is_null($image) && $image->isNotEmpty()) {
                     $imageMimeType = $image->toFile()->mime();
-                    $imagePath = $image->toFile()->resize(800)->root(); // TODO image size must be very low, so we need to resize it
+                    $resizedImage = $image->toFile()->resize(800); // image size must be very low, so we need to resize it
+                    $resizedImage->base64(); // this forces kirby to generate the image
 
-                    if (!F::exists($imagePath)) {
+                    if (!F::exists($resizedImage->root())) {
                         return false;
                     }
 
                     return [
-                        'content' => file_get_contents($imagePath),
+                        'content' => file_get_contents($resizedImage->root()),
                         'mime' => $imageMimeType,
+                        'width' => $resizedImage->width(),
+                        'height' => $resizedImage->height()
                     ];
                 }
             }

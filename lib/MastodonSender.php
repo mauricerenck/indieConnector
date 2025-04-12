@@ -101,9 +101,14 @@ class MastodonSender extends ExternalPostSender
             $result = $response->json();
 
             $url = $result['url'] ?? null;
-            $this->updatePosts($url, $response->code(), $page, 'mastodon');
+            $id = $result['id'] ?? null;
 
-            return true;
+            return [
+                'id' => $id,
+                'uri' => $url,
+                'status' => 200,
+                'target' => 'mastodon'
+            ];
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
             return false;
