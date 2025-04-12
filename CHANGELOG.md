@@ -1,3 +1,10 @@
+## [2.7.2](https://github.com/mauricerenck/indieConnector/compare/v2.7.1...v2.7.2) (2025-04-12)
+
+
+### Bug Fixes
+
+* prevent timing issue when writing multiple posts to outbox [#18](https://github.com/mauricerenck/indieConnector/issues/18) ([a4991bc](https://github.com/mauricerenck/indieConnector/commit/a4991bcd166ab96033a0f9f128f54e66a4560fda)), closes [#19](https://github.com/mauricerenck/indieConnector/issues/19) [#20](https://github.com/mauricerenck/indieConnector/issues/20)
+
 ## [2.7.1](https://github.com/mauricerenck/indieConnector/compare/v2.7.0...v2.7.1) (2025-04-04)
 
 
