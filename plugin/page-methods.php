@@ -11,6 +11,10 @@ return [
         $mastodonSender = new BlueskySender();
         $atUri = $mastodonSender->getPostTargetUrl('bluesky', $this);
 
+        if (is_null($atUri)) {
+            return '';
+        }
+
         // Regular expression to match the DID and RKEY
         $regex = '/^at:\/\/(did:plc:[a-zA-Z0-9]+)\/app\.bsky\.feed\.post\/([a-zA-Z0-9]+)$/';
 
