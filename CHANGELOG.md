@@ -1,3 +1,10 @@
+## [2.7.3](https://github.com/mauricerenck/indieConnector/compare/v2.7.2...v2.7.3) (2025-04-16)
+
+
+### Bug Fixes
+
+* check for empty atUri ([d8b3732](https://github.com/mauricerenck/indieConnector/commit/d8b3732818d9a58516a6a8b2b49acf7f590a530c))
+
 ## [2.7.2](https://github.com/mauricerenck/indieConnector/compare/v2.7.1...v2.7.2) (2025-04-12)
 
 
