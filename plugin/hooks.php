@@ -2,6 +2,8 @@
 
 namespace mauricerenck\IndieConnector;
 
+use Kirby\Cms\Page;
+
 return [
     'page.update:after' => function ($newPage) {
         $webmentions = new WebmentionSender();
@@ -48,6 +50,16 @@ return [
     'page.changeSlug:after' => function ($newPage) {
         $webmentions = new WebmentionSender();
         $webmentions->removePageFromDeleted($newPage);
+    },
+
+    'page.render:after' => function (string $contentType, array $data, string $html, Page $page) {
+        $reponseId = $page->responseId();
+        if (is_null($reponseId)) {
+            return;
+        }
+
+        $responseCollector = new ResponseCollector();
+        $responseCollector->removeFromQueue($reponseId->value());
     },
 
     'system.loadPlugins:after' => function () {
