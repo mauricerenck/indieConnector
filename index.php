@@ -15,6 +15,9 @@ Kirby::plugin('mauricerenck/indieConnector', [
         'webmention-endpoint' => __DIR__ . '/snippets/webmention-endpoint.php',
         'activitypub-wm' => __DIR__ . '/snippets/activitypub-webmention.php',
     ],
+    'templates' => [
+        'indie-post-response' => __DIR__ . '/templates/pages/response.php',
+    ],
     'tags' => require_once __DIR__ . '/plugin/kirbytags.php',
     'blueprints' => [
         'indieconnector/fields/webmentions' => __DIR__ . '/blueprints/fields/block-webmentions.yml',
