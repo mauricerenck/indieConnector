@@ -88,6 +88,7 @@ class ResponseCollector
                 if (!in_array($fav['id'], $knownIds)) {
 
                     $this->addToQueue(
+                        postUrl: $postUrl,
                         responseId: $fav['id'], // 'response_id' likes dont have ids use author id instead
                         responseType: 'like-of',
                         responseSource: 'mastodon',
@@ -123,6 +124,7 @@ class ResponseCollector
                 if (!in_array($repost['id'], $knownIds)) {
 
                     $this->addToQueue(
+                        postUrl: $postUrl,
                         responseId: $repost['id'], // 'response_id' likes dont have ids use author id instead
                         responseType: 'repost-of',
                         responseSource: 'mastodon',
@@ -158,6 +160,7 @@ class ResponseCollector
 
                 if (!in_array($reply['id'], $knownIds) && $reply['in_reply_to_id'] === $postId && $reply['visibility'] === 'public') {
                     $this->addToQueue(
+                        postUrl: $postUrl,
                         responseId: $reply['id'],
                         responseType: 'in-reply-to',
                         responseSource: 'mastodon',
@@ -200,6 +203,7 @@ class ResponseCollector
     }
 
     public function addToQueue(
+        string $postUrl,
         string $responseId,
         string $responseType,
         string $responseSource,
@@ -214,13 +218,16 @@ class ResponseCollector
         string $queueStatus = 'pending',
         int $retries = 0
     ) {
-        $fields = ['id', 'response_id', 'response_type', 'response_source', 'response_date', 'response_text', 'response_url', 'author_id', 'author_name', 'author_username', 'author_avatar', 'author_url', 'queueStatus', 'retries'];
 
+        $pageData = $this->indieDb->select('external_post_urls', ['page_uuid'], 'WHERE post_url = "' . $postUrl . '"')->first();
+
+        $fields = ['id', 'page_uuid', 'response_id', 'response_type', 'response_source', 'response_date', 'response_text', 'response_url', 'author_id', 'author_name', 'author_username', 'author_avatar', 'author_url', 'queueStatus', 'retries'];
         $id = Uuid::generate();
         $content = Str::unhtml($responseText);
 
         $values = [
             $id,
+            $pageData->page_uuid,
             $responseId,
             $responseType,
             $responseSource,
@@ -237,5 +244,27 @@ class ResponseCollector
         ];
 
         $this->indieDb->insert('queue_responses', $fields, $values);
+    }
+
+    public function processResponses($limit = 100)
+    {
+        $responses = $this->indieDb->select('queue_responses', ['*'], 'WHERE queueStatus = "pending" LIMIT ' . $limit);
+        return $responses;
+    }
+
+    public function markProcessed($responseIds)
+    {
+        $this->indieDb->update('queue_responses', ['queueStatus'], ['success'], 'WHERE id IN ("' . implode('","', $responseIds) . '")');
+    }
+
+    public function removeFromQueue($responseId)
+    {
+        $this->indieDb->delete('queue_responses', 'WHERE id = "' . $responseId . '" AND queueStatus = "success"');
+    }
+
+    public function getSingleResponse($responseId)
+    {
+        $response = $this->indieDb->select('queue_responses', ['*'], 'WHERE id = "' . $responseId . '"')->first();
+        return $response;
     }
 }
