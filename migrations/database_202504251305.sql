@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS external_post_urls (
 
 CREATE TABLE IF NOT EXISTS queue_responses (
     id VARCHAR UNIQUE,
+    page_uuid VARCHAR NOT NULL,
+
     response_id VARCHAR NOT NULL,
     response_type VARCHAR NOT NULL,
     response_source VARCHAR NOT NULL,
