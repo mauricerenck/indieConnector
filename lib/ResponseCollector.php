@@ -270,4 +270,9 @@ class ResponseCollector
         $response = $this->indieDb->select('queue_responses', ['*'], 'WHERE id = "' . $responseId . '"')->first();
         return $response;
     }
+
+    public function isEnabled()
+    {
+        return $this->enabled;
+    }
 }

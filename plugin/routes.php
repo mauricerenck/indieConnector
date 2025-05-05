@@ -162,10 +162,49 @@ return [
         },
     ],
     [
+        'pattern' => '(indieConnector|indieconnector)/cron/queue-responses',
+        'method' => 'GET',
+        'action' => function () {
+            // get secret from query string
+            $request = kirby()->request();
+            $data = $request->data();
+
+            $receiver = new Receiver();
+            if (!$receiver->hasValidSecret($data)) {
+                return new Response('Authentication failed', 'text/plain', 401);
+            }
+
+            $collector = new ResponseCollector();
+
+            if (!$collector->isEnabled()) {
+                return new Response('Feature is disabled', 'text/plain', 403);
+            }
+
+            $collector->getDuePostUrls();
+
+            return new Response('OK', 204);
+        },
+    ],
+    [
         'pattern' => '(indieConnector|indieconnector)/cron/fetch-responses',
         'method' => 'GET',
         'action' => function () {
+            // get secret from query string
+            $request = kirby()->request();
+            $data = $request->data();
+
+            $receiver = new Receiver();
+            if (!$receiver->hasValidSecret($data)) {
+                return new Response('Authentication failed', 'text/plain', 401);
+            }
+
+
             $collector = new ResponseCollector();
+
+            if (!$collector->isEnabled()) {
+                return new Response('Feature is disabled', 'text/plain', 403);
+            }
+
             $responses = $collector->processResponses();
 
             if (is_null($responses)) {
