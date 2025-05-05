@@ -90,6 +90,14 @@
 | `bluesky.handle`   | `‘‘`    | Your user handle                     |
 | `bluesky.password` | `‘‘`    | Your bluesky app password            |
 
+## Collecting responses ([details](responses.md))
+
+| Option              | Default | Description                                                       |
+| ------------------- | ------- | ----------------------------------------------------------------- |
+| `responses.enabled` | `false` | Enable collecting responses                                       |
+| `responses.limit`   | `10`    | Number of posts to check for responses                            |
+| `responses.ttl`     | `60`    | Minutes after which a post url should be re-checked for responses |
+
 ## ActivityPub beta ([details](activitiypub.md))
 
 | Option              | Default | Description               |
