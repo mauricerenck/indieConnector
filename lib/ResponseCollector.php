@@ -26,6 +26,10 @@ class ResponseCollector
 
     public function registerPostUrl(string $pageUuid, string $postUrl, string $postType): void
     {
+        if (!$this->enabled) {
+            return;
+        }
+
         $existingPostUrls = $this->indieDb->select(
             'external_post_urls',
             ['id'],
