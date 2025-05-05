@@ -170,6 +170,21 @@ class Sender
         return $outbox;
     }
 
+    public function updateResponseCollectionUrls($posts, $page)
+    {
+        $responseCollector = new ResponseCollector();
+
+        foreach ($posts as $post) {
+            $status = $post['status'] === 200 ? 'success' : 'error';
+
+            if ($status === 'success') {
+                $responseCollector->registerPostUrl($page->uuid()->id(), $post['uri'], $post['target']);
+            }
+        }
+
+        return;
+    }
+
     public function convertProcessedUrlsToV2($processedUrls)
     {
         $processedUrlsV2 = [];

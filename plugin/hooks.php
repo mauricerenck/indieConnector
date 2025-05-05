@@ -5,9 +5,19 @@ namespace mauricerenck\IndieConnector;
 use Kirby\Cms\Page;
 
 return [
-    'page.update:after' => function ($newPage) {
+    'page.update:after' => function ($newPage, $oldPage) {
         $webmentions = new WebmentionSender();
         $webmentions->sendWebmentions($newPage);
+
+        if ($mastodonUrl = $newPage->mastodonStatusUrl()) {
+
+            if ($oldPage->mastodonStatusUrl() === $mastodonUrl) {
+                return;
+            }
+
+            $responseCollector = new ResponseCollector();
+            $responseCollector->registerPostUrl($newPage->uuid()->id(), $mastodonUrl->value(), 'mastodon');
+        }
     },
 
     'page.changeStatus:after' => function ($newPage, $oldPage) {
@@ -32,6 +42,7 @@ return [
             }
 
             $mastodonSender->updateExternalPosts($postResults, $newPage);
+            $mastodonSender->updateResponseCollectionUrls($postResults, $newPage);
         }
     },
 
