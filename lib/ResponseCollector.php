@@ -13,9 +13,15 @@ class ResponseCollector
 
 
     public function __construct(
+        private ?bool $enabled = null,
+        private ?int $limit = null,
+        private ?int $ttl = null,
         private ?IndieConnectorDatabase $indieDatabase = null,
     ) {
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
+        $this->enabled = $queueEnabled ?? option('mauricerenck.indieConnector.responses.enabled', false);
+        $this->limit = $queueEnabled ?? option('mauricerenck.indieConnector.responses.limit', 10);
+        $this->ttl = $queueEnabled ?? option('mauricerenck.indieConnector.responses.ttl', 60);
     }
 
     public function registerPostUrl(string $pageUuid, string $postUrl, string $postType): void
@@ -48,17 +54,14 @@ class ResponseCollector
 
     public function getDuePostUrls()
     {
-        $limit = 10;
         $currentTimestamp = time();
-        $timeToFetchAfter = $currentTimestamp - 3600;
-        $limitQuery = $limit > 0 ? ' LIMIT ' . $limit : '';
+        $timeToFetchAfter = $currentTimestamp - $this->ttl * 60;
+        $limitQuery = $this->limit > 0 ? ' LIMIT ' . $this->limit : '';
+        $query = 'SELECT GROUP_CONCAT(post_url, ",") AS post_urls, post_type FROM external_post_urls WHERE active = TRUE AND UNIXEPOCH(last_fetched) < ' . $timeToFetchAfter . ' GROUP BY post_type ' . $limitQuery;
 
-        $postUrls = $this->indieDb->query(
-            'SELECT GROUP_CONCAT(post_url, ",") AS post_urls FROM external_post_urls '
-                . 'WHERE active = TRUE AND last_fetched < ' . $timeToFetchAfter . $limitQuery
-        );
+        $postUrls = $this->indieDb->query($query);
 
-        $this->parseMastodonResponses($postUrls->first()->post_urls);
+        $this->parseMastodonResponses($postUrls->filterBy('post_type', 'mastodon')->first()->post_urls); // we only get one resultset here, so we use first()
     }
 
     public function parseMastodonResponses(string $postUrls)
