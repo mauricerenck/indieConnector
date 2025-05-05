@@ -25,14 +25,6 @@
         <pre><?= $page->icGetBlueskyUrl() ?></pre>
     </div>
 
-
-    <div>
-        <?php
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector();
-        //$collector->parseMastodonResponses('https://d-64.social/@dejan/114331123039841387');
-        ?>
-    </div>
-
     <main>
         <div class="h-entry">
             <p class="p-name">Post content goes here...</p>
