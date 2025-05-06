@@ -89,6 +89,11 @@ class ResponseCollector
 
             $response = $this->paginateMastodonResponses($urlHost . '/api/v1/statuses/' . $postId . '/favourited_by');
             $favs = $response['data'];
+
+            if (count($favs) === 0) {
+                continue;
+            }
+
             $latestId = $favs[0]['id'];
 
             while ($response['next'] !== null) {
@@ -129,6 +134,11 @@ class ResponseCollector
 
             $response = $this->paginateMastodonResponses($urlHost . '/api/v1/statuses/' . $postId . '/reblogged_by');
             $reblogs = $response['data'];
+
+            if (count($reblogs) === 0) {
+                continue;
+            }
+
             $latestId = $reblogs[0]['id'];
 
             while ($response['next'] !== null) {
@@ -169,6 +179,11 @@ class ResponseCollector
             $knownIds = $this->getKnownIds($lastResponses, 'in-reply-to');
 
             $response = $this->paginateMastodonResponses($urlHost . '/api/v1/statuses/' . $postId . '/context');
+
+            if (!isset($response['data']['descendants']) || count($response['data']['descendants']) === 0) {
+                continue;
+            }
+
             $replies = $response['data']['descendants'];
             $latestId = $replies[0]['id'];
 
@@ -178,22 +193,24 @@ class ResponseCollector
             }
 
             foreach ($replies as $reply) {
+                if (!in_array($reply['id'], $knownIds)) {
 
-                if (!in_array($reply['id'], $knownIds) && $reply['in_reply_to_id'] === $postId && $reply['visibility'] === 'public') {
-                    $this->addToQueue(
-                        postUrl: $postUrl,
-                        responseId: $reply['id'],
-                        responseType: 'in-reply-to',
-                        responseSource: 'mastodon',
-                        responseDate: $reply['created_at'],
-                        responseText: $reply['content'],
-                        responseUrl: $reply['url'],
-                        authorId: $reply['account']['id'],
-                        authorName: $reply['account']['display_name'],
-                        authorUsername: $reply['account']['username'],
-                        authorAvatar: $reply['account']['avatar_static'],
-                        authorUrl: $reply['account']['url']
-                    );
+                    if ($reply['in_reply_to_id'] === $postId && $reply['visibility'] === 'public') {
+                        $this->addToQueue(
+                            postUrl: $postUrl,
+                            responseId: $reply['id'],
+                            responseType: 'in-reply-to',
+                            responseSource: 'mastodon',
+                            responseDate: $reply['created_at'],
+                            responseText: $reply['content'],
+                            responseUrl: $reply['url'],
+                            authorId: $reply['account']['id'],
+                            authorName: $reply['account']['display_name'],
+                            authorUsername: $reply['account']['username'],
+                            authorAvatar: $reply['account']['avatar_static'],
+                            authorUrl: $reply['account']['url']
+                        );
+                    }
                 } else {
                     break;
                 }
