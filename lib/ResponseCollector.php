@@ -87,13 +87,17 @@ class ResponseCollector
             list($urlHost, $postId) = $this->getPostUrlData($postUrl);
             $knownIds = $this->getKnownIds($lastResponses, 'like-of');
 
-            $response = Remote::get($urlHost . '/api/v1/statuses/' . $postId . '/favourited_by');
-            $favs = $response->json();
+            $response = $this->paginateMastodonResponses($urlHost . '/api/v1/statuses/' . $postId . '/favourited_by');
+            $favs = $response['data'];
             $latestId = $favs[0]['id'];
+
+            while ($response['next'] !== null) {
+                $response = $this->paginateMastodonResponses($response['next']);
+                $favs = [...$favs, ...$response['data']];
+            }
 
             foreach ($favs as $fav) {
                 if (!in_array($fav['id'], $knownIds)) {
-
                     $this->addToQueue(
                         postUrl: $postUrl,
                         responseId: $fav['id'], // 'response_id' likes dont have ids use author id instead
@@ -123,9 +127,14 @@ class ResponseCollector
             list($urlHost, $postId) = $this->getPostUrlData($postUrl);
             $knownIds = $this->getKnownIds($lastResponses, 'repost-of');
 
-            $response = Remote::get($urlHost . '/api/v1/statuses/' . $postId . '/reblogged_by');
-            $reblogs = $response->json();
+            $response = $this->paginateMastodonResponses($urlHost . '/api/v1/statuses/' . $postId . '/reblogged_by');
+            $reblogs = $response['data'];
             $latestId = $reblogs[0]['id'];
+
+            while ($response['next'] !== null) {
+                $response = $this->paginateMastodonResponses($response['next']);
+                $reblogs = [...$reblogs, ...$response['data']];
+            }
 
             foreach ($reblogs as $repost) {
                 if (!in_array($repost['id'], $knownIds)) {
@@ -159,11 +168,16 @@ class ResponseCollector
             list($urlHost, $postId) = $this->getPostUrlData($postUrl);
             $knownIds = $this->getKnownIds($lastResponses, 'in-reply-to');
 
-            $response = Remote::get($urlHost . '/api/v1/statuses/' . $postId . '/context');
-            $replies = $response->json();
-            $latestId = $replies['descendants'][0]['id'];
+            $response = $this->paginateMastodonResponses($urlHost . '/api/v1/statuses/' . $postId . '/context');
+            $replies = $response['data']['descendants'];
+            $latestId = $replies[0]['id'];
 
-            foreach ($replies['descendants'] as $reply) {
+            while ($response['next'] !== null) {
+                $response = $this->paginateMastodonResponses($response['next']);
+                $replies = [...$replies, ...$response['data']['descendants']];
+            }
+
+            foreach ($replies as $reply) {
 
                 if (!in_array($reply['id'], $knownIds) && $reply['in_reply_to_id'] === $postId && $reply['visibility'] === 'public') {
                     $this->addToQueue(
@@ -251,6 +265,25 @@ class ResponseCollector
         ];
 
         $this->indieDb->insert('queue_responses', $fields, $values);
+    }
+
+    public function paginateMastodonResponses(string $url)
+    {
+        $response = Remote::get($url);
+        $json = $response->json();
+        $headers = $response->headers();
+
+        return [
+            'data' => $json,
+            'next' => isset($headers['link']) ? $this->extractNextPageUrl($headers['link']) : null
+        ];
+    }
+
+    public function extractNextPageUrl($link)
+    {
+        $matches = [];
+        preg_match('/<([^>]+)>; rel="next"/', $link, $matches);
+        return $matches[1] ?? null;
     }
 
     public function processResponses($limit = 100)

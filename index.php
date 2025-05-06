@@ -2,7 +2,7 @@
 
 namespace mauricerenck\IndieConnector;
 
-use Kirby;
+use Kirby\Cms\App as Kirby;
 
 @require_once __DIR__ . '/dependencies/indieweb-comments.php';
 @include_once __DIR__ . '/vendor/autoload.php';
