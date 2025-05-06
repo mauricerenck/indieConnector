@@ -5,7 +5,7 @@ namespace mauricerenck\IndieConnector;
 use Kirby\Uuid\Uuid;
 use Kirby\Http\Remote;
 use Kirby\Toolkit\Str;
-
+use Exception;
 
 class ResponseCollector
 {
@@ -269,14 +269,21 @@ class ResponseCollector
 
     public function paginateMastodonResponses(string $url)
     {
-        $response = Remote::get($url);
-        $json = $response->json();
-        $headers = $response->headers();
+        try {
+            $response = Remote::get($url);
+            $json = $response->json();
+            $headers = $response->headers();
 
-        return [
-            'data' => $json,
-            'next' => isset($headers['link']) ? $this->extractNextPageUrl($headers['link']) : null
-        ];
+            return [
+                'data' => $json,
+                'next' => isset($headers['link']) ? $this->extractNextPageUrl($headers['link']) : null
+            ];
+        } catch (Exception $e) {
+            return [
+                'data' => [],
+                'next' => null
+            ];
+        }
     }
 
     public function extractNextPageUrl($link)
