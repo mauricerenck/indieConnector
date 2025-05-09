@@ -66,6 +66,7 @@ class ResponseCollector
         $postUrls = $this->indieDb->query($query);
 
         $this->parseMastodonResponses($postUrls->filterBy('post_type', 'mastodon')->first()->post_urls); // we only get one resultset here, so we use first()
+        $this->parseBlueskyResponses($postUrls->filterBy('post_type', 'bluesky')->first()->post_urls); // we only get one resultset here, so we use first()
     }
 
     public function parseMastodonResponses(string $postUrls)
@@ -79,6 +80,20 @@ class ResponseCollector
         $this->fetchMastodonLikes($postUrls, $lastResponses);
         $this->fetchMastodonReblogs($postUrls, $lastResponses);
         $this->fetchMastodonReplies($postUrls, $lastResponses);
+    }
+
+    public function parseBlueskyResponses(string $postUrls)
+    {
+        // get known responses
+        $postUrls = explode(',', $postUrls);
+        $lastResponses = $this->indieDb->query(
+            'SELECT GROUP_CONCAT(id, ",") AS ids, post_type FROM known_responses WHERE post_url IN ("' . implode('", "', $postUrls) . '") GROUP BY post_type;'
+        );
+
+        $this->fetchBlueskyLikes($postUrls, $lastResponses);
+        $this->fetchBlueskyReposts($postUrls, $lastResponses);
+        $this->fetchBlueskyQuotes($postUrls, $lastResponses);
+        $this->fetchBlueskyReplies($postUrls, $lastResponses);
     }
 
     public function fetchMastodonLikes(array $postUrls, $lastResponses)
@@ -121,8 +136,7 @@ class ResponseCollector
                 }
             }
 
-            $selector = str_replace('https://', '', $postUrl) . '_like-of';
-            $this->indieDb->upsert('known_responses', ['id', 'post_url', 'post_type', 'post_selector'], [$latestId, $postUrl, 'like-of', $selector], 'post_selector', 'id = "' . $latestId . '"');
+            $this->updateKnownReponses($postUrl, $latestId, 'like-of');
         }
     }
 
@@ -293,7 +307,7 @@ class ResponseCollector
 
             return [
                 'data' => $json,
-                'next' => isset($headers['link']) ? $this->extractNextPageUrl($headers['link']) : null
+                'next' => isset($headers['link']) ? $this->extractMastodonNextPageUrl($headers['link']) : null
             ];
         } catch (Exception $e) {
             return [
@@ -303,12 +317,174 @@ class ResponseCollector
         }
     }
 
-    public function extractNextPageUrl($link)
+    public function extractMastodonNextPageUrl($link)
     {
         $matches = [];
         preg_match('/<([^>]+)>; rel="next"/', $link, $matches);
         return $matches[1] ?? null;
     }
+
+    public function fetchBlueskyLikes(array $postUrls, $lastResponses)
+    {
+        $bskReceiver = new BlueskyReceiver();
+        $knownIds = $this->getKnownIds($lastResponses, 'like-of');
+
+        foreach ($postUrls as $postUrl) {
+            $likes = $bskReceiver->getResponses($postUrl, 'likes');
+            $latestId = md5($likes[0]->actor->did . $likes[0]->createdAt);
+
+            if (count($likes) === 0) {
+                continue;
+            }
+
+            foreach ($likes as $like) {
+                $id = md5($like->actor->did . $like->createdAt);
+                $displayName = (!empty($like->actor->displayName)) ? $like->actor->displayName : $like->actor->handle;
+
+                if (!in_array($id, $knownIds)) {
+                    $this->addToQueue(
+                        postUrl: $postUrl,
+                        responseId: $id, // 'response_id' likes dont have ids
+                        responseType: 'like-of',
+                        responseSource: 'bluesky',
+                        responseDate: $like->createdAt,
+                        responseUrl: $postUrl, // 'response_url' likes don't have a url, use post url instead
+                        authorId: $like->actor->did,
+                        authorName: $displayName,
+                        authorUsername: $like->actor->handle,
+                        authorAvatar: $like->actor->avatar,
+                        authorUrl: 'https://bsky.app/profile/' . $like->actor->handle
+                    );
+                } else {
+                    break;
+                }
+            }
+
+            $this->updateKnownReponses($postUrl, $latestId, 'like-of');
+        }
+    }
+
+    public function fetchBlueskyReposts(array $postUrls, $lastResponses)
+    {
+        $bskReceiver = new BlueskyReceiver();
+        $knownIds = $this->getKnownIds($lastResponses, 'repost-of');
+
+        foreach ($postUrls as $postUrl) {
+            $reposts = $bskReceiver->getResponses($postUrl, 'reposts');
+            $latestId = $reposts[0]->did;
+
+            if (count($reposts) === 0) {
+                continue;
+            }
+
+            foreach ($reposts as $repost) {
+                $id = md5($repost->did . $repost->createdAt);
+                $displayName = (!empty($repost->displayName)) ? $repost->displayName : $repost->handle;
+
+                if (!in_array($id, $knownIds)) {
+                    $this->addToQueue(
+                        postUrl: $postUrl,
+                        responseId: $id,
+                        responseType: 'repost-of',
+                        responseSource: 'bluesky',
+                        responseDate: $repost->createdAt,
+                        responseUrl: $postUrl,
+                        authorId: $repost->did,
+                        authorName: $displayName,
+                        authorUsername: $repost->handle,
+                        authorAvatar: $repost->avatar,
+                        authorUrl: 'https://bsky.app/profile/' . $repost->handle
+                    );
+                } else {
+                    break;
+                }
+            }
+
+            $this->updateKnownReponses($postUrl, $latestId, 'repost-of');
+        }
+    }
+
+    public function fetchBlueskyQuotes(array $postUrls, $lastResponses)
+    {
+        $bskReceiver = new BlueskyReceiver();
+        $knownIds = $this->getKnownIds($lastResponses, 'mention-of');
+
+        foreach ($postUrls as $postUrl) {
+            $quotes = $bskReceiver->getResponses($postUrl, 'quotes');
+            $latestId = $quotes[0]->cid;
+
+            if (count($quotes) === 0) {
+                continue;
+            }
+
+            foreach ($quotes as $quote) {
+                $displayName = (!empty($quote->author->displayName)) ? $quote->author->displayName : $quote->author->handle;
+
+                if (!in_array($quote->cid, $knownIds)) {
+                    $this->addToQueue(
+                        postUrl: $postUrl,
+                        responseId: $quote->cid, // 'response_id' likes dont have ids
+                        responseType: 'mention-of',
+                        responseSource: 'bluesky',
+                        responseDate: $quote->record->createdAt,
+                        responseText: $quote->record->text ?? '',
+                        responseUrl: $quote->uri,
+                        authorId: $quote->author->did,
+                        authorName: $displayName,
+                        authorUsername: $quote->author->handle,
+                        authorAvatar: $quote->author->avatar,
+                        authorUrl: 'https://bsky.app/profile/' . $quote->author->handle
+                    );
+                } else {
+                    break;
+                }
+            }
+
+            $this->updateKnownReponses($postUrl, $latestId, 'mention-of');
+        }
+    }
+
+    public function fetchBlueskyReplies(array $postUrls, $lastResponses)
+    {
+        $bskReceiver = new BlueskyReceiver();
+        $knownIds = $this->getKnownIds($lastResponses, 'in-reply-to');
+
+        foreach ($postUrls as $postUrl) {
+            $replies = $bskReceiver->getResponses($postUrl, 'replies');
+            $latestId = $replies[0]->post->cid;
+
+            if (count($replies) === 0) {
+                continue;
+            }
+
+            foreach ($replies as $reply) {
+                $displayName = (!empty($reply->post->author->displayName)) ? $reply->post->author->displayName : $reply->post->author->handle;
+
+                if (!in_array($reply->post->cid, $knownIds)) {
+                    $this->addToQueue(
+                        postUrl: $postUrl,
+                        responseId: $reply->post->cid, // 'response_id' likes dont have ids
+                        responseType: 'in-reply-to',
+                        responseSource: 'bluesky',
+                        responseDate: $reply->post->record->createdAt,
+                        responseText: $reply->post->record->text ?? '',
+                        responseUrl: $reply->post->uri,
+                        authorId: $reply->post->author->did,
+                        authorName: $displayName,
+                        authorUsername: $reply->post->author->handle,
+                        authorAvatar: $reply->post->author->avatar,
+                        authorUrl: 'https://bsky.app/profile/' . $reply->post->author->handle
+                    );
+                } else {
+                    break;
+                }
+            }
+
+            $this->updateKnownReponses($postUrl, $latestId, 'in-reply-to');
+        }
+    }
+
+
 
     public function processResponses($limit = 100)
     {
@@ -319,6 +495,12 @@ class ResponseCollector
     public function markProcessed($responseIds)
     {
         $this->indieDb->update('queue_responses', ['queueStatus'], ['success'], 'WHERE id IN ("' . implode('","', $responseIds) . '")');
+    }
+
+    public function updateKnownReponses($postUrl, $latestId, $verb)
+    {
+        $selector = str_replace(['https://', 'at://'], ['', ''], $postUrl) . '_' . $verb;
+        $this->indieDb->upsert('known_responses', ['id', 'post_url', 'post_type', 'post_selector'], [$latestId, $postUrl, $verb, $selector], 'post_selector', 'id = "' . $latestId . '"');
     }
 
     public function removeFromQueue($responseId)
