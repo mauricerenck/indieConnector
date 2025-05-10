@@ -3,14 +3,11 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Uuid\Uuid;
-use Kirby\Http\Remote;
 use Kirby\Toolkit\Str;
-use Exception;
 
 class ResponseCollector
 {
     private $indieDb;
-
 
     public function __construct(
         private ?bool $enabled = null,
@@ -98,23 +95,17 @@ class ResponseCollector
 
     public function fetchMastodonLikes(array $postUrls, $lastResponses)
     {
-        foreach ($postUrls as $postUrl) {
-            list($urlHost, $postId) = $this->getPostUrlData($postUrl);
-            $knownIds = $this->getKnownIds($lastResponses, 'like-of');
+        $mastodonReceiver = new MastodonReceiver();
+        $knownIds = $this->getKnownIds($lastResponses, 'like-of');
 
-            $response = $this->paginateMastodonResponses($urlHost . '/api/v1/statuses/' . $postId . '/favourited_by');
-            $favs = $response['data'];
+        foreach ($postUrls as $postUrl) {
+            $favs = $mastodonReceiver->getResponses($postUrl, 'likes');
 
             if (count($favs) === 0) {
                 continue;
             }
 
             $latestId = $favs[0]['id'];
-
-            while ($response['next'] !== null) {
-                $response = $this->paginateMastodonResponses($response['next']);
-                $favs = [...$favs, ...$response['data']];
-            }
 
             foreach ($favs as $fav) {
                 if (!in_array($fav['id'], $knownIds)) {
@@ -142,23 +133,17 @@ class ResponseCollector
 
     public function fetchMastodonReblogs(array $postUrls, $lastResponses)
     {
-        foreach ($postUrls as $postUrl) {
-            list($urlHost, $postId) = $this->getPostUrlData($postUrl);
-            $knownIds = $this->getKnownIds($lastResponses, 'repost-of');
+        $mastodonReceiver = new MastodonReceiver();
+        $knownIds = $this->getKnownIds($lastResponses, 'repost-of');
 
-            $response = $this->paginateMastodonResponses($urlHost . '/api/v1/statuses/' . $postId . '/reblogged_by');
-            $reblogs = $response['data'];
+        foreach ($postUrls as $postUrl) {
+            $reblogs = $mastodonReceiver->getResponses($postUrl, 'reposts');
 
             if (count($reblogs) === 0) {
                 continue;
             }
 
             $latestId = $reblogs[0]['id'];
-
-            while ($response['next'] !== null) {
-                $response = $this->paginateMastodonResponses($response['next']);
-                $reblogs = [...$reblogs, ...$response['data']];
-            }
 
             foreach ($reblogs as $repost) {
                 if (!in_array($repost['id'], $knownIds)) {
@@ -181,30 +166,24 @@ class ResponseCollector
                 }
             }
 
-            $selector = str_replace('https://', '', $postUrl) . '_repost-of';
-            $this->indieDb->upsert('known_responses', ['id', 'post_url', 'post_type', 'post_selector'], [$latestId, $postUrl, 'repost-of', $selector], 'post_selector', 'id = "' . $latestId . '"');
+            $this->updateKnownReponses($postUrl, $latestId, 'repost-of');
         }
     }
 
     public function fetchMastodonReplies(array $postUrls, $lastResponses)
     {
+        $mastodonReceiver = new MastodonReceiver();
+        $knownIds = $this->getKnownIds($lastResponses, 'in-reply-to');
+
         foreach ($postUrls as $postUrl) {
-            list($urlHost, $postId) = $this->getPostUrlData($postUrl);
-            $knownIds = $this->getKnownIds($lastResponses, 'in-reply-to');
+            $replies = $mastodonReceiver->getResponses($postUrl, 'replies');
+            list($_urlHost, $postId) = $mastodonReceiver->getPostUrlData($postUrl);
 
-            $response = $this->paginateMastodonResponses($urlHost . '/api/v1/statuses/' . $postId . '/context');
-
-            if (!isset($response['data']['descendants']) || count($response['data']['descendants']) === 0) {
+            if (count($replies) === 0) {
                 continue;
             }
 
-            $replies = $response['data']['descendants'];
             $latestId = $replies[0]['id'];
-
-            while ($response['next'] !== null) {
-                $response = $this->paginateMastodonResponses($response['next']);
-                $replies = [...$replies, ...$response['data']['descendants']];
-            }
 
             foreach ($replies as $reply) {
                 if (!in_array($reply['id'], $knownIds)) {
@@ -230,98 +209,8 @@ class ResponseCollector
                 }
             }
 
-            $selector = str_replace('https://', '', $postUrl) . '_in-reply-to';
-            $this->indieDb->upsert('known_responses', ['id', 'post_url', 'post_type', 'post_selector'], [$latestId, $postUrl, 'in-reply-to', $selector], 'post_selector', 'id = "' . $latestId . '"');
+            $this->updateKnownReponses($postUrl, $latestId, 'in-reply-to');
         }
-    }
-
-    public function getPostUrlData(string $postUrl): array
-    {
-        $urlHost = parse_url($postUrl, PHP_URL_HOST);
-        $urlPath = parse_url($postUrl, PHP_URL_PATH);
-        $pathElements = explode('/', $urlPath);
-        $postId = end($pathElements);
-
-        return [
-            $urlHost,
-            $postId
-        ];
-    }
-
-    public function getKnownIds($lastResponses, $verb): array
-    {
-        $idList = $lastResponses->filterBy('post_type', $verb)->first();
-        return !is_null($idList) ? explode(',', $idList->ids) : [];
-    }
-
-    public function addToQueue(
-        string $postUrl,
-        string $responseId,
-        string $responseType,
-        string $responseSource,
-        string $responseDate,
-        string $authorId,
-        string $authorName,
-        string $authorUsername,
-        string $authorAvatar,
-        string $authorUrl,
-        string $responseText = '',
-        string $responseUrl = '',
-        string $queueStatus = 'pending',
-        int $retries = 0
-    ) {
-
-        $pageData = $this->indieDb->select('external_post_urls', ['page_uuid'], 'WHERE post_url = "' . $postUrl . '"')->first();
-
-        $fields = ['id', 'page_uuid', 'response_id', 'response_type', 'response_source', 'response_date', 'response_text', 'response_url', 'author_id', 'author_name', 'author_username', 'author_avatar', 'author_url', 'queueStatus', 'retries'];
-        $id = Uuid::generate();
-        $content = Str::unhtml($responseText);
-
-        $values = [
-            $id,
-            $pageData->page_uuid,
-            $responseId,
-            $responseType,
-            $responseSource,
-            $responseDate,
-            $content,
-            $responseUrl,
-            $authorId,
-            $authorName,
-            $authorUsername,
-            $authorAvatar,
-            $authorUrl,
-            $queueStatus,
-            $retries
-        ];
-
-        $this->indieDb->insert('queue_responses', $fields, $values);
-    }
-
-    public function paginateMastodonResponses(string $url)
-    {
-        try {
-            $response = Remote::get($url);
-            $json = $response->json();
-            $headers = $response->headers();
-
-            return [
-                'data' => $json,
-                'next' => isset($headers['link']) ? $this->extractMastodonNextPageUrl($headers['link']) : null
-            ];
-        } catch (Exception $e) {
-            return [
-                'data' => [],
-                'next' => null
-            ];
-        }
-    }
-
-    public function extractMastodonNextPageUrl($link)
-    {
-        $matches = [];
-        preg_match('/<([^>]+)>; rel="next"/', $link, $matches);
-        return $matches[1] ?? null;
     }
 
     public function fetchBlueskyLikes(array $postUrls, $lastResponses)
@@ -331,11 +220,12 @@ class ResponseCollector
 
         foreach ($postUrls as $postUrl) {
             $likes = $bskReceiver->getResponses($postUrl, 'likes');
-            $latestId = md5($likes[0]->actor->did . $likes[0]->createdAt);
 
             if (count($likes) === 0) {
                 continue;
             }
+
+            $latestId = md5($likes[0]->actor->did . $likes[0]->createdAt);
 
             foreach ($likes as $like) {
                 $id = md5($like->actor->did . $like->createdAt);
@@ -485,6 +375,55 @@ class ResponseCollector
     }
 
 
+    public function getKnownIds($lastResponses, $verb): array
+    {
+        $idList = $lastResponses->filterBy('post_type', $verb)->first();
+        return !is_null($idList) ? explode(',', $idList->ids) : [];
+    }
+
+    public function addToQueue(
+        string $postUrl,
+        string $responseId,
+        string $responseType,
+        string $responseSource,
+        string $responseDate,
+        string $authorId,
+        string $authorName,
+        string $authorUsername,
+        string $authorAvatar,
+        string $authorUrl,
+        string $responseText = '',
+        string $responseUrl = '',
+        string $queueStatus = 'pending',
+        int $retries = 0
+    ) {
+
+        $pageData = $this->indieDb->select('external_post_urls', ['page_uuid'], 'WHERE post_url = "' . $postUrl . '"')->first();
+
+        $fields = ['id', 'page_uuid', 'response_id', 'response_type', 'response_source', 'response_date', 'response_text', 'response_url', 'author_id', 'author_name', 'author_username', 'author_avatar', 'author_url', 'queueStatus', 'retries'];
+        $id = Uuid::generate();
+        $content = Str::unhtml($responseText);
+
+        $values = [
+            $id,
+            $pageData->page_uuid,
+            $responseId,
+            $responseType,
+            $responseSource,
+            $responseDate,
+            $content,
+            $responseUrl,
+            $authorId,
+            $authorName,
+            $authorUsername,
+            $authorAvatar,
+            $authorUrl,
+            $queueStatus,
+            $retries
+        ];
+
+        $this->indieDb->insert('queue_responses', $fields, $values);
+    }
 
     public function processResponses($limit = 100)
     {
