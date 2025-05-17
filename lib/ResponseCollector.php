@@ -99,7 +99,7 @@ class ResponseCollector
         $knownIds = $this->getKnownIds($lastResponses, 'like-of');
 
         foreach ($postUrls as $postUrl) {
-            $favs = $mastodonReceiver->getResponses($postUrl, 'likes');
+            $favs = $mastodonReceiver->getResponses($postUrl, 'likes', $knownIds);
 
             if (count($favs) === 0) {
                 continue;
@@ -137,7 +137,7 @@ class ResponseCollector
         $knownIds = $this->getKnownIds($lastResponses, 'repost-of');
 
         foreach ($postUrls as $postUrl) {
-            $reblogs = $mastodonReceiver->getResponses($postUrl, 'reposts');
+            $reblogs = $mastodonReceiver->getResponses($postUrl, 'reposts', $knownIds);
 
             if (count($reblogs) === 0) {
                 continue;
@@ -176,7 +176,7 @@ class ResponseCollector
         $knownIds = $this->getKnownIds($lastResponses, 'in-reply-to');
 
         foreach ($postUrls as $postUrl) {
-            $replies = $mastodonReceiver->getResponses($postUrl, 'replies');
+            $replies = $mastodonReceiver->getResponses($postUrl, 'replies', $knownIds);
             list($_urlHost, $postId) = $mastodonReceiver->getPostUrlData($postUrl);
 
             if (count($replies) === 0) {
@@ -219,22 +219,23 @@ class ResponseCollector
         $knownIds = $this->getKnownIds($lastResponses, 'like-of');
 
         foreach ($postUrls as $postUrl) {
-            $likes = $bskReceiver->getResponses($postUrl, 'likes');
+            $likes = $bskReceiver->getResponses($postUrl, 'likes', $knownIds);
 
             if (count($likes) === 0) {
                 continue;
             }
 
-            $latestId = md5($likes[0]->actor->did . $likes[0]->createdAt);
+            $latestId = $likes[0]->indieConnectorId;
 
             foreach ($likes as $like) {
-                $id = md5($like->actor->did . $like->createdAt);
                 $displayName = (!empty($like->actor->displayName)) ? $like->actor->displayName : $like->actor->handle;
 
-                if (!in_array($id, $knownIds)) {
+                if (!in_array($like->indieConnectorId, $knownIds)) {
+                    $avatar = isset($like->actor->avatar) ? $like->actor->avatar : '';
+
                     $this->addToQueue(
                         postUrl: $postUrl,
-                        responseId: $id, // 'response_id' likes dont have ids
+                        responseId: $like->indieConnectorId,
                         responseType: 'like-of',
                         responseSource: 'bluesky',
                         responseDate: $like->createdAt,
@@ -242,7 +243,7 @@ class ResponseCollector
                         authorId: $like->actor->did,
                         authorName: $displayName,
                         authorUsername: $like->actor->handle,
-                        authorAvatar: $like->actor->avatar,
+                        authorAvatar: $avatar,
                         authorUrl: 'https://bsky.app/profile/' . $like->actor->handle
                     );
                 } else {
@@ -260,21 +261,21 @@ class ResponseCollector
         $knownIds = $this->getKnownIds($lastResponses, 'repost-of');
 
         foreach ($postUrls as $postUrl) {
-            $reposts = $bskReceiver->getResponses($postUrl, 'reposts');
-            $latestId = $reposts[0]->did;
+            $reposts = $bskReceiver->getResponses($postUrl, 'reposts', $knownIds);
+            $latestId = $reposts[0]->indieConnectorId;
 
             if (count($reposts) === 0) {
                 continue;
             }
 
             foreach ($reposts as $repost) {
-                $id = md5($repost->did . $repost->createdAt);
                 $displayName = (!empty($repost->displayName)) ? $repost->displayName : $repost->handle;
+                $avatar = isset($repost->avatar) ? $repost->avatar : '';
 
-                if (!in_array($id, $knownIds)) {
+                if (!in_array($repost->indieConnectorId, $knownIds)) {
                     $this->addToQueue(
                         postUrl: $postUrl,
-                        responseId: $id,
+                        responseId: $repost->indieConnectorId,
                         responseType: 'repost-of',
                         responseSource: 'bluesky',
                         responseDate: $repost->createdAt,
@@ -282,7 +283,7 @@ class ResponseCollector
                         authorId: $repost->did,
                         authorName: $displayName,
                         authorUsername: $repost->handle,
-                        authorAvatar: $repost->avatar,
+                        authorAvatar: $avatar,
                         authorUrl: 'https://bsky.app/profile/' . $repost->handle
                     );
                 } else {
@@ -300,8 +301,8 @@ class ResponseCollector
         $knownIds = $this->getKnownIds($lastResponses, 'mention-of');
 
         foreach ($postUrls as $postUrl) {
-            $quotes = $bskReceiver->getResponses($postUrl, 'quotes');
-            $latestId = $quotes[0]->cid;
+            $quotes = $bskReceiver->getResponses($postUrl, 'quotes', $knownIds);
+            $latestId = $quotes[0]->indieConnectorId;
 
             if (count($quotes) === 0) {
                 continue;
@@ -309,11 +310,12 @@ class ResponseCollector
 
             foreach ($quotes as $quote) {
                 $displayName = (!empty($quote->author->displayName)) ? $quote->author->displayName : $quote->author->handle;
+                $avatar = isset($quote->author->avatar) ? $quote->author->avatar : '';
 
-                if (!in_array($quote->cid, $knownIds)) {
+                if (!in_array($quote->indieConnectorId, $knownIds)) {
                     $this->addToQueue(
                         postUrl: $postUrl,
-                        responseId: $quote->cid, // 'response_id' likes dont have ids
+                        responseId: $quote->indieConnectorId, // 'response_id' likes dont have ids
                         responseType: 'mention-of',
                         responseSource: 'bluesky',
                         responseDate: $quote->record->createdAt,
@@ -322,7 +324,7 @@ class ResponseCollector
                         authorId: $quote->author->did,
                         authorName: $displayName,
                         authorUsername: $quote->author->handle,
-                        authorAvatar: $quote->author->avatar,
+                        authorAvatar: $avatar,
                         authorUrl: 'https://bsky.app/profile/' . $quote->author->handle
                     );
                 } else {
@@ -340,8 +342,8 @@ class ResponseCollector
         $knownIds = $this->getKnownIds($lastResponses, 'in-reply-to');
 
         foreach ($postUrls as $postUrl) {
-            $replies = $bskReceiver->getResponses($postUrl, 'replies');
-            $latestId = $replies[0]->post->cid;
+            $replies = $bskReceiver->getResponses($postUrl, 'replies', $knownIds);
+            $latestId = $replies[0]->indieConnectorId;
 
             if (count($replies) === 0) {
                 continue;
@@ -349,11 +351,12 @@ class ResponseCollector
 
             foreach ($replies as $reply) {
                 $displayName = (!empty($reply->post->author->displayName)) ? $reply->post->author->displayName : $reply->post->author->handle;
+                $avatar = isset($reply->post->author->avatar) ? $reply->post->author->avatar : '';
 
-                if (!in_array($reply->post->cid, $knownIds)) {
+                if (!in_array($reply->indieConnectorId, $knownIds)) {
                     $this->addToQueue(
                         postUrl: $postUrl,
-                        responseId: $reply->post->cid, // 'response_id' likes dont have ids
+                        responseId: $reply->indieConnectorId, // 'response_id' likes dont have ids
                         responseType: 'in-reply-to',
                         responseSource: 'bluesky',
                         responseDate: $reply->post->record->createdAt,
@@ -362,7 +365,7 @@ class ResponseCollector
                         authorId: $reply->post->author->did,
                         authorName: $displayName,
                         authorUsername: $reply->post->author->handle,
-                        authorAvatar: $reply->post->author->avatar,
+                        authorAvatar: $avatar,
                         authorUrl: 'https://bsky.app/profile/' . $reply->post->author->handle
                     );
                 } else {
