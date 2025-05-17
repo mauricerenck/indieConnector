@@ -53,7 +53,7 @@
             "Composer\\Config::disableProcessTimeout",
             "@php -S localhost:8000 kirby/router.php"
         ],
-        "test": "vendor/bin/phpunit --testdox",
+        "test": "vendor/bin/phpunit --testdox --colors=always tests \"$@\"",
         "build-test-package": "git archive HEAD -o indieConnector.zip --worktree-attributes",
         "build-composer": "composer install --no-dev --optimize-autoloader",
         "build-release": [
