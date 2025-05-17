@@ -33,7 +33,7 @@ class BlueskyReceiver
         $this->bskClient->auth($this->handle, $this->password);
     }
 
-    public function getResponses($did, $type)
+    public function getResponses(string $did, string $type, array $knownIds)
     {
         if (!$this->enabled) {
             return [];
@@ -43,9 +43,18 @@ class BlueskyReceiver
             $response = $this->paginateResponses($did, $type, null);
             $likes = $response['data'];
 
+            if ($this->responsesIncludeKnownId($likes, $knownIds)) {
+                return $likes;
+            }
+
             while ($response['next'] !== null) {
                 $response = $this->paginateResponses($did, $type, $response['next']);
                 $likes = [...$likes, ...$response['data']];
+
+                // if there is a known Id in the loop set next to null to stop it
+                if ($this->responsesIncludeKnownId($response['data'], $knownIds)) {
+                    $response['next'] = null;
+                }
             }
 
             return $likes;
@@ -53,6 +62,15 @@ class BlueskyReceiver
             throw new Exception($e->getMessage());
             return [];
         }
+    }
+
+    /*
+     * Check the list and return bool, we will filter out the entry later we just
+     * want to stop the pagination at this point
+    */
+    public function responsesIncludeKnownId($responses, $knownIds): bool
+    {
+        return !empty(array_intersect(array_map(fn($response) => $response->indieConnectorId, $responses), $knownIds));
     }
 
     public function paginateResponses(string $did, $type, $cursor)
@@ -98,16 +116,16 @@ class BlueskyReceiver
 
             switch ($type) {
                 case 'likes':
-                    $data = isset($response->likes) ? $response->likes : [];
+                    $data = isset($response->likes) ? $this->appendIndieConnectorId($response->likes, 'likes') : [];
                     break;
                 case 'reposts':
-                    $data = isset($response->repostedBy) ? $response->repostedBy : [];
+                    $data = isset($response->repostedBy) ? $this->appendIndieConnectorId($response->repostedBy, 'reposts') : [];
                     break;
                 case 'quotes':
-                    $data = isset($response->posts) ? $response->posts : [];
+                    $data = isset($response->posts) ? $this->appendIndieConnectorId($response->posts, 'quotes') : [];
                     break;
                 case 'replies':
-                    $data = isset($response->thread->replies) ? $response->thread->replies : [];
+                    $data = isset($response->thread->replies) ? $this->appendIndieConnectorId($response->thread->replies, 'replies') : [];
                     break;
             }
 
@@ -121,5 +139,31 @@ class BlueskyReceiver
                 'next' => null
             ];
         }
+    }
+
+    /*
+    *   unfortunately bluesky does not have Ids for every result entry, so we create them here
+    */
+    public function appendIndieConnectorId(array $responses, string $responseType): array
+    {
+        return array_map(function ($response) use ($responseType) {
+            switch ($responseType) {
+                case 'likes':
+                    $id = md5($response->actor->did . $response->createdAt);
+                    break;
+                case 'reposts':
+                    $id = md5($response->did . $response->createdAt);
+                    break;
+                case 'quotes':
+                    $id = $response->cid;
+                    break;
+                case 'replies':
+                    $id = $response->post->cid;
+                    break;
+            }
+
+            $response->indieConnectorId = $id;
+            return $response;
+        }, $responses);
     }
 }
