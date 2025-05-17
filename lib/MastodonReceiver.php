@@ -4,6 +4,7 @@ namespace mauricerenck\IndieConnector;
 
 use Exception;
 use Kirby\Http\Remote;
+use Kirby\Toolkit\V;
 
 class MastodonReceiver
 {
@@ -21,6 +22,11 @@ class MastodonReceiver
 
         try {
             list($urlHost, $postId) = $this->getPostUrlData($postUrl);
+
+            if (is_null($urlHost) || is_null($postId)) {
+                return [];
+            }
+
             $response = $this->paginateResponses($urlHost, $postId, $type, null);
             $favs = $response['data'];
 
@@ -79,7 +85,7 @@ class MastodonReceiver
         }
 
         try {
-            $url = ($cursor) ?  $cursor : $host . '/api/v1/statuses/' . $postId . '/' . $endpoint;
+            $url = ($cursor) ?  $cursor : $host . '/api/v1/statuses/' . $postId . '/' . $endpoint . '?limit=1';
             $response = Remote::get($url);
             $json = $response->json();
             $headers = $response->headers();
@@ -106,10 +112,21 @@ class MastodonReceiver
 
     public function getPostUrlData(string $postUrl): array
     {
+        if (!V::url($postUrl)) {
+            return [
+                null,
+                null
+            ];
+        }
+
         $urlHost = parse_url($postUrl, PHP_URL_HOST);
         $urlPath = parse_url($postUrl, PHP_URL_PATH);
         $pathElements = explode('/', $urlPath);
         $postId = end($pathElements);
+
+        if (empty($postId)) {
+            $postId = null;
+        }
 
         return [
             $urlHost,
@@ -121,6 +138,7 @@ class MastodonReceiver
     {
         $matches = [];
         preg_match('/<([^>]+)>; rel="next"/', $link, $matches);
+
         return $matches[1] ?? null;
     }
 }
