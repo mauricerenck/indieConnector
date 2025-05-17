@@ -7,13 +7,13 @@ use cjrasmussen\BlueskyApi\BlueskyApi;
 
 class BlueskyReceiver
 {
-
     private $bskClient = null;
 
     public function __construct(
+        private ?bool $enabled = null,
         private ?string $handle = null,
         private ?string $password = null,
-        private ?bool $enabled = null,
+        $bskClient = null
     ) {
         $this->enabled = $enabled ?? option('mauricerenck.indieConnector.bluesky.enabled', false);
         $this->handle = $password ?? option('mauricerenck.indieConnector.bluesky.handle', false);
@@ -29,7 +29,7 @@ class BlueskyReceiver
             return;
         }
 
-        $this->bskClient = new BlueskyApi();
+        $this->bskClient = $bskClient ?: new BlueskyApi();
         $this->bskClient->auth($this->handle, $this->password);
     }
 
