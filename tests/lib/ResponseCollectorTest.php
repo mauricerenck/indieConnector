@@ -20,7 +20,7 @@ final class ResponseCollectorTest extends TestCaseMocked
         $this->blueskyMock = $this->createMock(\mauricerenck\IndieConnector\BlueskyReceiver::class);
 
         $this->collector = $this->getMockBuilder(ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock, $this->blueskyMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock, $this->blueskyMock])
             ->onlyMethods(['isEnabled'])
             ->getMock();
     }
@@ -174,7 +174,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn($mockResult);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb])
             ->onlyMethods(['parseMastodonResponses', 'parseBlueskyResponses'])
             ->getMock();
 
@@ -207,7 +207,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn($mockLastResponses);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb])
             ->onlyMethods(['fetchMastodonLikes', 'fetchMastodonReblogs', 'fetchMastodonReplies'])
             ->getMock();
 
@@ -244,7 +244,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn($mockLastResponses);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb])
             ->onlyMethods(['fetchMastodonLikes', 'fetchMastodonReblogs', 'fetchMastodonReplies'])
             ->getMock();
 
@@ -281,7 +281,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn($mockLastResponses);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb])
             ->onlyMethods(['fetchBlueskyLikes', 'fetchBlueskyReposts', 'fetchBlueskyQuotes', 'fetchBlueskyReplies'])
             ->getMock();
 
@@ -322,7 +322,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn($mockLastResponses);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb])
             ->onlyMethods(['fetchBlueskyLikes', 'fetchBlueskyReposts', 'fetchBlueskyQuotes', 'fetchBlueskyReplies'])
             ->getMock();
 
@@ -368,7 +368,7 @@ final class ResponseCollectorTest extends TestCaseMocked
 
         // Patch MastodonReceiver instantiation
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -420,7 +420,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ]);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -462,7 +462,7 @@ final class ResponseCollectorTest extends TestCaseMocked
 
         // Patch MastodonReceiver instantiation
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -514,7 +514,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ]);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -568,7 +568,7 @@ final class ResponseCollectorTest extends TestCaseMocked
 
         // Patch MastodonReceiver instantiation
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -634,7 +634,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn(['host1', 'post1']);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -678,7 +678,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn([$like]);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, null, $this->blueskyMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -733,7 +733,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn([$like]);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, null, $this->blueskyMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -775,7 +775,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn([$repost]);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, null, $this->blueskyMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -828,7 +828,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn([$repost]);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, null, $this->blueskyMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -876,7 +876,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn([$quote]);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, null, $this->blueskyMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -938,7 +938,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn([$quote]);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, null, $this->blueskyMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -988,7 +988,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn([$reply]);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, null, $this->blueskyMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -1052,7 +1052,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn([$reply]);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb, null, $this->blueskyMock])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
@@ -1099,7 +1099,7 @@ final class ResponseCollectorTest extends TestCaseMocked
                 }
             });
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
 
         $result = $collector->getKnownIds($mockLastResponses, 'like-of');
         $this->assertEquals(['id1', 'id2', 'id3'], $result);
@@ -1126,7 +1126,7 @@ final class ResponseCollectorTest extends TestCaseMocked
                 }
             });
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
 
         $result = $collector->getKnownIds($mockLastResponses, 'like-of');
         $this->assertEquals([], $result);
@@ -1177,7 +1177,7 @@ final class ResponseCollectorTest extends TestCaseMocked
 
         // Optionally, mock Uuid::generate and Str::unhtml if your test framework/setup allows
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
 
         // Act
         $collector->addToQueue(
@@ -1203,10 +1203,10 @@ final class ResponseCollectorTest extends TestCaseMocked
         $mockResponses = ['response1', 'response2'];
         $this->indieDb->expects($this->once())
             ->method('select')
-            ->with('queue_responses', ['*'], $this->stringContains('WHERE queueStatus = "pending" LIMIT 100'))
+            ->with('queue_responses', ['*'], $this->stringContains('WHERE queueStatus = "pending" LIMIT 50'))
             ->willReturn($mockResponses);
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
         $result = $collector->processResponses();
         $this->assertSame($mockResponses, $result);
     }
@@ -1227,7 +1227,7 @@ final class ResponseCollectorTest extends TestCaseMocked
                 'WHERE id IN ("id1","id2")'
             );
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
         $collector->markProcessed($responseIds);
     }
 
@@ -1252,7 +1252,7 @@ final class ResponseCollectorTest extends TestCaseMocked
                 'id = "' . $latestId . '"'
             );
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
         $collector->updateKnownReponses($postUrl, $latestId, $verb);
     }
 
@@ -1267,7 +1267,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->method('delete')
             ->with('queue_responses', 'WHERE id = "response-123" AND queueStatus = "success"');
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
         $collector->removeFromQueue($responseId);
     }
 
@@ -1291,7 +1291,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->with('queue_responses', ['*'], 'WHERE id = "response-456"')
             ->willReturn($mockSelectResult);
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
         $result = $collector->getSingleResponse($responseId);
         $this->assertSame($mockResponse, $result);
     }

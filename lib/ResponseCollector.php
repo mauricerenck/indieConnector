@@ -13,6 +13,7 @@ class ResponseCollector
         private ?bool $enabled = null,
         private ?int $limit = null,
         private ?int $ttl = null,
+        private ?int $queueLimit = null,
         private ?IndieConnectorDatabase $indieDatabase = null,
         private ?MastodonReceiver $mastodonReceiver = null,
         private ?BlueskyReceiver $blueskyReceiver = null,
@@ -23,6 +24,7 @@ class ResponseCollector
         $this->enabled = $enabled ?? option('mauricerenck.indieConnector.responses.enabled', false);
         $this->limit = $limit ?? option('mauricerenck.indieConnector.responses.limit', 10);
         $this->ttl = $ttl ?? option('mauricerenck.indieConnector.responses.ttl', 60);
+        $this->queueLimit = $queueLimit ?? option('mauricerenck.indieConnector.responses.queue.limit', 50);
     }
 
     public function registerPostUrl(string $pageUuid, string $postUrl, string $postType): void
@@ -426,9 +428,9 @@ class ResponseCollector
         $this->indieDb->insert('queue_responses', $fields, $values);
     }
 
-    public function processResponses($limit = 100)
+    public function processResponses()
     {
-        $responses = $this->indieDb->select('queue_responses', ['*'], 'WHERE queueStatus = "pending" LIMIT ' . $limit);
+        $responses = $this->indieDb->select('queue_responses', ['*'], 'WHERE queueStatus = "pending" LIMIT ' . $this->queueLimit);
         return $responses;
     }
 
