@@ -297,11 +297,10 @@ class ResponseCollector
 
     public function fetchBlueskyQuotes(array $postUrls, $lastResponses)
     {
-        $bskReceiver = new BlueskyReceiver();
         $knownIds = $this->getKnownIds($lastResponses, 'mention-of');
 
         foreach ($postUrls as $postUrl) {
-            $quotes = $bskReceiver->getResponses($postUrl, 'quotes', $knownIds);
+            $quotes = $this->blueskyReceiver->getResponses($postUrl, 'quotes', $knownIds);
             $latestId = $quotes[0]->indieConnectorId;
 
             if (count($quotes) === 0) {
@@ -338,11 +337,10 @@ class ResponseCollector
 
     public function fetchBlueskyReplies(array $postUrls, $lastResponses)
     {
-        $bskReceiver = new BlueskyReceiver();
         $knownIds = $this->getKnownIds($lastResponses, 'in-reply-to');
 
         foreach ($postUrls as $postUrl) {
-            $replies = $bskReceiver->getResponses($postUrl, 'replies', $knownIds);
+            $replies = $this->blueskyReceiver->getResponses($postUrl, 'replies', $knownIds);
             $latestId = $replies[0]->indieConnectorId;
 
             if (count($replies) === 0) {
