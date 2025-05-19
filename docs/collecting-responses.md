@@ -53,3 +53,7 @@ This Webhook will process 50 responses in a row. You can change that by setting:
 ```
 
 New reponses will be processed as Webmention, so after setting everything up, you should see those reponses on the Panel View of IndieConnector in case you enabled it.
+
+## brid.gy
+
+If you used brid.gy to collect respones, please make sure to deactivate it, otherwise you might end up with duplicates.
