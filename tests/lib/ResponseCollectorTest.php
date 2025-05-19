@@ -653,4 +653,197 @@ final class ResponseCollectorTest extends TestCaseMocked
 
         $collector->fetchMastodonReplies(['url1'], (object)[]);
     }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchBlueskyLikes - adds new likes to queue and updates known responses
+     */
+    public function testFetchBlueskyLikesAddsNewLikesToQueueAndUpdatesKnownResponses()
+    {
+        // Simulate a Bluesky like object
+        $like = (object)[
+            'indieConnectorId' => 'like123',
+            'createdAt' => '2024-01-01T00:00:00Z',
+            'actor' => (object)[
+                'did' => 'did:plc:123',
+                'displayName' => 'Bob',
+                'handle' => 'bob.bsky.social',
+                'avatar' => 'avatar.jpg'
+            ]
+        ];
+
+        $this->blueskyMock->expects($this->once())
+            ->method('getResponses')
+            ->with('url1', 'likes', ['knownLike'])
+            ->willReturn([$like]);
+
+        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
+            ->setConstructorArgs([true, true, true, $this->indieDb, null, $this->blueskyMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getKnownIds')
+            ->with($this->anything(), 'like-of')
+            ->willReturn(['knownLike']);
+
+        $collector->expects($this->once())
+            ->method('addToQueue')
+            ->with(
+                postUrl: 'url1',
+                responseId: 'like123',
+                responseType: 'like-of',
+                responseSource: 'bluesky',
+                responseDate: '2024-01-01T00:00:00Z',
+                authorId: 'did:plc:123',
+                authorName: 'Bob',
+                authorUsername: 'bob.bsky.social',
+                authorAvatar: 'avatar.jpg',
+                authorUrl: 'https://bsky.app/profile/bob.bsky.social',
+            );
+
+        $collector->expects($this->once())
+            ->method('updateKnownReponses')
+            ->with('url1', 'like123', 'like-of');
+
+        $collector->fetchBlueskyLikes(['url1'], (object)[]);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchBlueskyLikes - skips known likes
+     */
+    public function testFetchBlueskyLikesSkipsKnownLikes()
+    {
+        // Simulate a Bluesky like object
+        $like = (object)[
+            'indieConnectorId' => 'like123',
+            'createdAt' => '2024-01-01T00:00:00Z',
+            'actor' => (object)[
+                'did' => 'did:plc:123',
+                'displayName' => 'Bob',
+                'handle' => 'bob.bsky.social',
+                'avatar' => 'avatar.jpg'
+            ]
+        ];
+
+        $this->blueskyMock->expects($this->once())
+            ->method('getResponses')
+            ->with('url1', 'likes', ['like123'])
+            ->willReturn([$like]);
+
+        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
+            ->setConstructorArgs([true, true, true, $this->indieDb, null, $this->blueskyMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getKnownIds')
+            ->with($this->anything(), 'like-of')
+            ->willReturn(['like123']);
+
+        $collector->expects($this->never())
+            ->method('addToQueue');
+
+        $collector->expects($this->once())
+            ->method('updateKnownReponses')
+            ->with('url1', 'like123', 'like-of');
+
+        $collector->fetchBlueskyLikes(['url1'], (object)[]);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchBlueskyReposts - adds new reposts to queue and updates known responses
+     */
+    public function testFetchBlueskyRepostsAddsNewRepostsToQueueAndUpdatesKnownResponses()
+    {
+        // Simulate a Bluesky repost object
+        $repost = (object)[
+            'indieConnectorId' => 'repost123',
+            'createdAt' => '2024-01-01T00:00:00Z',
+            'did' => 'did:plc:123',
+            'displayName' => 'Bob',
+            'handle' => 'bob.bsky.social',
+            'avatar' => 'avatar.jpg'
+
+        ];
+
+        $this->blueskyMock->expects($this->once())
+            ->method('getResponses')
+            ->with('url1', 'reposts', ['knownRepost'])
+            ->willReturn([$repost]);
+
+        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
+            ->setConstructorArgs([true, true, true, $this->indieDb, null, $this->blueskyMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getKnownIds')
+            ->with($this->anything(), 'repost-of')
+            ->willReturn(['knownRepost']);
+
+        $collector->expects($this->once())
+            ->method('addToQueue')
+            ->with(
+                postUrl: 'url1',
+                responseId: 'repost123',
+                responseType: 'repost-of',
+                responseSource: 'bluesky',
+                responseDate: '2024-01-01T00:00:00Z',
+                authorId: 'did:plc:123',
+                authorName: 'Bob',
+                authorUsername: 'bob.bsky.social',
+                authorAvatar: 'avatar.jpg',
+                authorUrl: 'https://bsky.app/profile/bob.bsky.social',
+            );
+
+        $collector->expects($this->once())
+            ->method('updateKnownReponses')
+            ->with('url1', 'repost123', 'repost-of');
+
+        $collector->fetchBlueskyReposts(['url1'], (object)[]);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchBlueskyReposts - skips known reposts
+     */
+    public function testFetchBlueskyRepostsSkipsKnownReposts()
+    {
+        // Simulate a Bluesky repost object
+        $repost = (object)[
+            'indieConnectorId' => 'repost123',
+            'createdAt' => '2024-01-01T00:00:00Z',
+            'did' => 'did:plc:123',
+            'displayName' => 'Bob',
+            'handle' => 'bob.bsky.social',
+            'avatar' => 'avatar.jpg'
+        ];
+
+        $this->blueskyMock->expects($this->once())
+            ->method('getResponses')
+            ->with('url1', 'reposts', ['repost123'])
+            ->willReturn([$repost]);
+
+        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
+            ->setConstructorArgs([true, true, true, $this->indieDb, null, $this->blueskyMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getKnownIds')
+            ->with($this->anything(), 'repost-of')
+            ->willReturn(['repost123']);
+
+        $collector->expects($this->never())
+            ->method('addToQueue');
+
+        $collector->expects($this->once())
+            ->method('updateKnownReponses')
+            ->with('url1', 'repost123', 'repost-of');
+
+        $collector->fetchBlueskyReposts(['url1'], (object)[]);
+    }
 }

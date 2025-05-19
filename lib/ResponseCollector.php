@@ -217,11 +217,10 @@ class ResponseCollector
 
     public function fetchBlueskyLikes(array $postUrls, $lastResponses)
     {
-        $bskReceiver = new BlueskyReceiver();
         $knownIds = $this->getKnownIds($lastResponses, 'like-of');
 
         foreach ($postUrls as $postUrl) {
-            $likes = $bskReceiver->getResponses($postUrl, 'likes', $knownIds);
+            $likes = $this->blueskyReceiver->getResponses($postUrl, 'likes', $knownIds);
 
             if (count($likes) === 0) {
                 continue;
@@ -259,11 +258,10 @@ class ResponseCollector
 
     public function fetchBlueskyReposts(array $postUrls, $lastResponses)
     {
-        $bskReceiver = new BlueskyReceiver();
         $knownIds = $this->getKnownIds($lastResponses, 'repost-of');
 
         foreach ($postUrls as $postUrl) {
-            $reposts = $bskReceiver->getResponses($postUrl, 'reposts', $knownIds);
+            $reposts = $this->blueskyReceiver->getResponses($postUrl, 'reposts', $knownIds);
             $latestId = $reposts[0]->indieConnectorId;
 
             if (count($reposts) === 0) {
