@@ -16,14 +16,15 @@ class ResponseCollector
         private ?IndieConnectorDatabase $indieDatabase = null,
     ) {
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
-        $this->enabled = $queueEnabled ?? option('mauricerenck.indieConnector.responses.enabled', false);
-        $this->limit = $queueEnabled ?? option('mauricerenck.indieConnector.responses.limit', 10);
-        $this->ttl = $queueEnabled ?? option('mauricerenck.indieConnector.responses.ttl', 60);
+        $this->enabled = $enabled ?? option('mauricerenck.indieConnector.responses.enabled', false);
+        $this->limit = $limit ?? option('mauricerenck.indieConnector.responses.limit', 10);
+        $this->ttl = $ttl ?? option('mauricerenck.indieConnector.responses.ttl', 60);
     }
 
     public function registerPostUrl(string $pageUuid, string $postUrl, string $postType): void
     {
-        if (!$this->enabled) {
+
+        if (!$this->isEnabled()) {
             return;
         }
 
