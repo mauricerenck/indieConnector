@@ -1070,4 +1070,229 @@ final class ResponseCollectorTest extends TestCaseMocked
 
         $collector->fetchBlueskyReplies(['url1'], (object)[]);
     }
+
+    /**
+     * @group responseCollector
+     * @testdox getKnownIds - returns array of ids
+     */
+    public function testGetKnownIdsReturnsArrayOfIds()
+    {
+        // Mock $lastResponses with filterBy('post_type', 'like-of')->first() returning an object with ids
+        $mockLastResponses = $this->getMockBuilder(stdClass::class)
+            ->addMethods(['filterBy', 'first'])
+            ->getMock();
+
+        $mockIdList = (object)['ids' => 'id1,id2,id3'];
+
+        $mockLastResponses->expects($this->once())
+            ->method('filterBy')
+            ->with('post_type', 'like-of')
+            ->willReturn(new class($mockIdList) {
+                private $result;
+                public function __construct($result)
+                {
+                    $this->result = $result;
+                }
+                public function first()
+                {
+                    return $this->result;
+                }
+            });
+
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+
+        $result = $collector->getKnownIds($mockLastResponses, 'like-of');
+        $this->assertEquals(['id1', 'id2', 'id3'], $result);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox getKnownIds - returns empty array when no ids
+     */
+    public function testGetKnownIdsReturnsEmptyArrayWhenNoIds()
+    {
+        // Mock $lastResponses with filterBy('post_type', 'like-of')->first() returning null
+        $mockLastResponses = $this->getMockBuilder(stdClass::class)
+            ->addMethods(['filterBy', 'first'])
+            ->getMock();
+
+        $mockLastResponses->expects($this->once())
+            ->method('filterBy')
+            ->with('post_type', 'like-of')
+            ->willReturn(new class {
+                public function first()
+                {
+                    return null;
+                }
+            });
+
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+
+        $result = $collector->getKnownIds($mockLastResponses, 'like-of');
+        $this->assertEquals([], $result);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox addToQueue - inserts correctly
+     */
+    public function testAddToQueueInsertsCorrectly()
+    {
+        // Arrange: Mock select to return a page_uuid
+        $mockPageData = (object)['page_uuid' => 'page-uuid-123'];
+        $mockSelectResult = $this->getMockBuilder(stdClass::class)
+            ->addMethods(['first'])
+            ->getMock();
+        $mockSelectResult->expects($this->once())
+            ->method('first')
+            ->willReturn($mockPageData);
+
+        $this->indieDb->expects($this->once())
+            ->method('select')
+            ->with('external_post_urls', ['page_uuid'], $this->stringContains('WHERE post_url = "post-url-1"'))
+            ->willReturn($mockSelectResult);
+
+        // Mock insert to check arguments
+        $this->indieDb->expects($this->once())
+            ->method('insert')
+            ->with(
+                'queue_responses',
+                $this->callback(function ($fields) {
+                    return in_array('id', $fields) && in_array('page_uuid', $fields);
+                }),
+                $this->callback(function ($values) {
+                    // Check that the values array contains expected data
+                    return in_array('page-uuid-123', $values)
+                        && in_array('response-id-1', $values)
+                        && in_array('like-of', $values)
+                        && in_array('mastodon', $values)
+                        && in_array('2024-01-01T00:00:00Z', $values)
+                        && in_array('author-id-1', $values)
+                        && in_array('Alice', $values)
+                        && in_array('alice', $values)
+                        && in_array('avatar.png', $values)
+                        && in_array('https://mastodon.social/@alice', $values);
+                })
+            );
+
+        // Optionally, mock Uuid::generate and Str::unhtml if your test framework/setup allows
+
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+
+        // Act
+        $collector->addToQueue(
+            postUrl: 'post-url-1',
+            responseId: 'response-id-1',
+            responseType: 'like-of',
+            responseSource: 'mastodon',
+            responseDate: '2024-01-01T00:00:00Z',
+            authorId: 'author-id-1',
+            authorName: 'Alice',
+            authorUsername: 'alice',
+            authorAvatar: 'avatar.png',
+            authorUrl: 'https://mastodon.social/@alice'
+        );
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox processResponses - returns responses
+     */
+    public function testProcessResponsesReturnsResponses()
+    {
+        $mockResponses = ['response1', 'response2'];
+        $this->indieDb->expects($this->once())
+            ->method('select')
+            ->with('queue_responses', ['*'], $this->stringContains('WHERE queueStatus = "pending" LIMIT 100'))
+            ->willReturn($mockResponses);
+
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $result = $collector->processResponses();
+        $this->assertSame($mockResponses, $result);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox markProcessed - updates queue status
+     */
+    public function testMarkProcessedUpdatesQueueStatus()
+    {
+        $responseIds = ['id1', 'id2'];
+        $this->indieDb->expects($this->once())
+            ->method('update')
+            ->with(
+                'queue_responses',
+                ['queueStatus'],
+                ['success'],
+                'WHERE id IN ("id1","id2")'
+            );
+
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $collector->markProcessed($responseIds);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox updateKnownReponses - upserts correctly
+     */
+    public function testUpdateKnownReponsesUpsertsCorrectly()
+    {
+        $postUrl = 'https://example.com/post';
+        $latestId = 'latest-id';
+        $verb = 'like-of';
+        $expectedSelector = 'example.com/post_like-of';
+
+        $this->indieDb->expects($this->once())
+            ->method('upsert')
+            ->with(
+                'known_responses',
+                ['id', 'post_url', 'post_type', 'post_selector'],
+                [$latestId, $postUrl, $verb, $expectedSelector],
+                'post_selector',
+                'id = "' . $latestId . '"'
+            );
+
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $collector->updateKnownReponses($postUrl, $latestId, $verb);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox removeFromQueue - deletes correctly
+     */
+    public function testRemoveFromQueueDeletesCorrectly()
+    {
+        $responseId = 'response-123';
+        $this->indieDb->expects($this->once())
+            ->method('delete')
+            ->with('queue_responses', 'WHERE id = "response-123" AND queueStatus = "success"');
+
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $collector->removeFromQueue($responseId);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox getSingleResponse - returns correct response
+     */
+    public function testGetSingleResponseReturnsCorrectResponse()
+    {
+        $responseId = 'response-456';
+        $mockResponse = (object)['id' => $responseId, 'foo' => 'bar'];
+        $mockSelectResult = $this->getMockBuilder(stdClass::class)
+            ->addMethods(['first'])
+            ->getMock();
+        $mockSelectResult->expects($this->once())
+            ->method('first')
+            ->willReturn($mockResponse);
+
+        $this->indieDb->expects($this->once())
+            ->method('select')
+            ->with('queue_responses', ['*'], 'WHERE id = "response-456"')
+            ->willReturn($mockSelectResult);
+
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, true, true, $this->indieDb);
+        $result = $collector->getSingleResponse($responseId);
+        $this->assertSame($mockResponse, $result);
+    }
 }
