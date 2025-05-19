@@ -2,7 +2,7 @@
 
 Collect likes, reposts and replies from Mastodon or Bluesky and show them on your pages.
 
-**This feature requires a SQLite database**
+**This feature requires a SQLite database. [Learn how to set it up here](database.md)**
 
 When you use the IndieConnector to create posts on Mastodon or Bluesky whenever you publish a page (POSSE), you can now collect responses from those posts and show them as comments or in any other form on your pages.
 
