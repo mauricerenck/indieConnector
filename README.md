@@ -48,6 +48,8 @@ Use one of these three methods to install the plugin:
 
 -   [x] Kirby 5 ready
 -   [x] Manual queue cleanup
+-   [x] Get replies from Mastodon and Bluesky without brid.gy
+-   [x] Option for using Kirby UUID permalinks in Mastodon/Bluesky posts
 -   [ ] Queue for sending webmentions
 -   [ ] Queue for sending mastodon posts
 -   [ ] Queue for sending bluesky posts
@@ -56,5 +58,3 @@ Use one of these three methods to install the plugin:
 -   [ ] Manual post to Mastodon and Bluesky
 -   [ ] Block hosts from within the panel
 -   [ ] Post complete texts to Mastodon and Bluesky splitted in threads
--   [ ] Option for using Kirby UUID permalinks in Mastodon/Bluesky posts
--   [ ] Get replies from Mastodon and Bluesky without brid.gy
