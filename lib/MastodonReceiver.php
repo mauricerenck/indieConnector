@@ -28,15 +28,15 @@ class MastodonReceiver
             }
 
             $response = $this->paginateResponses($urlHost, $postId, $type, null);
-            $favs = $response['data'];
+            $entries = $response['data'];
 
-            if ($this->responsesIncludeKnownId($favs, $knownIds)) {
-                return $favs;
+            if ($this->responsesIncludeKnownId($entries, $knownIds)) {
+                return $entries;
             }
 
             while ($response['next'] !== null) {
                 $response = $this->paginateResponses($urlHost, $postId, $type, $response['next']);
-                $favs = [...$favs, ...$response['data']];
+                $entries = [...$entries, ...$response['data']];
 
                 // if there is a known Id in the loop set next to null to stop it
                 if ($this->responsesIncludeKnownId($response['data'], $knownIds)) {
@@ -44,7 +44,7 @@ class MastodonReceiver
                 }
             }
 
-            return $favs;
+            return $entries;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
             return [];

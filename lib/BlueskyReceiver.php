@@ -41,15 +41,15 @@ class BlueskyReceiver
 
         try {
             $response = $this->paginateResponses($did, $type, null);
-            $likes = $response['data'];
+            $entries = $response['data'];
 
-            if ($this->responsesIncludeKnownId($likes, $knownIds)) {
-                return $likes;
+            if ($this->responsesIncludeKnownId($entries, $knownIds)) {
+                return $entries;
             }
 
             while ($response['next'] !== null) {
                 $response = $this->paginateResponses($did, $type, $response['next']);
-                $likes = [...$likes, ...$response['data']];
+                $entries = [...$entries, ...$response['data']];
 
                 // if there is a known Id in the loop set next to null to stop it
                 if ($this->responsesIncludeKnownId($response['data'], $knownIds)) {
@@ -57,7 +57,7 @@ class BlueskyReceiver
                 }
             }
 
-            return $likes;
+            return $entries;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
             return [];
