@@ -14,7 +14,11 @@ class ResponseCollector
         private ?int $limit = null,
         private ?int $ttl = null,
         private ?IndieConnectorDatabase $indieDatabase = null,
+        private ?MastodonReceiver $mastodonReceiver = null,
+        private ?BlueskyReceiver $blueskyReceiver = null,
     ) {
+        $this->mastodonReceiver = $mastodonReceiver ?? new MastodonReceiver();
+        $this->blueskyReceiver = $blueskyReceiver ?? new BlueskyReceiver();
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
         $this->enabled = $enabled ?? option('mauricerenck.indieConnector.responses.enabled', false);
         $this->limit = $limit ?? option('mauricerenck.indieConnector.responses.limit', 10);
@@ -96,11 +100,10 @@ class ResponseCollector
 
     public function fetchMastodonLikes(array $postUrls, $lastResponses)
     {
-        $mastodonReceiver = new MastodonReceiver();
         $knownIds = $this->getKnownIds($lastResponses, 'like-of');
 
         foreach ($postUrls as $postUrl) {
-            $favs = $mastodonReceiver->getResponses($postUrl, 'likes', $knownIds);
+            $favs = $this->mastodonReceiver->getResponses($postUrl, 'likes', $knownIds);
 
             if (count($favs) === 0) {
                 continue;
@@ -134,11 +137,10 @@ class ResponseCollector
 
     public function fetchMastodonReblogs(array $postUrls, $lastResponses)
     {
-        $mastodonReceiver = new MastodonReceiver();
         $knownIds = $this->getKnownIds($lastResponses, 'repost-of');
 
         foreach ($postUrls as $postUrl) {
-            $reblogs = $mastodonReceiver->getResponses($postUrl, 'reposts', $knownIds);
+            $reblogs = $this->mastodonReceiver->getResponses($postUrl, 'reposts', $knownIds);
 
             if (count($reblogs) === 0) {
                 continue;
@@ -173,12 +175,11 @@ class ResponseCollector
 
     public function fetchMastodonReplies(array $postUrls, $lastResponses)
     {
-        $mastodonReceiver = new MastodonReceiver();
         $knownIds = $this->getKnownIds($lastResponses, 'in-reply-to');
 
         foreach ($postUrls as $postUrl) {
-            $replies = $mastodonReceiver->getResponses($postUrl, 'replies', $knownIds);
-            list($_urlHost, $postId) = $mastodonReceiver->getPostUrlData($postUrl);
+            $replies = $this->mastodonReceiver->getResponses($postUrl, 'replies', $knownIds);
+            list($_urlHost, $postId) = $this->mastodonReceiver->getPostUrlData($postUrl);
 
             if (count($replies) === 0) {
                 continue;

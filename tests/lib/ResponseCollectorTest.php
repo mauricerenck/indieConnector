@@ -3,22 +3,24 @@
 use mauricerenck\IndieConnector\ResponseCollector;
 use mauricerenck\IndieConnector\IndieConnectorDatabase;
 use mauricerenck\IndieConnector\TestCaseMocked;
-use Kirby\Content\Content;
-use Kirby\Cms\Collection;
 
 final class ResponseCollectorTest extends TestCaseMocked
 {
     private $indieDb;
     private $collector;
+    private $mastodonMock;
+    private $blueskyMock;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->indieDb = $this->createMock(IndieConnectorDatabase::class);
+        $this->mastodonMock = $this->createMock(\mauricerenck\IndieConnector\MastodonReceiver::class);
+        $this->blueskyMock = $this->createMock(\mauricerenck\IndieConnector\BlueskyReceiver::class);
 
         $this->collector = $this->getMockBuilder(ResponseCollector::class)
-            ->setConstructorArgs([true, true, true, $this->indieDb])
+            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock, $this->blueskyMock])
             ->onlyMethods(['isEnabled'])
             ->getMock();
     }
@@ -341,5 +343,314 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->with([''], $mockLastResponses);
 
         $collector->parseBlueskyResponses('');
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchMastodonLikes - adds new likes to queue and updates known responses
+     */
+    public function testFetchMastodonLikesAddsNewLikesToQueueAndUpdatesKnownResponses()
+    {
+        // Arrange
+        $this->mastodonMock->expects($this->once())
+            ->method('getResponses')
+            ->with('url1', 'likes', ['known1'])
+            ->willReturn([
+                [
+                    'id' => 'like1',
+                    'created_at' => '2024-01-01T00:00:00Z',
+                    'display_name' => 'Alice',
+                    'username' => 'alice',
+                    'avatar_static' => 'avatar.png',
+                    'url' => 'https://mastodon.social/@alice'
+                ]
+            ]);
+
+        // Patch MastodonReceiver instantiation
+        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
+            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getKnownIds')
+            ->with($this->anything(), 'like-of')
+            ->willReturn(['known1']);
+
+        $collector->expects($this->once())
+            ->method('addToQueue')
+            ->with(
+                postUrl: 'url1',
+                responseId: 'like1',
+                responseType: 'like-of',
+                responseSource: 'mastodon',
+                responseDate: '2024-01-01T00:00:00Z',
+                authorId: 'like1',
+                authorName: 'Alice',
+                authorUsername: 'alice',
+                authorAvatar: 'avatar.png',
+                authorUrl: 'https://mastodon.social/@alice'
+            );
+
+        $collector->expects($this->once())
+            ->method('updateKnownReponses')
+            ->with('url1', 'like1', 'like-of');
+
+        $collector->fetchMastodonLikes(['url1'], (object)[]);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchMastodonLikes - skips known likes
+     */
+    public function testFetchMastodonLikesSkipsKnownLikes()
+    {
+        $this->mastodonMock->expects($this->once())
+            ->method('getResponses')
+            ->with('url1', 'likes', ['like1'])
+            ->willReturn([
+                [
+                    'id' => 'like1',
+                    'created_at' => '2024-01-01T00:00:00Z',
+                    'display_name' => 'Alice',
+                    'username' => 'alice',
+                    'avatar_static' => 'avatar.png',
+                    'url' => 'https://mastodon.social/@alice'
+                ]
+            ]);
+
+        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
+            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getKnownIds')
+            ->with($this->anything(), 'like-of')
+            ->willReturn(['like1']);
+
+        $collector->expects($this->never())
+            ->method('addToQueue');
+
+        $collector->expects($this->once())
+            ->method('updateKnownReponses')
+            ->with('url1', 'like1', 'like-of');
+
+        $collector->fetchMastodonLikes(['url1'], (object)[]);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchMastodonReblogs - adds new reblogs to queue and updates known responses
+     */
+    public function testFetchMastodonReblogsAddsNewReblogsToQueueAndUpdatesKnownResponses()
+    {
+        // Arrange
+        $this->mastodonMock->expects($this->once())
+            ->method('getResponses')
+            ->with('url1', 'reposts', ['known1'])
+            ->willReturn([
+                [
+                    'id' => 'reblog1',
+                    'created_at' => '2024-01-01T00:00:00Z',
+                    'display_name' => 'Alice',
+                    'username' => 'alice',
+                    'avatar_static' => 'avatar.png',
+                    'url' => 'https://mastodon.social/@alice'
+                ]
+            ]);
+
+        // Patch MastodonReceiver instantiation
+        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
+            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getKnownIds')
+            ->with($this->anything(), 'repost-of')
+            ->willReturn(['known1']);
+
+        $collector->expects($this->once())
+            ->method('addToQueue')
+            ->with(
+                postUrl: 'url1',
+                responseId: 'reblog1',
+                responseType: 'repost-of',
+                responseSource: 'mastodon',
+                responseDate: '2024-01-01T00:00:00Z',
+                authorId: 'reblog1',
+                authorName: 'Alice',
+                authorUsername: 'alice',
+                authorAvatar: 'avatar.png',
+                authorUrl: 'https://mastodon.social/@alice'
+            );
+
+        $collector->expects($this->once())
+            ->method('updateKnownReponses')
+            ->with('url1', 'reblog1', 'repost-of');
+
+        $collector->fetchMastodonReblogs(['url1'], (object)[]);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchMastodonReblogs - skips known reblogs
+     */
+    public function testFetchMastodonReblogsSkipsKnownReblogs()
+    {
+        $this->mastodonMock->expects($this->once())
+            ->method('getResponses')
+            ->with('url1', 'reposts', ['reblog1'])
+            ->willReturn([
+                [
+                    'id' => 'reblog1',
+                    'created_at' => '2024-01-01T00:00:00Z',
+                    'display_name' => 'Alice',
+                    'username' => 'alice',
+                    'avatar_static' => 'avatar.png',
+                    'url' => 'https://mastodon.social/@alice'
+                ]
+            ]);
+
+        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
+            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getKnownIds')
+            ->with($this->anything(), 'repost-of')
+            ->willReturn(['reblog1']);
+
+        $collector->expects($this->never())
+            ->method('addToQueue');
+
+        $collector->expects($this->once())
+            ->method('updateKnownReponses')
+            ->with('url1', 'reblog1', 'repost-of');
+
+        $collector->fetchMastodonReblogs(['url1'], (object)[]);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchMastodonReplies - adds new replies to queue and updates known responses
+     */
+    public function testFetchMastodonRepliesAddsNewRepliesToQueueAndUpdatesKnownResponses()
+    {
+        // Arrange
+        $this->mastodonMock->expects($this->once())
+            ->method('getResponses')
+            ->with('url1', 'replies', ['known1'])
+            ->willReturn([
+                [
+                    'id' => 'reply1',
+                    'in_reply_to_id' => "post1",
+                    'visibility' => 'public',
+                    'created_at' => '2024-01-01T00:00:00Z',
+                    'content' => 'hello world!',
+                    'url' => 'https://example.com',
+                    'account' => [
+                        'id' => 'user1',
+                        'display_name' => 'Alice',
+                        'username' => 'alice',
+                        'avatar_static' => 'avatar.png',
+                        'url' => 'https://mastodon.social/@alice'
+                    ]
+                ]
+            ]);
+
+        $this->mastodonMock->expects($this->once())
+            ->method('getPostUrlData')
+            ->with('url1')
+            ->willReturn(['host1', 'post1']);
+
+        // Patch MastodonReceiver instantiation
+        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
+            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getKnownIds')
+            ->with($this->anything(), 'in-reply-to')
+            ->willReturn(['known1']);
+
+        $collector->expects($this->once())
+            ->method('addToQueue')
+            ->with(
+                postUrl: 'url1',
+                responseId: 'reply1',
+                responseType: 'in-reply-to',
+                responseSource: 'mastodon',
+                responseDate: '2024-01-01T00:00:00Z',
+                authorId: 'user1',
+                authorName: 'Alice',
+                authorUsername: 'alice',
+                authorAvatar: 'avatar.png',
+                authorUrl: 'https://mastodon.social/@alice',
+                responseText: 'hello world!',
+                responseUrl: 'https://example.com',
+            );
+
+        $collector->expects($this->once())
+            ->method('updateKnownReponses')
+            ->with('url1', 'reply1', 'in-reply-to');
+
+        $collector->fetchMastodonReplies(['url1'], (object)[]);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchMastodonReplies - skips known replies
+     */
+    public function testFetchMastodonRepliesSkipsKnownReplies()
+    {
+        $this->mastodonMock->expects($this->once())
+            ->method('getResponses')
+            ->with('url1', 'replies', ['reply1'])
+            ->willReturn([
+                [
+                    'id' => 'reply1',
+                    'in_reply_to_id' => "post1",
+                    'visibility' => 'public',
+                    'created_at' => '2024-01-01T00:00:00Z',
+                    'content' => 'hello world!',
+                    'url' => 'https://example.com',
+                    'account' => [
+                        'id' => 'user1',
+                        'display_name' => 'Alice',
+                        'username' => 'alice',
+                        'avatar_static' => 'avatar.png',
+                        'url' => 'https://mastodon.social/@alice'
+                    ]
+                ]
+            ]);
+
+        $this->mastodonMock->expects($this->once())
+            ->method('getPostUrlData')
+            ->with('url1')
+            ->willReturn(['host1', 'post1']);
+
+        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
+            ->setConstructorArgs([true, true, true, $this->indieDb, $this->mastodonMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->getMock();
+
+
+        $collector->expects($this->once())
+            ->method('getKnownIds')
+            ->with($this->anything(), 'in-reply-to')
+            ->willReturn(['reply1']);
+
+        $collector->expects($this->never())
+            ->method('addToQueue');
+
+        $collector->expects($this->once())
+            ->method('updateKnownReponses')
+            ->with('url1', 'reply1', 'in-reply-to');
+
+        $collector->fetchMastodonReplies(['url1'], (object)[]);
     }
 }
