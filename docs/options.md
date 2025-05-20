@@ -97,7 +97,7 @@
 | `responses.enabled`     | `false` | Enable collecting responses                                       |
 | `responses.limit`       | `10`    | Number of posts to check for responses                            |
 | `responses.ttl`         | `60`    | Minutes after which a post url should be re-checked for responses |
-| `responses.queue.limit` | `50`    | Minutes after which a post url should be re-checked for responses |
+| `responses.queue.limit` | `50`    | Number of items to process per run                                |
 
 ## ActivityPub beta ([details](activitiypub.md))
 
