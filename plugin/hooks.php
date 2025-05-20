@@ -73,7 +73,8 @@ return [
 
     'page.render:after' => function (string $contentType, array $data, string $html, Page $page) {
         $reponseId = $page->responseId();
-        if (is_null($reponseId)) {
+
+        if (is_null($reponseId) || $reponseId->isEmpty()) {
             return;
         }
 
