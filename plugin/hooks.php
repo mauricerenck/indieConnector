@@ -6,17 +6,25 @@ use Kirby\Cms\Page;
 
 return [
     'page.update:after' => function ($newPage, $oldPage) {
+        $responseCollector = new ResponseCollector();
         $webmentions = new WebmentionSender();
+
         $webmentions->sendWebmentions($newPage);
 
         if ($mastodonUrl = $newPage->mastodonStatusUrl()) {
-
             if ($oldPage->mastodonStatusUrl() === $mastodonUrl) {
                 return;
             }
 
-            $responseCollector = new ResponseCollector();
             $responseCollector->registerPostUrl($newPage->uuid()->id(), $mastodonUrl->value(), 'mastodon');
+        }
+
+        if ($blueskyUrl = $newPage->blueskyStatusUrl()) {
+            if ($oldPage->blueskyStatusUrl() === $blueskyUrl) {
+                return;
+            }
+
+            $responseCollector->registerPostUrl($newPage->uuid()->id(), $blueskyUrl->value(), 'bluesky');
         }
     },
 

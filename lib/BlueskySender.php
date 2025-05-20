@@ -206,4 +206,22 @@ class BlueskySender extends ExternalPostSender
 
         return $atUri;
     }
+
+    public function getDidFromUrl(string $url): string
+    {
+        // Regular expression to match the Bluesky post URL
+        $regex = '/^https:\/\/bsky\.app\/profile\/(did:plc:[a-zA-Z0-9]+)\/post\/([a-zA-Z0-9]+)$/';
+
+        // Check if the Bluesky URL matches the pattern
+        if (preg_match($regex, $url, $matches)) {
+            // Extract DID and RKEY from the matched groups
+            $did = $matches[1];  // Group 1: DID
+            $rkey = $matches[2]; // Group 2: RKEY
+
+            // Generate the AT-URI
+            return "at://$did/app.bsky.feed.post/$rkey";
+        }
+
+        return $url; // Return the original URL if it doesn't match
+    }
 }

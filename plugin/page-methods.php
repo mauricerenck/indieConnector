@@ -9,12 +9,13 @@ return [
     },
     'icGetBlueskyUrl' => function () {
         $blueskySender = new BlueskySender();
+        $bluesky = new Bluesky();
         $atUri = $blueskySender->getPostTargetUrl('bluesky', $this);
 
         if (is_null($atUri)) {
             return '';
         }
 
-        return $blueskySender->getUrlFromDid($atUri);
+        return $bluesky->getUrlFromDid($atUri);
     },
 ];
