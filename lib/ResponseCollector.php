@@ -42,8 +42,8 @@ class ResponseCollector
 
         if ($existingPostUrls->count() === 0) {
             $id = Uuid::generate();
-            $fields = ['id', 'page_uuid', 'post_url', 'post_type'];
-            $values = [$id, $pageUuid, $postUrl, $postType];
+            $fields = ['id', 'page_uuid', 'post_url', 'post_type', 'last_fetched'];
+            $values = [$id, $pageUuid, $postUrl, $postType, 0];
 
             $this->indieDb->insert('external_post_urls', $fields, $values);
 
@@ -53,8 +53,8 @@ class ResponseCollector
         foreach ($existingPostUrls->toArray() as $existingPostUrl) {
             $this->indieDb->update(
                 'external_post_urls',
-                ['post_url'],
-                [$postUrl],
+                ['post_url', 'last_fetched'],
+                [$postUrl, 0],
                 'WHERE id = "' . $existingPostUrl->id . '" AND page_uuid = "' . $pageUuid . '" AND post_type = "' . $postType . '"'
             );
         }
@@ -68,6 +68,10 @@ class ResponseCollector
         $query = 'SELECT GROUP_CONCAT(post_url, ",") AS post_urls, post_type FROM external_post_urls WHERE active = TRUE AND UNIXEPOCH(last_fetched) < ' . $timeToFetchAfter . ' GROUP BY post_type ' . $limitQuery;
 
         $postUrls = $this->indieDb->query($query);
+
+        if (!$postUrls) {
+            return;
+        }
 
         $this->parseMastodonResponses($postUrls->filterBy('post_type', 'mastodon')->first()->post_urls); // we only get one resultset here, so we use first()
         $this->parseBlueskyResponses($postUrls->filterBy('post_type', 'bluesky')->first()->post_urls); // we only get one resultset here, so we use first()

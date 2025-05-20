@@ -62,9 +62,9 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->method('insert')
             ->with(
                 'external_post_urls',
-                ['id', 'page_uuid', 'post_url', 'post_type'],
+                ['id', 'page_uuid', 'post_url', 'post_type', 'last_fetched'],
                 $this->callback(function ($values) {
-                    return count($values) === 4;
+                    return count($values) === 5;
                 })
             );
 
@@ -108,8 +108,8 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->method('update')
             ->with(
                 'external_post_urls',
-                ['post_url'],
-                ['url'],
+                ['post_url', 'last_fetched'],
+                ['url', 0],
                 $this->stringContains('WHERE id = "existing-id"')
             );
 
