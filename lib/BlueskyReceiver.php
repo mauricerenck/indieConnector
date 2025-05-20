@@ -20,12 +20,10 @@ class BlueskyReceiver
         $this->password = $password ?? option('mauricerenck.indieConnector.bluesky.password', false);
 
         if (!$this->handle) {
-            throw new Exception('No bluesky handle set');
             return;
         }
 
         if (!$this->password) {
-            throw new Exception('No bluesky app password set');
             return;
         }
 
