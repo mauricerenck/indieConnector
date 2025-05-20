@@ -12,7 +12,7 @@ return [
         $webmentions->sendWebmentions($newPage);
 
         if ($mastodonUrl = $newPage->mastodonStatusUrl()) {
-            if ($oldPage->mastodonStatusUrl() === $mastodonUrl) {
+            if ($oldPage->mastodonStatusUrl() === $mastodonUrl || $mastodonUrl->isEmpty()) {
                 return;
             }
 
@@ -20,7 +20,7 @@ return [
         }
 
         if ($blueskyUrl = $newPage->blueskyStatusUrl()) {
-            if ($oldPage->blueskyStatusUrl() === $blueskyUrl) {
+            if ($oldPage->blueskyStatusUrl() === $blueskyUrl || $blueskyUrl->isEmpty()) {
                 return;
             }
 
