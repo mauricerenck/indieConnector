@@ -109,7 +109,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->with(
                 'external_post_urls',
                 ['post_url', 'last_fetched'],
-                ['url', 0],
+                ['url', '1970-01-01 00:01:00'],
                 $this->stringContains('WHERE id = "existing-id"')
             );
 

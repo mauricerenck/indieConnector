@@ -43,7 +43,7 @@ class ResponseCollector
         if ($existingPostUrls->count() === 0) {
             $id = Uuid::generate();
             $fields = ['id', 'page_uuid', 'post_url', 'post_type', 'last_fetched'];
-            $values = [$id, $pageUuid, $postUrl, $postType, 0];
+            $values = [$id, $pageUuid, $postUrl, $postType, '1970-01-01 00:01:00'];
 
             $this->indieDb->insert('external_post_urls', $fields, $values);
 
@@ -54,7 +54,7 @@ class ResponseCollector
             $this->indieDb->update(
                 'external_post_urls',
                 ['post_url', 'last_fetched'],
-                [$postUrl, 0],
+                [$postUrl, '1970-01-01 00:01:00'],
                 'WHERE id = "' . $existingPostUrl->id . '" AND page_uuid = "' . $pageUuid . '" AND post_type = "' . $postType . '"'
             );
         }
@@ -65,7 +65,7 @@ class ResponseCollector
         $currentTimestamp = time();
         $timeToFetchAfter = $currentTimestamp - $this->ttl * 60;
         $limitQuery = $this->limit > 0 ? ' LIMIT ' . $this->limit : '';
-        $query = 'SELECT GROUP_CONCAT(post_url, ",") AS post_urls, post_type FROM external_post_urls WHERE active = TRUE AND UNIXEPOCH(last_fetched) < ' . $timeToFetchAfter . ' GROUP BY post_type ' . $limitQuery;
+        $query = 'SELECT GROUP_CONCAT(post_url, ",") AS post_urls, post_type FROM external_post_urls WHERE active = TRUE AND UNIXEPOCH(last_fetched) < ' . $timeToFetchAfter . ' GROUP BY post_type ' . $limitQuery . ';';
 
         $postUrls = $this->indieDb->query($query);
 
@@ -88,6 +88,8 @@ class ResponseCollector
         $this->fetchMastodonLikes($postUrls, $lastResponses);
         $this->fetchMastodonReblogs($postUrls, $lastResponses);
         $this->fetchMastodonReplies($postUrls, $lastResponses);
+
+        $this->updateLastFetched($postUrls);
     }
 
     public function parseBlueskyResponses(string $postUrls)
@@ -102,6 +104,8 @@ class ResponseCollector
         $this->fetchBlueskyReposts($postUrls, $lastResponses);
         $this->fetchBlueskyQuotes($postUrls, $lastResponses);
         $this->fetchBlueskyReplies($postUrls, $lastResponses);
+
+        $this->updateLastFetched($postUrls);
     }
 
     public function fetchMastodonLikes(array $postUrls, $lastResponses)
@@ -436,6 +440,12 @@ class ResponseCollector
     {
         $responses = $this->indieDb->select('queue_responses', ['*'], 'WHERE queueStatus = "pending" LIMIT ' . $this->queueLimit);
         return $responses;
+    }
+
+    public function updateLastFetched(array $postUrls)
+    {
+        $currentTimestamp = date('Y-m-d H:i:s');
+        $this->indieDb->update('external_post_urls', ['last_fetched'], [$currentTimestamp], 'WHERE post_url IN ("' . implode('","', $postUrls) . '")');
     }
 
     public function markProcessed($responseIds)
