@@ -40,4 +40,11 @@ return [
         'allowedTemplates' => ['phpunit', 'default'],
         'blockedTemplates' => ['blocked-template'],
     ],
+
+    'mauricerenck.indieConnector.responses' => [
+        'enabled' => true,
+        'limit' => 1,
+        'ttl' => 2,
+        'queue.limit' => 1,
+    ],
 ];

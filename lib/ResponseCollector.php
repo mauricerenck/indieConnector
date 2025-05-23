@@ -70,18 +70,70 @@ class ResponseCollector
         $postUrls = $this->indieDb->query($query);
 
         if (!$postUrls || $postUrls->count() === 0) {
-            return;
+            return [
+                'urls' => 0,
+                'responses' => 0
+            ];
         }
+
+        $countPostUrls = 0;
+        $countResponses = 0;
 
         $mastodonPostUrls = $postUrls->filterBy('post_type', 'mastodon')->first(); // we only get one resultset here, so we use first()
         if (!is_null($mastodonPostUrls)) {
-            $this->parseMastodonResponses($mastodonPostUrls->post_urls);
+            $result = $this->parseMastodonResponses($mastodonPostUrls->post_urls);
+            $countResponses += $result['responses'];
+            $countPostUrls += $result['urls'];
         }
 
         $blueskyPostUrls = $postUrls->filterBy('post_type', 'bluesky')->first(); // we only get one resultset here, so we use first()
         if (!is_null($blueskyPostUrls)) {
-            $this->parseBlueskyResponses($blueskyPostUrls->post_urls); // we only get one resultset here, so we use first()
+            $result = $this->parseBlueskyResponses($blueskyPostUrls->post_urls); // we only get one resultset here, so we use first()
+            $countResponses += $result['responses'];
+            $countPostUrls += $result['urls'];
         }
+
+        return [
+            'urls' => $countPostUrls,
+            'responses' => $countResponses
+        ];
+    }
+
+    public function getPostUrlMetrics()
+    {
+        $query = 'SELECT COUNT(post_url) as urls, post_type FROM external_post_urls WHERE active = TRUE GROUP BY post_type;';
+        $postUrls = $this->indieDb->query($query);
+
+        if (!$postUrls || $postUrls->count() === 0) {
+            return [
+                'total' => 0,
+                'mastodon' => 0,
+                'bluesky' => 0,
+                'due' => 0
+            ];
+        }
+
+        $mastodonUrls = $postUrls->filterBy('post_type', 'mastodon')->first(); // we only get one resultset here, so we use first()
+        $blueskyUrls = $postUrls->filterBy('post_type', 'bluesky')->first(); // we only get one resultset here, so we use first()
+
+        $mastodonUrlCount = $mastodonUrls ? $mastodonUrls->urls : 0;
+        $blueskyUrlCount = $blueskyUrls ? $blueskyUrls->urls : 0;
+
+
+        $currentTimestamp = time();
+        $timeToFetchAfter = $currentTimestamp - $this->ttl * 60;
+        $query = 'SELECT COUNT(post_url) as urls FROM external_post_urls WHERE active = TRUE AND last_fetched < ' . $timeToFetchAfter . ';';
+        $dueUrls = $this->indieDb->query($query);
+
+        $dueUrls = $postUrls->first();
+        $dueUrlsCount = $dueUrls ? $dueUrls->urls : 0;
+
+        return [
+            'total' => $mastodonUrlCount + $blueskyUrlCount,
+            'mastodon' => $mastodonUrlCount,
+            'bluesky' => $blueskyUrlCount,
+            'due' => $dueUrlsCount,
+        ];
     }
 
     public function parseMastodonResponses(string $postUrls)
@@ -92,11 +144,17 @@ class ResponseCollector
             'SELECT GROUP_CONCAT(id, ",") AS ids, post_type FROM known_responses WHERE post_url IN ("' . implode('", "', $postUrls) . '") GROUP BY post_type;'
         );
 
-        $this->fetchMastodonLikes($postUrls, $lastResponses);
-        $this->fetchMastodonReblogs($postUrls, $lastResponses);
-        $this->fetchMastodonReplies($postUrls, $lastResponses);
+        $count = 0;
+        $count += $this->fetchMastodonLikes($postUrls, $lastResponses);
+        $count += $this->fetchMastodonReblogs($postUrls, $lastResponses);
+        $count += $this->fetchMastodonReplies($postUrls, $lastResponses);
 
         $this->updateLastFetched($postUrls);
+
+        return [
+            'urls' => count($postUrls),
+            'responses' => $count
+        ];
     }
 
     public function parseBlueskyResponses(string $postUrls)
@@ -107,16 +165,23 @@ class ResponseCollector
             'SELECT GROUP_CONCAT(id, ",") AS ids, post_type FROM known_responses WHERE post_url IN ("' . implode('", "', $postUrls) . '") GROUP BY post_type;'
         );
 
-        $this->fetchBlueskyLikes($postUrls, $lastResponses);
-        $this->fetchBlueskyReposts($postUrls, $lastResponses);
-        $this->fetchBlueskyQuotes($postUrls, $lastResponses);
-        $this->fetchBlueskyReplies($postUrls, $lastResponses);
+        $count = 0;
+        $count += $this->fetchBlueskyLikes($postUrls, $lastResponses);
+        $count += $this->fetchBlueskyReposts($postUrls, $lastResponses);
+        $count += $this->fetchBlueskyQuotes($postUrls, $lastResponses);
+        $count += $this->fetchBlueskyReplies($postUrls, $lastResponses);
 
         $this->updateLastFetched($postUrls);
+
+        return [
+            'urls' => count($postUrls),
+            'responses' => $count
+        ];
     }
 
     public function fetchMastodonLikes(array $postUrls, $lastResponses)
     {
+        $count = 0;
         $knownIds = $this->getKnownIds($lastResponses, 'like-of');
 
         foreach ($postUrls as $postUrl) {
@@ -143,6 +208,7 @@ class ResponseCollector
                         authorAvatar: $fav['avatar_static'],
                         authorUrl: $fav['url']
                     );
+                    $count++;
                 } else {
                     break;
                 }
@@ -150,10 +216,13 @@ class ResponseCollector
 
             $this->updateKnownReponses($postUrl, $latestId, 'like-of');
         }
+
+        return $count;
     }
 
     public function fetchMastodonReblogs(array $postUrls, $lastResponses)
     {
+        $count = 0;
         $knownIds = $this->getKnownIds($lastResponses, 'repost-of');
 
         foreach ($postUrls as $postUrl) {
@@ -181,6 +250,7 @@ class ResponseCollector
                         authorAvatar: $repost['avatar_static'],
                         authorUrl: $repost['url']
                     );
+                    $count++;
                 } else {
                     break;
                 }
@@ -188,10 +258,13 @@ class ResponseCollector
 
             $this->updateKnownReponses($postUrl, $latestId, 'repost-of');
         }
+
+        return $count;
     }
 
     public function fetchMastodonReplies(array $postUrls, $lastResponses)
     {
+        $count = 0;
         $knownIds = $this->getKnownIds($lastResponses, 'in-reply-to');
 
         foreach ($postUrls as $postUrl) {
@@ -222,6 +295,7 @@ class ResponseCollector
                             authorAvatar: $reply['account']['avatar_static'],
                             authorUrl: $reply['account']['url']
                         );
+                        $count++;
                     }
                 } else {
                     break;
@@ -230,10 +304,13 @@ class ResponseCollector
 
             $this->updateKnownReponses($postUrl, $latestId, 'in-reply-to');
         }
+
+        return $count;
     }
 
     public function fetchBlueskyLikes(array $postUrls, $lastResponses)
     {
+        $count = 0;
         $knownIds = $this->getKnownIds($lastResponses, 'like-of');
 
         foreach ($postUrls as $postUrl) {
@@ -264,6 +341,7 @@ class ResponseCollector
                         authorAvatar: $avatar,
                         authorUrl: 'https://bsky.app/profile/' . $like->actor->handle
                     );
+                    $count++;
                 } else {
                     break;
                 }
@@ -271,10 +349,12 @@ class ResponseCollector
 
             $this->updateKnownReponses($postUrl, $latestId, 'like-of');
         }
+        return $count;
     }
 
     public function fetchBlueskyReposts(array $postUrls, $lastResponses)
     {
+        $count = 0;
         $knownIds = $this->getKnownIds($lastResponses, 'repost-of');
 
         foreach ($postUrls as $postUrl) {
@@ -303,6 +383,7 @@ class ResponseCollector
                         authorAvatar: $avatar,
                         authorUrl: 'https://bsky.app/profile/' . $repost->handle
                     );
+                    $count++;
                 } else {
                     break;
                 }
@@ -310,10 +391,13 @@ class ResponseCollector
 
             $this->updateKnownReponses($postUrl, $latestId, 'repost-of');
         }
+
+        return $count;
     }
 
     public function fetchBlueskyQuotes(array $postUrls, $lastResponses)
     {
+        $count = 0;
         $knownIds = $this->getKnownIds($lastResponses, 'mention-of');
 
         foreach ($postUrls as $postUrl) {
@@ -343,6 +427,8 @@ class ResponseCollector
                         authorAvatar: $avatar,
                         authorUrl: 'https://bsky.app/profile/' . $quote->author->handle
                     );
+
+                    $count++;
                 } else {
                     break;
                 }
@@ -350,10 +436,13 @@ class ResponseCollector
 
             $this->updateKnownReponses($postUrl, $latestId, 'mention-of');
         }
+
+        $count = 0;
     }
 
     public function fetchBlueskyReplies(array $postUrls, $lastResponses)
     {
+        $count = 0;
         $knownIds = $this->getKnownIds($lastResponses, 'in-reply-to');
 
         foreach ($postUrls as $postUrl) {
@@ -383,6 +472,8 @@ class ResponseCollector
                         authorAvatar: $avatar,
                         authorUrl: 'https://bsky.app/profile/' . $reply->post->author->handle
                     );
+
+                    $count++;
                 } else {
                     break;
                 }
@@ -390,6 +481,8 @@ class ResponseCollector
 
             $this->updateKnownReponses($postUrl, $latestId, 'in-reply-to');
         }
+
+        return $count;
     }
 
 

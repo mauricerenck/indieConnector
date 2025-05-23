@@ -6,7 +6,7 @@
                 tab="webmentions"
                 :tabs="[
                     { name: 'webmentions', label: 'Webmentions', link: '/webmentions' },
-                    { name: 'queue', label: 'Queue', link: '/webmentions/queue', badge: itemsInQueue },
+                    { name: 'queue', label: 'Queues', link: '/webmentions/queue', badge: itemsInQueue },
                 ]"
                 theme="warning"
             />

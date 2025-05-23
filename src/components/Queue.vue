@@ -6,7 +6,7 @@
                 tab="queue"
                 :tabs="[
                     { name: 'webmentions', label: 'Webmentions', link: '/webmentions' },
-                    { name: 'queue', label: 'Queue', link: '/webmentions/queue', badge: itemsInQueue },
+                    { name: 'queue', label: 'Queues', link: '/webmentions/queue', badge: itemsInQueue },
                 ]"
                 theme="warning"
             />
@@ -18,6 +18,14 @@
             />
 
             <QueueList :queuedItems="queuedItems" />
+
+            <k-info-field
+                v-if="responses.enabled"
+                label="Responses enabled"
+                text="Responses are enabled. Configure them in your config.php"
+            />
+
+            <ResponseList :responses="responses" />
         </div>
     </k-panel-inside>
 </template>
@@ -28,6 +36,7 @@ export default {
         disabled: Boolean,
         queuedItems: Object,
         itemsInQueue: Number,
+        responses: Object,
     },
 
     methods: {},
