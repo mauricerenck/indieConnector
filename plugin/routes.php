@@ -198,7 +198,6 @@ return [
                 return new Response('Authentication failed', 'text/plain', 401);
             }
 
-
             $collector = new ResponseCollector();
 
             if (!$collector->isEnabled()) {

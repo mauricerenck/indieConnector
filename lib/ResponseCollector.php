@@ -69,12 +69,19 @@ class ResponseCollector
 
         $postUrls = $this->indieDb->query($query);
 
-        if (!$postUrls) {
+        if (!$postUrls || $postUrls->count() === 0) {
             return;
         }
 
-        $this->parseMastodonResponses($postUrls->filterBy('post_type', 'mastodon')->first()->post_urls); // we only get one resultset here, so we use first()
-        $this->parseBlueskyResponses($postUrls->filterBy('post_type', 'bluesky')->first()->post_urls); // we only get one resultset here, so we use first()
+        $mastodonPostUrls = $postUrls->filterBy('post_type', 'mastodon')->first(); // we only get one resultset here, so we use first()
+        if (!is_null($mastodonPostUrls)) {
+            $this->parseMastodonResponses($mastodonPostUrls->post_urls);
+        }
+
+        $blueskyPostUrls = $postUrls->filterBy('post_type', 'bluesky')->first(); // we only get one resultset here, so we use first()
+        if (!is_null($blueskyPostUrls)) {
+            $this->parseBlueskyResponses($blueskyPostUrls->post_urls); // we only get one resultset here, so we use first()
+        }
     }
 
     public function parseMastodonResponses(string $postUrls)
