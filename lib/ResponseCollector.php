@@ -135,7 +135,7 @@ class ResponseCollector
                         responseId: $fav['id'], // 'response_id' likes dont have ids use author id instead
                         responseType: 'like-of',
                         responseSource: 'mastodon',
-                        responseDate: $fav['created_at'],
+                        responseDate: date('Y-m-d H:i:s'),
                         responseUrl: $postUrl, // 'response_url' likes don't have a url, use post url instead
                         authorId: $fav['id'],
                         authorName: $fav['display_name'],
@@ -173,7 +173,7 @@ class ResponseCollector
                         responseId: $repost['id'], // 'response_id' likes dont have ids use author id instead
                         responseType: 'repost-of',
                         responseSource: 'mastodon',
-                        responseDate: $repost['created_at'],
+                        responseDate: date('Y-m-d H:i:s'),
                         responseUrl: $postUrl, // 'response_url' likes don't have a url, use post url instead
                         authorId: $repost['id'],
                         authorName: $repost['display_name'],
