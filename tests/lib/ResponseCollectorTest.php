@@ -109,7 +109,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->with(
                 'external_post_urls',
                 ['post_url', 'last_fetched'],
-                ['url', '1970-01-01 00:01:00'],
+                ['url', '1'],
                 $this->stringContains('WHERE id = "existing-id"')
             );
 
@@ -124,7 +124,7 @@ final class ResponseCollectorTest extends TestCaseMocked
     {
         // Mock the result of $this->indieDb->query($query)
         $mockResult = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['filterBy', 'first'])
+            ->addMethods(['filterBy', 'first', 'count'])
             ->getMock();
 
         // Simulate filterBy('post_type', 'mastodon')->first()->post_urls
