@@ -2,12 +2,53 @@
     <div>
         <k-headline tag="h2">Queue</k-headline>
 
-        <k-info-field v-if="processRunning" theme="warning" text="The queue is being processed. Do not leave this page!" class="bottom-margin" />
-
         <k-button-group class="bottom-margin">
-        <k-button variant="filled" icon="refresh" theme="aqua-icon" :click="this.processQueue">Process entire queue</k-button>
-        <k-button variant="filled" icon="trash" theme="red-icon" :disabled="!hasFailed" :click="() => {this.cleanQueue('failed')}">Delete failed</k-button>
-        <k-button variant="filled" icon="trash" theme="orange-icon" :disabled="!hasErrors" :click="() => {this.cleanQueue('error')}">Delete errors</k-button>
+            <k-button
+                variant="filled"
+                :icon="processRunning ? 'loader' : 'refresh'"
+                :theme="this.queueList.length === 0 ? 'gray' : 'blue'"
+                :disabled="this.queueList.length === 0"
+                :click="this.processQueue"
+                data-type="loader"
+                >Process queue</k-button
+            >
+            <k-button
+                variant="filled"
+                icon="trash"
+                :theme="!hasFailed ? 'gray' : 'red'"
+                :disabled="!hasFailed"
+                :click="
+                    () => {
+                        this.cleanQueue('failed')
+                    }
+                "
+                >Delete failed</k-button
+            >
+            <k-button
+                variant="filled"
+                icon="trash"
+                :theme="!hasErrors ? 'gray' : 'orange'"
+                :disabled="!hasErrors"
+                :click="
+                    () => {
+                        this.cleanQueue('error')
+                    }
+                "
+                >Delete errors</k-button
+            >
+            <k-button
+                variant="filled"
+                icon="trash"
+                :theme="queueList.length === 0 ? 'gray' : 'orange'"
+                :disabled="queueList.length === 0"
+                :click="
+                    () => {
+                        this.cleanQueue('queued')
+                    }
+                "
+            >
+                Empty queue
+            </k-button>
         </k-button-group>
 
         <k-table
@@ -54,7 +95,7 @@ export default {
                 total: 0,
             },
             processIndex: 0,
-            processRunning: false
+            processRunning: false,
         }
     },
     methods: {
@@ -64,8 +105,8 @@ export default {
         },
 
         processQueueItem(id) {
-            panel.api.post(`indieconnector/queue/processItem/${id}`).then((response) => {
-                const affectedItem = this.queuedItems.find((item) => item.id === id)
+            panel.api.post(`indieconnector/queue/processItem/${id}`).then(response => {
+                const affectedItem = this.queuedItems.find(item => item.id === id)
                 affectedItem.queueStatus = response.queueStatus
                 affectedItem.retries = response.retries
                 affectedItem.processLog = response.processLog
@@ -73,43 +114,53 @@ export default {
         },
 
         processQueue() {
-          const limit = 2
+            const limit = 2
 
-          if (this.processIndex >= this.queuedItems.length) {
-            this.processIndex = 0
-            this.processRunning = false
+            if (this.processIndex >= this.queuedItems.length) {
+                this.processIndex = 0
+                this.processRunning = false
 
-            setTimeout(() => {
-              panel.reload()
-            }, 500)
+                setTimeout(() => {
+                    panel.reload()
+                }, 500)
 
-            return
-          }
+                return
+            }
 
-          this.processRunning = true
+            this.processRunning = true
 
-          const itemsWithStatus = this.processIndex > 0 ? this.queuedItems.filter((item) => item.queueStatus !== 'failed' && item.queueStatus !== 'error' && item.queueStatus !== 'success') : this.queuedItems.filter((item) => item.queueStatus !== 'failed' && item.queueStatus !== 'success')
-          const processList = itemsWithStatus.slice(0, limit)
-          const processIds = processList.map((item) => item.id)
+            const itemsWithStatus =
+                this.processIndex > 0
+                    ? this.queuedItems.filter(
+                          item =>
+                              item.queueStatus !== 'failed' &&
+                              item.queueStatus !== 'error' &&
+                              item.queueStatus !== 'success'
+                      )
+                    : this.queuedItems.filter(item => item.queueStatus !== 'failed' && item.queueStatus !== 'success')
+            const processList = itemsWithStatus.slice(0, limit)
+            const processIds = processList.map(item => item.id)
 
-          processList.forEach((item) => {
-            item.queueStatus = 'running'
-          })
-
-          this.processIndex += limit
-
-          panel.api.post(`indieconnector/queue/process`, processIds).then((response) => {
-            response.forEach((responseItem) => {
-              const affectedItem = this.queuedItems.find((item) => item.id === responseItem.id)
-              affectedItem.queueStatus = responseItem.queueStatus
-              affectedItem.retries = responseItem.retries
-              affectedItem.processLog = responseItem.processLog
+            processList.forEach(item => {
+                item.queueStatus = 'running'
             })
-          }).then(() => {
-              this.processQueue()
-          })
-        },
 
+            this.processIndex += limit
+
+            panel.api
+                .post(`indieconnector/queue/process`, processIds)
+                .then(response => {
+                    response.forEach(responseItem => {
+                        const affectedItem = this.queuedItems.find(item => item.id === responseItem.id)
+                        affectedItem.queueStatus = responseItem.queueStatus
+                        affectedItem.retries = responseItem.retries
+                        affectedItem.processLog = responseItem.processLog
+                    })
+                })
+                .then(() => {
+                    this.processQueue()
+                })
+        },
 
         deleteQueueItem(id) {
             panel.dialog.open(`queue/delete/${id}`)
@@ -140,11 +191,11 @@ export default {
         },
 
         hasErrors() {
-            return this.queuedItems.filter((item) => item.queueStatus === 'error').length > 0
+            return this.queuedItems.filter(item => item.queueStatus === 'error').length > 0
         },
 
         hasFailed() {
-          return this.queuedItems.filter((item) => item.queueStatus === 'failed').length > 0
+            return this.queuedItems.filter(item => item.queueStatus === 'failed').length > 0
         },
 
         queueList() {
@@ -154,7 +205,7 @@ export default {
             this.queuedItems.forEach(queueEntry => {
                 const newQueueItem = {
                     id: queueEntry.id,
-                    source: `<a href="${queueEntry.sourceUrl}" target="_blank">${queueEntry.sourceUrl}</a>`,
+                    source: `<a href="${queueEntry.sourceUrl}?panelPreview=true" target="_blank">${queueEntry.sourceUrl}</a>`,
                     target: `<a href="${queueEntry.targetUrl}" target="_blank">${queueEntry.targetUrl}</a>`,
                     queueStatus: `<span class="status ${queueEntry.queueStatus}">${queueEntry.queueStatus}</span>`,
                     message: queueEntry.processLog,

@@ -31,7 +31,7 @@ use Kirby\Toolkit\Str;
             </time>
 
             <p class="h-card" style="margin-top: 50px; border-top: 1px solid #ccc; padding-top: 50px;">
-                <img class="u-photo" src="<?= $page->authorAvatar() ?>" alt="" />
+                <img class="u-photo" src="<?= $page->authorAvatar() ?>" alt="" style="max-width: 100%;" />
                 <a class="p-name u-url" href="<?= $site->authorUrl() ?>"><?= $page->authorName() ?></a>
             </p>
         </article>

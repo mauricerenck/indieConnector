@@ -20,7 +20,7 @@ final class ResponseCollectorTest extends TestCaseMocked
         $this->blueskyMock = $this->createMock(\mauricerenck\IndieConnector\BlueskyReceiver::class);
 
         $this->collector = $this->getMockBuilder(ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock, $this->blueskyMock])
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock])
             ->onlyMethods(['isEnabled'])
             ->getMock();
     }
@@ -358,7 +358,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn([
                 [
                     'id' => 'like1',
-                    'created_at' => '2024-01-01T00:00:00Z',
+                    'created_at' => '2025-05-24 13:29:11',
                     'display_name' => 'Alice',
                     'username' => 'alice',
                     'avatar_static' => 'avatar.png',
@@ -369,8 +369,13 @@ final class ResponseCollectorTest extends TestCaseMocked
         // Patch MastodonReceiver instantiation
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
             ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses', 'currentDateTime'])
             ->getMock();
+
+
+        $collector->expects($this->once())
+            ->method('currentDateTime')
+            ->willReturn('2025-01-01T00:00:00Z');
 
         $collector->expects($this->once())
             ->method('getKnownIds')
@@ -384,7 +389,7 @@ final class ResponseCollectorTest extends TestCaseMocked
                 responseId: 'like1',
                 responseType: 'like-of',
                 responseSource: 'mastodon',
-                responseDate: '2024-01-01T00:00:00Z',
+                responseDate: '2025-01-01T00:00:00Z',
                 authorId: 'like1',
                 authorName: 'Alice',
                 authorUsername: 'alice',
@@ -411,7 +416,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn([
                 [
                     'id' => 'like1',
-                    'created_at' => '2024-01-01T00:00:00Z',
+                    'created_at' => '2025-05-24 13:29:23',
                     'display_name' => 'Alice',
                     'username' => 'alice',
                     'avatar_static' => 'avatar.png',
@@ -463,8 +468,12 @@ final class ResponseCollectorTest extends TestCaseMocked
         // Patch MastodonReceiver instantiation
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
             ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses', 'currentDateTime'])
             ->getMock();
+
+        $collector->expects($this->once())
+            ->method('currentDateTime')
+            ->willReturn('2025-01-01T00:00:00Z');
 
         $collector->expects($this->once())
             ->method('getKnownIds')
@@ -478,7 +487,7 @@ final class ResponseCollectorTest extends TestCaseMocked
                 responseId: 'reblog1',
                 responseType: 'repost-of',
                 responseSource: 'mastodon',
-                responseDate: '2024-01-01T00:00:00Z',
+                responseDate: '2025-01-01T00:00:00Z',
                 authorId: 'reblog1',
                 authorName: 'Alice',
                 authorUsername: 'alice',
@@ -548,7 +557,7 @@ final class ResponseCollectorTest extends TestCaseMocked
                     'id' => 'reply1',
                     'in_reply_to_id' => "post1",
                     'visibility' => 'public',
-                    'created_at' => '2024-01-01T00:00:00Z',
+                    'created_at' => '2025-01-01T00:00:00Z',
                     'content' => 'hello world!',
                     'url' => 'https://example.com',
                     'account' => [
@@ -584,7 +593,7 @@ final class ResponseCollectorTest extends TestCaseMocked
                 responseId: 'reply1',
                 responseType: 'in-reply-to',
                 responseSource: 'mastodon',
-                responseDate: '2024-01-01T00:00:00Z',
+                responseDate: '2025-01-01T00:00:00Z',
                 authorId: 'user1',
                 authorName: 'Alice',
                 authorUsername: 'alice',
@@ -1206,7 +1215,7 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->with('queue_responses', ['*'], $this->stringContains('WHERE queueStatus = "pending" LIMIT 50'))
             ->willReturn($mockResponses);
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, 10, 60, 50, $this->indieDb);
         $result = $collector->processResponses();
         $this->assertSame($mockResponses, $result);
     }
@@ -1227,7 +1236,7 @@ final class ResponseCollectorTest extends TestCaseMocked
                 'WHERE id IN ("id1","id2")'
             );
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
+        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, 10, 60, 50, $this->indieDb);
         $collector->markProcessed($responseIds);
     }
 

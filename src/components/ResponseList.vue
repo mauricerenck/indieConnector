@@ -2,16 +2,15 @@
     <div>
         <k-headline tag="h2">Responses</k-headline>
 
-        <k-info-field
-            v-if="processRunning"
-            theme="warning"
-            text="The queue is being processed. Do not leave this page!"
-            class="bottom-margin"
-        />
-
         <k-button-group class="bottom-margin">
-            <k-button variant="filled" icon="refresh" theme="aqua-icon" :click="this.processQueue">
-                Process due URLs
+            <k-button
+                variant="filled"
+                :icon="this.button.icon"
+                theme="blue"
+                :click="this.processQueue"
+                data-type="loader"
+            >
+                {{ button.label }}
             </k-button>
         </k-button-group>
 
@@ -42,6 +41,7 @@
 export default {
     props: {
         responses: Object,
+        limit: Number,
     },
     data() {
         return {
@@ -49,6 +49,11 @@ export default {
             due: this.responses.urls.due ?? 0,
             processed: 0,
             newResponses: 0,
+            button: {
+                label: 'Check due URLs for responses',
+                icon: 'checklist',
+            },
+            iteration: 0,
         }
     },
     methods: {
@@ -59,7 +64,10 @@ export default {
 
         processQueue() {
             this.processRunning = true
+            this.button.label = `Fetching URLs...`
+            this.button.icon = 'loader'
 
+            this.iteration++
             panel.api
                 .post(`indieconnector/responses/fill-queue`, {})
                 .then(response => {
@@ -73,13 +81,25 @@ export default {
                         return Promise.resolve()
                     }
 
-                    this.processRunning = false
-                    this.processResponses()
+                    this.button.label = `Done`
+                    this.button.icon = 'check'
+
+                    if (this.newResponses > 0) {
+                        this.processRunning = false
+                        this.processResponses()
+                    } else {
+                        this.iteration = 0
+                        this.processRunning = false
+                        this.button.label = `Check due URLs for responses`
+                        this.button.icon = 'checklist'
+                    }
                 })
         },
 
         processResponses() {
             this.processRunning = true
+            this.button.label = `Processing ${this.newResponses} responses...`
+            this.button.icon = 'loader'
 
             panel.api
                 .post(`indieconnector/responses/process-queue`, {})
@@ -92,6 +112,8 @@ export default {
                         return Promise.resolve()
                     }
 
+                    this.button.label = `Check due URLs for responses`
+                    this.button.icon = 'checklist'
                     this.processRunning = false
                     panel.reload()
                 })

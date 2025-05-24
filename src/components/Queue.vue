@@ -11,21 +11,8 @@
                 theme="warning"
             />
 
-            <k-info-field
-                v-if="disabled"
-                label="Queue disabled"
-                text="The queue feature is disabled. Configure it in your config.php"
-            />
-
-            <QueueList :queuedItems="queuedItems" />
-
-            <k-info-field
-                v-if="responses.enabled"
-                label="Responses enabled"
-                text="Responses are enabled. Configure them in your config.php"
-            />
-
-            <ResponseList :responses="responses" />
+            <QueueList :queuedItems="queuedItems" v-if="!disabled" />
+            <ResponseList :responses="responses" :limit="responses.limit" v-if="responses.enabled" />
         </div>
     </k-panel-inside>
 </template>

@@ -112,6 +112,7 @@ return [
                                 'queuedItems' => $queuedItems->toArray(),
                                 'responses' => [
                                     'enabled' => $responseCollector->isEnabled(),
+                                    'limit' => option('mauricerenck.indieConnector.responses.limit', 10),
                                     'urls' => [
                                         'total' => $urlCounts['total'],
                                         'due' => $urlCounts['due'],

@@ -136,11 +136,13 @@ return [
         'pattern' => '(indieConnector|indieconnector)/response/(:any)',
         'method' => 'GET',
         'action' => function ($_ic, $responseId) {
+            $request = kirby()->request();
+            $data = $request->data();
+
             $collector = new ResponseCollector();
             $response = $collector->getSingleResponse($responseId);
 
             $targetPage = page('page://' . $response->page_uuid);
-
 
             return new Page([
                 'slug' => 'indie-post-response/' . $responseId,
@@ -153,10 +155,10 @@ return [
                     'responseUrl' => $response->response_url,
                     'responseDate' => $response->response_date,
                     'responseId' => $responseId,
-
                     'authorName' => $response->author_name(),
                     'authorUrl' => $response->author_url,
                     'authorAvatar' => $response->author_avatar(),
+                    'panelPreview' => isset($data['panelPreview']),
                 ]
             ]);
         },

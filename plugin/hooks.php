@@ -78,8 +78,11 @@ return [
             return;
         }
 
-        $responseCollector = new ResponseCollector();
-        $responseCollector->removeFromQueue($reponseId->value());
+        $isPanelPreview = $page->panelPreview();
+        if (is_null($isPanelPreview) || $isPanelPreview->isEmpty() || $isPanelPreview->isFalse()) {
+            $responseCollector = new ResponseCollector();
+            $responseCollector->removeFromQueue($reponseId->value());
+        }
     },
 
     'system.loadPlugins:after' => function () {

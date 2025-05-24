@@ -82,15 +82,19 @@ class ResponseCollector
         $mastodonPostUrls = $postUrls->filterBy('post_type', 'mastodon')->first(); // we only get one resultset here, so we use first()
         if (!is_null($mastodonPostUrls)) {
             $result = $this->parseMastodonResponses($mastodonPostUrls->post_urls);
-            $countResponses += $result['responses'];
-            $countPostUrls += $result['urls'];
+            if (!is_null($result)) {
+                $countResponses += $result['responses'];
+                $countPostUrls += $result['urls'];
+            }
         }
 
         $blueskyPostUrls = $postUrls->filterBy('post_type', 'bluesky')->first(); // we only get one resultset here, so we use first()
         if (!is_null($blueskyPostUrls)) {
             $result = $this->parseBlueskyResponses($blueskyPostUrls->post_urls); // we only get one resultset here, so we use first()
-            $countResponses += $result['responses'];
-            $countPostUrls += $result['urls'];
+            if (!is_null($result)) {
+                $countResponses += $result['responses'];
+                $countPostUrls += $result['urls'];
+            }
         }
 
         return [
@@ -125,7 +129,7 @@ class ResponseCollector
         $query = 'SELECT COUNT(post_url) as urls FROM external_post_urls WHERE active = TRUE AND last_fetched < ' . $timeToFetchAfter . ';';
         $dueUrls = $this->indieDb->query($query);
 
-        $dueUrls = $postUrls->first();
+        $dueUrls = $dueUrls->first();
         $dueUrlsCount = $dueUrls ? $dueUrls->urls : 0;
 
         return [
@@ -200,7 +204,7 @@ class ResponseCollector
                         responseId: $fav['id'], // 'response_id' likes dont have ids use author id instead
                         responseType: 'like-of',
                         responseSource: 'mastodon',
-                        responseDate: date('Y-m-d H:i:s'),
+                        responseDate: $this->currentDateTime(),
                         responseUrl: $postUrl, // 'response_url' likes don't have a url, use post url instead
                         authorId: $fav['id'],
                         authorName: $fav['display_name'],
@@ -242,7 +246,7 @@ class ResponseCollector
                         responseId: $repost['id'], // 'response_id' likes dont have ids use author id instead
                         responseType: 'repost-of',
                         responseSource: 'mastodon',
-                        responseDate: date('Y-m-d H:i:s'),
+                        responseDate: $this->currentDateTime(),
                         responseUrl: $postUrl, // 'response_url' likes don't have a url, use post url instead
                         authorId: $repost['id'],
                         authorName: $repost['display_name'],
@@ -295,6 +299,7 @@ class ResponseCollector
                             authorAvatar: $reply['account']['avatar_static'],
                             authorUrl: $reply['account']['url']
                         );
+
                         $count++;
                     }
                 } else {
@@ -437,7 +442,7 @@ class ResponseCollector
             $this->updateKnownReponses($postUrl, $latestId, 'mention-of');
         }
 
-        $count = 0;
+        return $count;
     }
 
     public function fetchBlueskyReplies(array $postUrls, $lastResponses)
@@ -573,5 +578,13 @@ class ResponseCollector
     public function isEnabled()
     {
         return $this->enabled;
+    }
+
+    /*
+    * this class helps with testing date stuff as we can hand in a fixed date
+    */
+    public function currentDateTime($dateTime = null)
+    {
+        return $dateTime ?? date('Y-m-d H:i:s');
     }
 }
