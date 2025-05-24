@@ -84,4 +84,20 @@ class ExternalPostSender extends Sender
     {
         return $this->updateExternalPosts($id, $url, $statusCode, $target, $page);
     }
+
+    public function getImages($page)
+    {
+        if ($this->imagefield) {
+            $imagefield = $this->imagefield;
+            $images = $page->$imagefield();
+
+            if ($images->isEmpty()) {
+                return false;
+            }
+
+            return $images;
+        }
+
+        return false;
+    }
 }

@@ -77,29 +77,42 @@ class BlueskySender extends ExternalPostSender
                 ],
             ];
 
-            if ($mediaAttachment = $this->getMediaAttachment($page)) {
-                $response = $bluesky->request(
-                    'POST',
-                    'com.atproto.repo.uploadBlob',
-                    [],
-                    $mediaAttachment['content'],
-                    $mediaAttachment['mime']
-                );
+            if ($images = $this->getImages($page)) {
 
-                $image = $response->blob;
+                $imageList = [];
+                foreach ($images->toFiles()->limit(4) as $image) {
+                    if (is_null($image)) {
+                        continue;
+                    }
+
+                    $mediaAttachment = $this->getMediaAttachment($image);
+
+                    if (!$mediaAttachment) {
+                        continue;
+                    }
+
+                    $response = $bluesky->request(
+                        'POST',
+                        'com.atproto.repo.uploadBlob',
+                        [],
+                        $mediaAttachment['content'],
+                        $mediaAttachment['mime']
+                    );
+
+                    $image = $response->blob;
+                    $imageList[] = [
+                        'alt' => $page->title()->value(),
+                        'image' => $image,
+                        'aspectRatio' => [
+                            'width'  => $mediaAttachment['width'],
+                            'height' => $mediaAttachment['height'],
+                        ],
+                    ];
+                }
 
                 $args['record']['embed'] = [
                     '$type' => 'app.bsky.embed.images',
-                    'images' => [
-                        [
-                            'alt' => $page->title()->value(),
-                            'image' => $image,
-                            'aspectRatio' => [
-                                'width'  => $mediaAttachment['width'],
-                                'height' => $mediaAttachment['height'],
-                            ],
-                        ],
-                    ],
+                    'images' => $imageList,
                 ];
             }
 
@@ -157,33 +170,23 @@ class BlueskySender extends ExternalPostSender
         return $links;
     }
 
-    public function getMediaAttachment($page)
+    public function getMediaAttachment($image)
     {
         try {
-            if ($this->imagefield) {
-                $imagefield = $this->imagefield;
-                $image = $page->$imagefield();
+            $imageMimeType = $image->mime();
+            $resizedImage = $image->resize(800); // image size must be very low, so we need to resize it
+            $resizedImage->base64(); // this forces kirby to generate the image
 
-
-                if (!is_null($image) && $image->isNotEmpty()) {
-                    $imageMimeType = $image->toFile()->mime();
-                    $resizedImage = $image->toFile()->resize(800); // image size must be very low, so we need to resize it
-                    $resizedImage->base64(); // this forces kirby to generate the image
-
-                    if (!F::exists($resizedImage->root())) {
-                        return false;
-                    }
-
-                    return [
-                        'content' => file_get_contents($resizedImage->root()),
-                        'mime' => $imageMimeType,
-                        'width' => $resizedImage->width(),
-                        'height' => $resizedImage->height()
-                    ];
-                }
+            if (!F::exists($resizedImage->root())) {
+                return false;
             }
 
-            return false;
+            return [
+                'content' => file_get_contents($resizedImage->root()),
+                'mime' => $imageMimeType,
+                'width' => $resizedImage->width(),
+                'height' => $resizedImage->height()
+            ];
         } catch (Exception $e) {
             return false;
         }
