@@ -18,3 +18,8 @@ fields:
         label: Bluesky URL
         type: url
         width: 1/3
+    icSkipUrl:
+        label: Skip posting URL
+        type: toggle
+        default: false
+        width: 1/3

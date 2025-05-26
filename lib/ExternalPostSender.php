@@ -11,6 +11,8 @@ class ExternalPostSender extends Sender
         public ?string $imagefield = null,
         public ?string $prefereLanguage = null,
         public ?bool $usePermalinkUrl = null,
+        public ?bool $skipUrl = null,
+        public ?array $skipUrlTemplates = null,
         private ?int $maxPostLength = null,
         public ?UrlChecks $urlChecks = null,
         public ?PageChecks $pageChecks = null
@@ -21,6 +23,8 @@ class ExternalPostSender extends Sender
         $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
         $this->prefereLanguage = $prefereLanguage ?? option('mauricerenck.indieConnector.post.prefereLanguage', false);
         $this->usePermalinkUrl = $usePermalinkUrl ?? option('mauricerenck.indieConnector.post.usePermalinkUrl', false);
+        $this->skipUrl = $skipUrl ?? option('mauricerenck.indieConnector.post.skipUrl', false);
+        $this->skipUrlTemplates = $skipUrlTemplates ?? option('mauricerenck.indieConnector.post.skipUrlTemplates', []);
         $this->maxPostLength = $maxPostLength ?? 300;
 
         $this->urlChecks = $urlChecks ?? new UrlChecks();
@@ -65,6 +69,19 @@ class ExternalPostSender extends Sender
 
     public function getPostUrl($page)
     {
+        if ($this->skipUrl) {
+            return '';
+        }
+
+        $normalizedIntendedTemplate = strtolower($page->intendedTemplate());
+        if (in_array($normalizedIntendedTemplate, $this->skipUrlTemplates)) {
+            return '';
+        }
+
+        if (!is_null($page->icSkipUrl()) && $page->icSkipUrl()->isTrue()) {
+            return '';
+        }
+
         $url = $page->url($this->prefereLanguage);
 
         if ($this->usePermalinkUrl) {
