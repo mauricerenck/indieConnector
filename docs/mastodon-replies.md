@@ -1,7 +1,8 @@
 # Replies via Mastodon
 
-If you want to enable people to reply to your posts via Mastodon, you currently have to use brid.gy to do so. I am currently working on a solution that will allow you to do this without brid.gy.
+If you want to enable people to reply to your posts via Mastodon, ~~you currently have to use brid.gy to do so. I am currently working on a solution that will allow you to do this without brid.gy.~~ [there is now a native solution for that](docs/collecting-responses.md).
 
+You can sill use brid.gy.
 Sign up for [brid.gy](https://brid.gy/) and sign in with with Mastodon. Choose cross posting. Follow all the steps. Brid.gy will then send you Webmentions whenever someone replies, likes or boosts your Mastodon post. This webmentions will then be collected by IndieConnector.
 
 ### Set the URL of your Mastodon post

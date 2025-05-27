@@ -1,6 +1,6 @@
 # Kirby IndieConnector
 
-#### Send and receive Webmentions, send Mastodon and Bluesky posts or act like an ActivityPub instance
+#### Send and receive Webmentions, send Mastodon and Bluesky posts (POSSE) and get back responses, or act like an ActivityPub instance
 
 ![GitHub release](https://img.shields.io/github/release/mauricerenck/indieConnector.svg?maxAge=1800) ![License](https://img.shields.io/github/license/mashape/apistatus.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-4%2B-black.svg)
 
@@ -10,8 +10,8 @@ IndieConnector is your interface to the IndieWeb. It'll help you to:
 
 -   Receive Webmentions
 -   Send Webmentions
--   Post to Mastodon
--   Post to Bluesky
+-   Post to Mastodon and Bluesky (POSSE)
+-   Collect responses from Mastodon and Bluesky
 -   Act like a ActivityPub Instance
 
 This plugins handles all the stuff around Webmentions and then normalizes the format and triggers a hook. Other plugins can then subscribe to this hook and use the data.
@@ -35,7 +35,8 @@ Use one of these three methods to install the plugin:
 -   [Sending Webmentions](docs/sending.md)
 -   [Activate the Panel view](docs/panel-view.md)
 -   [Post to Mastodon or Bluesky](docs/mastodon.md)
--   [Reply via Mastodon](docs/mastodon-replies.md)
+-   [Collect replies from Mastodon and Bluesky](docs/collecting-responses.md)
+-   [Get replies using brid.gy](docs/mastodon-replies.md)
 -   [Be a Mastodon Instance](docs/activitypub.md) (ActivityPub)
 -   [Subscribe to the hook](docs/hook.md)
 -   [Using webmention.io](docs/webmentionio.md)
