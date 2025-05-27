@@ -120,6 +120,12 @@ class Sender
             return $page->mastodonStatusUrl()->value();
         }
 
+        if ($target === 'bluesky' && $page->blueskyStatusUrl()->isNotEmpty()) {
+            $bluesky = new Bluesky();
+            $bskUrl = $page->blueskyStatusUrl()->value();
+            return (str_starts_with('at://', $bskUrl)) ? $bluesky->getDidFromUrl($bskUrl) : $bskUrl;
+        }
+
         $outbox = $this->readOutbox($page);
 
         $posts = array_filter($outbox['posts'], function ($post) use ($target) {
@@ -168,6 +174,21 @@ class Sender
         $this->writeOutbox($outbox, $page);
 
         return $outbox;
+    }
+
+    public function updateResponseCollectionUrls($posts, $page)
+    {
+        $responseCollector = new ResponseCollector();
+
+        foreach ($posts as $post) {
+            $status = $post['status'] === 200 ? 'success' : 'error';
+
+            if ($status === 'success') {
+                $responseCollector->registerPostUrl($page->uuid()->id(), $post['uri'], $post['target']);
+            }
+        }
+
+        return;
     }
 
     public function convertProcessedUrlsToV2($processedUrls)

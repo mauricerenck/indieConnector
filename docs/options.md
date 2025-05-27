@@ -63,6 +63,8 @@
 | ----------------------- | ----------------- | -------------------------------------------------------------------- |
 | `post.prefereLanguage`  | `-`               | Use another language than your default language to use the text from |
 | `post.usePermalinkUrl`  | `false`           | Use the permalink url instead of the page url                        |
+| `post.skipUrl`          | `false`           | NEVER add the url to the post                                        |
+| `post.skipUrlTemplates` | `[]`              | Do not add the url to the post when using the given templates        |
 | `post.textfields`       | `['description']` | Text source fields for posting elsewhere                             |
 | `post.imagefield`       | `''`              | Image source field for posting elsewhere, must be one image          |
 | `post.allowedTemplates` | `[]`              | Set templates allowed to send webmentions                            |
@@ -89,6 +91,15 @@
 | `bluesky.enabled`  | `false` | Enable posting to bluesky on publish |
 | `bluesky.handle`   | `‘‘`    | Your user handle                     |
 | `bluesky.password` | `‘‘`    | Your bluesky app password            |
+
+## Collecting responses ([details](responses.md))
+
+| Option                  | Default | Description                                                       |
+| ----------------------- | ------- | ----------------------------------------------------------------- |
+| `responses.enabled`     | `false` | Enable collecting responses                                       |
+| `responses.limit`       | `10`    | Number of posts to check for responses                            |
+| `responses.ttl`         | `60`    | Minutes after which a post url should be re-checked for responses |
+| `responses.queue.limit` | `50`    | Number of items to process per run                                |
 
 ## ActivityPub beta ([details](activitiypub.md))
 

@@ -77,29 +77,42 @@ class BlueskySender extends ExternalPostSender
                 ],
             ];
 
-            if ($mediaAttachment = $this->getMediaAttachment($page)) {
-                $response = $bluesky->request(
-                    'POST',
-                    'com.atproto.repo.uploadBlob',
-                    [],
-                    $mediaAttachment['content'],
-                    $mediaAttachment['mime']
-                );
+            if ($images = $this->getImages($page)) {
 
-                $image = $response->blob;
+                $imageList = [];
+                foreach ($images->toFiles()->limit(4) as $image) {
+                    if (is_null($image)) {
+                        continue;
+                    }
+
+                    $mediaAttachment = $this->getMediaAttachment($image);
+
+                    if (!$mediaAttachment) {
+                        continue;
+                    }
+
+                    $response = $bluesky->request(
+                        'POST',
+                        'com.atproto.repo.uploadBlob',
+                        [],
+                        $mediaAttachment['content'],
+                        $mediaAttachment['mime']
+                    );
+
+                    $image = $response->blob;
+                    $imageList[] = [
+                        'alt' => $page->title()->value(),
+                        'image' => $image,
+                        'aspectRatio' => [
+                            'width'  => $mediaAttachment['width'],
+                            'height' => $mediaAttachment['height'],
+                        ],
+                    ];
+                }
 
                 $args['record']['embed'] = [
                     '$type' => 'app.bsky.embed.images',
-                    'images' => [
-                        [
-                            'alt' => $page->title()->value(),
-                            'image' => $image,
-                            'aspectRatio' => [
-                                'width'  => $mediaAttachment['width'],
-                                'height' => $mediaAttachment['height'],
-                            ],
-                        ],
-                    ],
+                    'images' => $imageList,
                 ];
             }
 
@@ -156,35 +169,62 @@ class BlueskySender extends ExternalPostSender
 
         return $links;
     }
-    public function getMediaAttachment($page)
+
+    public function getMediaAttachment($image)
     {
         try {
-            if ($this->imagefield) {
-                $imagefield = $this->imagefield;
-                $image = $page->$imagefield();
+            $imageMimeType = $image->mime();
+            $resizedImage = $image->resize(800); // image size must be very low, so we need to resize it
+            $resizedImage->base64(); // this forces kirby to generate the image
 
-
-                if (!is_null($image) && $image->isNotEmpty()) {
-                    $imageMimeType = $image->toFile()->mime();
-                    $resizedImage = $image->toFile()->resize(800); // image size must be very low, so we need to resize it
-                    $resizedImage->base64(); // this forces kirby to generate the image
-
-                    if (!F::exists($resizedImage->root())) {
-                        return false;
-                    }
-
-                    return [
-                        'content' => file_get_contents($resizedImage->root()),
-                        'mime' => $imageMimeType,
-                        'width' => $resizedImage->width(),
-                        'height' => $resizedImage->height()
-                    ];
-                }
+            if (!F::exists($resizedImage->root())) {
+                return false;
             }
 
-            return false;
+            return [
+                'content' => file_get_contents($resizedImage->root()),
+                'mime' => $imageMimeType,
+                'width' => $resizedImage->width(),
+                'height' => $resizedImage->height()
+            ];
         } catch (Exception $e) {
             return false;
         }
+    }
+
+    public function getUrlFromDid(string $atUri): string
+    {
+        // Regular expression to match the DID and RKEY
+        $regex = '/^at:\/\/(did:plc:[a-zA-Z0-9]+)\/app\.bsky\.feed\.post\/([a-zA-Z0-9]+)$/';
+
+        // Check if the AT-URI matches the pattern
+        if (preg_match($regex, $atUri, $matches)) {
+            // Extract DID and RKEY from the matched groups
+            $did = $matches[1];  // Group 1: DID
+            $rkey = $matches[2]; // Group 2: RKEY
+
+            // Generate the Bluesky post URL
+            return "https://bsky.app/profile/$did/post/$rkey";
+        }
+
+        return $atUri;
+    }
+
+    public function getDidFromUrl(string $url): string
+    {
+        // Regular expression to match the Bluesky post URL
+        $regex = '/^https:\/\/bsky\.app\/profile\/(did:plc:[a-zA-Z0-9]+)\/post\/([a-zA-Z0-9]+)$/';
+
+        // Check if the Bluesky URL matches the pattern
+        if (preg_match($regex, $url, $matches)) {
+            // Extract DID and RKEY from the matched groups
+            $did = $matches[1];  // Group 1: DID
+            $rkey = $matches[2]; // Group 2: RKEY
+
+            // Generate the AT-URI
+            return "at://$did/app.bsky.feed.post/$rkey";
+        }
+
+        return $url; // Return the original URL if it doesn't match
     }
 }

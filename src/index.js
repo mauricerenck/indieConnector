@@ -5,6 +5,7 @@ import Sources from './components/Sources.vue'
 import Sent from './components/Sent.vue'
 import Queue from './components/Queue.vue'
 import QueueList from './components/QueueList.vue'
+import ResponseList from './components/ResponseList.vue'
 
 panel.plugin('mauricerenck/indieConnector', {
     components: {
@@ -15,6 +16,7 @@ panel.plugin('mauricerenck/indieConnector', {
         Sent: Sent,
         'k-webmentions-queue-view': Queue,
         QueueList: QueueList,
+        ResponseList: ResponseList,
     },
     icons: {
         'shape-icon-bookmark':

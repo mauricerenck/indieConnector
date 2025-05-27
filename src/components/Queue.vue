@@ -6,18 +6,13 @@
                 tab="queue"
                 :tabs="[
                     { name: 'webmentions', label: 'Webmentions', link: '/webmentions' },
-                    { name: 'queue', label: 'Queue', link: '/webmentions/queue', badge: itemsInQueue },
+                    { name: 'queue', label: 'Queues', link: '/webmentions/queue', badge: itemsInQueue },
                 ]"
                 theme="warning"
             />
 
-            <k-info-field
-                v-if="disabled"
-                label="Queue disabled"
-                text="The queue feature is disabled. Configure it in your config.php"
-            />
-
-            <QueueList :queuedItems="queuedItems" />
+            <QueueList :queuedItems="queuedItems" v-if="!disabled" />
+            <ResponseList :responses="responses" :limit="responses.limit" v-if="responses.enabled" />
         </div>
     </k-panel-inside>
 </template>
@@ -28,6 +23,7 @@ export default {
         disabled: Boolean,
         queuedItems: Object,
         itemsInQueue: Number,
+        responses: Object,
     },
 
     methods: {},

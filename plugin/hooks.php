@@ -2,10 +2,30 @@
 
 namespace mauricerenck\IndieConnector;
 
+use Kirby\Cms\Page;
+
 return [
-    'page.update:after' => function ($newPage) {
+    'page.update:after' => function ($newPage, $oldPage) {
+        $responseCollector = new ResponseCollector();
         $webmentions = new WebmentionSender();
+
         $webmentions->sendWebmentions($newPage);
+
+        if ($mastodonUrl = $newPage->mastodonStatusUrl()) {
+            if ($oldPage->mastodonStatusUrl() === $mastodonUrl || $mastodonUrl->isEmpty()) {
+                return;
+            }
+
+            $responseCollector->registerPostUrl($newPage->uuid()->id(), $mastodonUrl->value(), 'mastodon');
+        }
+
+        if ($blueskyUrl = $newPage->blueskyStatusUrl()) {
+            if ($oldPage->blueskyStatusUrl() === $blueskyUrl || $blueskyUrl->isEmpty()) {
+                return;
+            }
+
+            $responseCollector->registerPostUrl($newPage->uuid()->id(), $blueskyUrl->value(), 'bluesky');
+        }
     },
 
     'page.changeStatus:after' => function ($newPage, $oldPage) {
@@ -30,6 +50,7 @@ return [
             }
 
             $mastodonSender->updateExternalPosts($postResults, $newPage);
+            $mastodonSender->updateResponseCollectionUrls($postResults, $newPage);
         }
     },
 
@@ -48,6 +69,20 @@ return [
     'page.changeSlug:after' => function ($newPage) {
         $webmentions = new WebmentionSender();
         $webmentions->removePageFromDeleted($newPage);
+    },
+
+    'page.render:after' => function (string $contentType, array $data, string $html, Page $page) {
+        $reponseId = $page->responseId();
+
+        if (is_null($reponseId) || $reponseId->isEmpty()) {
+            return;
+        }
+
+        $isPanelPreview = $page->panelPreview();
+        if (is_null($isPanelPreview) || $isPanelPreview->isEmpty() || $isPanelPreview->isFalse()) {
+            $responseCollector = new ResponseCollector();
+            $responseCollector->removeFromQueue($reponseId->value());
+        }
     },
 
     'system.loadPlugins:after' => function () {

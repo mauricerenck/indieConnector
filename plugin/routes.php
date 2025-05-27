@@ -1,7 +1,9 @@
 <?php
+
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Http\Response;
+use Kirby\Cms\Page;
 
 return [
     [
@@ -128,6 +130,112 @@ return [
             $redirectUrl = 'https://fed.brid.gy/.well-known/' . $file . '?' . implode('&', $queryString);
 
             die(header('Location: ' . $redirectUrl));
+        },
+    ],
+    [
+        'pattern' => '(indieConnector|indieconnector)/response/(:any)',
+        'method' => 'GET',
+        'action' => function ($_ic, $responseId) {
+            $request = kirby()->request();
+            $data = $request->data();
+
+            $collector = new ResponseCollector();
+            $response = $collector->getSingleResponse($responseId);
+
+            $targetPage = page('page://' . $response->page_uuid);
+
+            return new Page([
+                'slug' => 'indie-post-response/' . $responseId,
+                'template' => 'indie-post-response',
+                'content' => [
+                    'title' => $response->response_type,
+                    'text'  => $response->response_text,
+                    'responseType' => $response->response_type,
+                    'targetPage' => $targetPage->url(),
+                    'responseUrl' => $response->response_url,
+                    'responseDate' => $response->response_date,
+                    'responseId' => $responseId,
+                    'authorName' => $response->author_name(),
+                    'authorUrl' => $response->author_url,
+                    'authorAvatar' => $response->author_avatar(),
+                    'panelPreview' => isset($data['panelPreview']),
+                ]
+            ]);
+        },
+    ],
+    [
+        'pattern' => '(indieConnector|indieconnector)/cron/queue-responses',
+        'method' => 'GET',
+        'action' => function () {
+            // get secret from query string
+            $request = kirby()->request();
+            $data = $request->data();
+
+            $receiver = new Receiver();
+            if (!$receiver->hasValidSecret($data)) {
+                return new Response('Authentication failed', 'text/plain', 401);
+            }
+
+            $collector = new ResponseCollector();
+
+            if (!$collector->isEnabled()) {
+                return new Response('Feature is disabled', 'text/plain', 403);
+            }
+
+            $collector->getDuePostUrls();
+
+            return new Response('OK', 204);
+        },
+    ],
+    [
+        'pattern' => '(indieConnector|indieconnector)/cron/fetch-responses',
+        'method' => 'GET',
+        'action' => function () {
+            // get secret from query string
+            $request = kirby()->request();
+            $data = $request->data();
+
+            $receiver = new Receiver();
+            if (!$receiver->hasValidSecret($data)) {
+                return new Response('Authentication failed', 'text/plain', 401);
+            }
+
+            $collector = new ResponseCollector();
+
+            if (!$collector->isEnabled()) {
+                return new Response('Feature is disabled', 'text/plain', 403);
+            }
+
+            $responses = $collector->processResponses();
+
+            if (is_null($responses)) {
+                return new Response('OK', 204);
+            }
+
+            if ($responses->count() === 0) {
+                return new Response('OK', 204);
+            }
+
+            $webmentions = new WebmentionSender();
+            $sourceBaseUrl = kirby()->url() . '/indieconnector/response/';
+
+            $processedIds = [];
+            foreach ($responses as $response) {
+
+                $targetPage = page('page://' . $response->page_uuid);
+                $sourceUrl = $sourceBaseUrl . $response->id;
+
+                if (is_null($targetPage)) {
+                    continue;
+                }
+
+                $webmentions->send($targetPage->url(), $sourceUrl);
+                $processedIds[] = $response->id;
+            }
+
+            $collector->markProcessed($processedIds);
+
+            return new Response('OK', 204);
         },
     ],
 ];

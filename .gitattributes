@@ -9,6 +9,9 @@
 /.gitattributes export-ignore
 /.gitignore export-ignore
 /.htaccess export-ignore
+/.nvmrc export-ignore
+/.prettierrc export-ignore
+/.releaserc export-ignore
 /index.site.php export-ignore
 /package.json export-ignore
 /package-lock.json export-ignore

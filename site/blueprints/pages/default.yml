@@ -22,7 +22,7 @@ sections:
                 label: Blocks
             mastodonimage:
                 type: files
-                max: 1
+                max: 4
                 label: Mastodon image
     mediathek:
         type: files

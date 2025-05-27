@@ -2,7 +2,7 @@
 
 return [
     'debug' => true,
-    'url' => 'http://indieconnector.ddev.site',
+    'url' => 'https://indieconnector.ddev.site',
     'api' => [
         'basicAuth' => true,
     ],
@@ -39,5 +39,12 @@ return [
         'imagefield' => 'mastodonimage',
         'allowedTemplates' => ['phpunit', 'default'],
         'blockedTemplates' => ['blocked-template'],
+    ],
+
+    'mauricerenck.indieConnector.responses' => [
+        'enabled' => true,
+        'limit' => 1,
+        'ttl' => 2,
+        'queue.limit' => 1,
     ],
 ];
