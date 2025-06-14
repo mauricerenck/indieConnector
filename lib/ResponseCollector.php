@@ -583,7 +583,7 @@ class ResponseCollector
 
     public function removeFromQueue($responseId)
     {
-        $this->indieDb->delete('queue_responses', 'WHERE id = "' . $responseId . '" AND queueStatus = "success"');
+        $this->indieDb->update('queue_responses', ['queueStatus'], ['redirecting'], 'WHERE id = "' . $responseId . '" AND queueStatus = "success"');
     }
 
     public function getSingleResponse($responseId)

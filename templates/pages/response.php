@@ -3,12 +3,12 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Toolkit\Str;
+
 ?>
 <html>
 
 <head>
     <meta charset="utf-8">
-    <meta redirect="<?= $page->commentLink() ?>" />
 </head>
 
 <body>
@@ -34,7 +34,7 @@ use Kirby\Toolkit\Str;
 
             <p class="h-card" style="margin-top: 50px; border-top: 1px solid #ccc; padding-top: 50px;">
                 <img class="u-photo" src="<?= $page->authorAvatar() ?>" alt="" style="max-width: 100%;" />
-                <a class="p-name u-url" href="<?= $site->authorUrl() ?>"><?= $page->authorName() ?></a>
+                <a class="p-name u-url" href="<?= $page->authorUrl() ?>"><?= $page->authorName() ?></a>
             </p>
         </article>
     </div>

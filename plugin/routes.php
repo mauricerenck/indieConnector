@@ -142,6 +142,10 @@ return [
             $collector = new ResponseCollector();
             $response = $collector->getSingleResponse($responseId);
 
+            if ($response->queueStatus === 'redirecting') {
+                return go($response->response_url);
+            }
+
             $targetPage = page('page://' . $response->page_uuid);
 
             return new Page([

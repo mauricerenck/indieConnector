@@ -25,6 +25,7 @@ class WebmentionStats
         string $type,
         ?string $image,
         ?string $author,
+        ?string $authorUrl,
         ?string $title,
         ?string $service
     ) {
@@ -40,6 +41,10 @@ class WebmentionStats
 
         if (is_null($author)) {
             $author = '';
+        }
+
+        if (is_null($authorUrl)) {
+            $authorUrl = '';
         }
 
         if (is_null($image)) {
@@ -67,9 +72,10 @@ class WebmentionStats
                     'mention_image',
                     'mention_service',
                     'author',
+                    'author_url',
                     'title',
                 ],
-                [$uniqueHash, $type, $mentionDate, $source, $target, $image, $service, $author, $title]
+                [$uniqueHash, $type, $mentionDate, $source, $target, $image, $service, $author, $authorUrl, $title]
             );
             return true;
         } catch (Exception $e) {
@@ -260,7 +266,7 @@ class WebmentionStats
 
             $result = $this->indieDb->select(
                 'webmentions',
-                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions, author, title'],
+                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'author_url'],
                 'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_source, mention_type;'
             );
 
@@ -277,6 +283,7 @@ class WebmentionStats
                         'host' => $host,
                         'title' => $webmention->title,
                         'author' => !empty($webmention->author) ? $webmention->author : $host,
+                        'author_url' => !empty($webmention->author_url) ? $webmention->author_url : $host,
                         'image' => $webmention->mention_image,
                         'likes' => 0,
                         'replies' => 0,
@@ -307,7 +314,7 @@ class WebmentionStats
 
             $result = $this->indieDb->select(
                 'webmentions',
-                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'mention_service'],
+                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'mention_service', 'author_url'],
                 'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_source, mention_type;'
             );
 
@@ -359,7 +366,7 @@ class WebmentionStats
 
             $result = $this->indieDb->select(
                 'webmentions',
-                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'mention_service'],
+                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'mention_service', 'author_url'],
                 'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY author, mention_source, mention_type;'
             );
 
@@ -388,6 +395,7 @@ class WebmentionStats
                         'sourceType' => $sourceType,
                         'source' => $webmention->mention_source,
                         'author' => $userHandle,
+                        'author_url' => $webmention->author_url,
                         'image' => $webmention->mention_image,
                         'host' => $host,
                         'likes' => 0,

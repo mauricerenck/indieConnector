@@ -149,7 +149,7 @@ export default {
             this.authors.forEach(author => {
                 const newAuthor = {
                     source: this.renderIcon(author.sourceType),
-                    author: `<a href="${author.source}" class="source-entry"><img src="${author.image}" width="40px" height="40px" />${author.author}</a>`,
+                    author: `<a href="${author.author_url}" class="source-entry"><img src="${author.image}" width="40px" height="40px" />${author.author}</a>`,
                     likes: this.printNumberValue(author.likes),
                     replies: this.printNumberValue(author.replies),
                     reposts: this.printNumberValue(author.reposts),
