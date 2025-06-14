@@ -87,6 +87,14 @@ class MastodonReceiver
         try {
             $url = ($cursor) ?  $cursor : $host . '/api/v1/statuses/' . $postId . '/' . $endpoint . '?limit=1';
             $response = Remote::get($url);
+
+            if ($response->code() !== 200) {
+                return [
+                    'data' => [],
+                    'next' => null
+                ];
+            }
+
             $json = $response->json();
             $headers = $response->headers();
 
@@ -140,5 +148,14 @@ class MastodonReceiver
         preg_match('/<([^>]+)>; rel="next"/', $link, $matches);
 
         return $matches[1] ?? null;
+    }
+
+    public function postExists(string $postUrl): bool
+    {
+        $response = Remote::get($postUrl);
+        if ($response->code() == 404) {
+            return false;
+        }
+        return true;
     }
 }

@@ -5,7 +5,7 @@ namespace mauricerenck\IndieConnector;
 use Exception;
 use cjrasmussen\BlueskyApi\BlueskyApi;
 
-class BlueskyReceiver
+class BlueskyReceiver extends Bluesky
 {
     private $bskClient = null;
 

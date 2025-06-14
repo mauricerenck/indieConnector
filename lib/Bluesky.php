@@ -2,6 +2,8 @@
 
 namespace mauricerenck\IndieConnector;
 
+use Kirby\Http\Remote;
+
 class Bluesky
 {
     public function getBlueskyUrl($page)
@@ -59,5 +61,54 @@ class Bluesky
         }
 
         return $url; // Return the original URL if it doesn't match
+    }
+
+    public function didToData(string $atUri): array | null
+    {
+        if (!str_starts_with($atUri, 'at://')) {
+            return null;
+        }
+
+        $withoutScheme = substr($atUri, 5); // remove 'at://'
+        $parts = explode('/', $withoutScheme, 3); // split into [did, collection, rkey]
+
+        if (count($parts) !== 3) {
+            return null;
+        }
+
+        return [
+            'did' => $parts[0],
+            'collection' => $parts[1],
+            'rkey' => $parts[2],
+        ];
+    }
+
+    public function postExists(string $did): bool
+    {
+        $didData = $this->didToData($did);
+        if (!$didData) {
+            return false;
+        }
+
+        try {
+            $urlCheckResponse = Remote::get('https://bsky.social/xrpc/com.atproto.repo.getRecord', [
+                'data' => [
+                    'repo' => $didData['did'],
+                    'collection' => $didData['collection'],
+                    'rkey' => $didData['rkey'],
+                ],
+
+            ]);
+
+            if ($urlCheckResponse->code() === 404 || $urlCheckResponse->code() === 400) {
+                $responseCollector = new ResponseCollector();
+                $responseCollector->disablePostUrls([$did]);
+                return false;
+            }
+
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 }

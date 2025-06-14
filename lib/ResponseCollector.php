@@ -148,10 +148,16 @@ class ResponseCollector
             'SELECT GROUP_CONCAT(id, ",") AS ids, post_type FROM known_responses WHERE post_url IN ("' . implode('", "', $postUrls) . '") GROUP BY post_type;'
         );
 
+        $cleanedPostUrls = $this->cleanPostUrls($postUrls, $this->mastodonReceiver);
+
+        if (count($cleanedPostUrls['invalid']) > 0) {
+            $this->disablePostUrls($cleanedPostUrls['invalid']);
+        }
+
         $count = 0;
-        $count += $this->fetchMastodonLikes($postUrls, $lastResponses);
-        $count += $this->fetchMastodonReblogs($postUrls, $lastResponses);
-        $count += $this->fetchMastodonReplies($postUrls, $lastResponses);
+        $count += $this->fetchMastodonLikes($cleanedPostUrls['valid'], $lastResponses);
+        $count += $this->fetchMastodonReblogs($cleanedPostUrls['valid'], $lastResponses);
+        $count += $this->fetchMastodonReplies($cleanedPostUrls['valid'], $lastResponses);
 
         $this->updateLastFetched($postUrls);
 
@@ -169,11 +175,17 @@ class ResponseCollector
             'SELECT GROUP_CONCAT(id, ",") AS ids, post_type FROM known_responses WHERE post_url IN ("' . implode('", "', $postUrls) . '") GROUP BY post_type;'
         );
 
+        $cleanedPostUrls = $this->cleanPostUrls($postUrls, $this->blueskyReceiver);
+
+        if (count($cleanedPostUrls['invalid']) > 0) {
+            $this->disablePostUrls($cleanedPostUrls['invalid']);
+        }
+
         $count = 0;
-        $count += $this->fetchBlueskyLikes($postUrls, $lastResponses);
-        $count += $this->fetchBlueskyReposts($postUrls, $lastResponses);
-        $count += $this->fetchBlueskyQuotes($postUrls, $lastResponses);
-        $count += $this->fetchBlueskyReplies($postUrls, $lastResponses);
+        $count += $this->fetchBlueskyLikes($cleanedPostUrls['valid'], $lastResponses);
+        $count += $this->fetchBlueskyReposts($cleanedPostUrls['valid'], $lastResponses);
+        $count += $this->fetchBlueskyQuotes($cleanedPostUrls['valid'], $lastResponses);
+        $count += $this->fetchBlueskyReplies($cleanedPostUrls['valid'], $lastResponses);
 
         $this->updateLastFetched($postUrls);
 
@@ -273,12 +285,12 @@ class ResponseCollector
 
         foreach ($postUrls as $postUrl) {
             $replies = $this->mastodonReceiver->getResponses($postUrl, 'replies', $knownIds);
-            list($_urlHost, $postId) = $this->mastodonReceiver->getPostUrlData($postUrl);
 
             if (count($replies) === 0) {
                 continue;
             }
 
+            list($_urlHost, $postId) = $this->mastodonReceiver->getPostUrlData($postUrl);
             $latestId = $replies[0]['id'];
 
             foreach ($replies as $reply) {
@@ -364,12 +376,12 @@ class ResponseCollector
 
         foreach ($postUrls as $postUrl) {
             $reposts = $this->blueskyReceiver->getResponses($postUrl, 'reposts', $knownIds);
-            $latestId = $reposts[0]->indieConnectorId;
 
             if (count($reposts) === 0) {
                 continue;
             }
 
+            $latestId = $reposts[0]->indieConnectorId;
             foreach ($reposts as $repost) {
                 $displayName = (!empty($repost->displayName)) ? $repost->displayName : $repost->handle;
                 $avatar = isset($repost->avatar) ? $repost->avatar : '';
@@ -407,12 +419,12 @@ class ResponseCollector
 
         foreach ($postUrls as $postUrl) {
             $quotes = $this->blueskyReceiver->getResponses($postUrl, 'quotes', $knownIds);
-            $latestId = $quotes[0]->indieConnectorId;
 
             if (count($quotes) === 0) {
                 continue;
             }
 
+            $latestId = $quotes[0]->indieConnectorId;
             foreach ($quotes as $quote) {
                 $displayName = (!empty($quote->author->displayName)) ? $quote->author->displayName : $quote->author->handle;
                 $avatar = isset($quote->author->avatar) ? $quote->author->avatar : '';
@@ -452,12 +464,12 @@ class ResponseCollector
 
         foreach ($postUrls as $postUrl) {
             $replies = $this->blueskyReceiver->getResponses($postUrl, 'replies', $knownIds);
-            $latestId = $replies[0]->indieConnectorId;
 
             if (count($replies) === 0) {
                 continue;
             }
 
+            $latestId = $replies[0]->indieConnectorId;
             foreach ($replies as $reply) {
                 $displayName = (!empty($reply->post->author->displayName)) ? $reply->post->author->displayName : $reply->post->author->handle;
                 $avatar = isset($reply->post->author->avatar) ? $reply->post->author->avatar : '';
@@ -553,6 +565,11 @@ class ResponseCollector
         $this->indieDb->update('external_post_urls', ['last_fetched'], [$currentTimestamp], 'WHERE post_url IN ("' . implode('","', $postUrls) . '")');
     }
 
+    public function disablePostUrls(array $postUrls)
+    {
+        $this->indieDb->update('external_post_urls', ['active'], [false], 'WHERE post_url IN ("' . implode('","', $postUrls) . '")');
+    }
+
     public function markProcessed($responseIds)
     {
         $this->indieDb->update('queue_responses', ['queueStatus'], ['success'], 'WHERE id IN ("' . implode('","', $responseIds) . '")');
@@ -586,5 +603,25 @@ class ResponseCollector
     public function currentDateTime($dateTime = null)
     {
         return $dateTime ?? date('Y-m-d H:i:s');
+    }
+
+    public function cleanPostUrls(array $postUrls, $receiver): array
+    {
+        $validUrls = [];
+        $invalidUrls = [];
+
+        foreach ($postUrls as $url) {
+            if (!$receiver->postExists($url)) {
+                $invalidUrls[] = $url;
+                continue;
+            }
+
+            $validUrls[] =  $url;
+        }
+
+        return [
+            'valid' => $validUrls,
+            'invalid' => $invalidUrls
+        ];
     }
 }
