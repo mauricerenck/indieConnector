@@ -15,8 +15,6 @@ class WebmentionReceiver extends Receiver
 
     public function processWebmention($sourceUrl, $targetUrl)
     {
-        $sourceUrl = str_replace('https://', 'http://', $sourceUrl); // FIXME
-
         if (is_null($this->sourceUrl)) {
             $this->sourceUrl = $sourceUrl;
         }
