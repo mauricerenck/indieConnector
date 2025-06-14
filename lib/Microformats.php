@@ -303,6 +303,31 @@ class Microformats
         return null;
     }
 
+    public function getService(array $microformats)
+    {
+        if (empty($microformats['items'])) {
+            return 'web';
+        }
+
+        foreach ($microformats['items'] as $item) {
+            if (in_array('h-entry', $item['type'])) {
+                if (isset($item['properties'])) {
+                    if (isset($item['properties']['category'])) {
+                        if (in_array('ic-src-mastodon', $item['properties']['category'], true)) {
+                            return 'mastodon';
+                        }
+
+                        if (in_array('ic-src-bluesky', $item['properties']['category'], true)) {
+                            return 'bluesky';
+                        }
+                    }
+                }
+            }
+        }
+
+        return 'web';
+    }
+
     public function getPublishDate(array $microformats)
     {
         if (empty($microformats['items'])) {

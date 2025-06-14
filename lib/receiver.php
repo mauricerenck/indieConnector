@@ -101,6 +101,7 @@ class Receiver
             'published' => $data['published'],
             'title' => $data['title'],
             'content' => $data['content'],
+            'service' => $data['service'],
             'author' => [
                 'type' => 'card',
                 'name' => $data['author']['name'],

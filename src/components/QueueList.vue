@@ -107,9 +107,9 @@ export default {
         processQueueItem(id) {
             panel.api.post(`indieconnector/queue/processItem/${id}`).then(response => {
                 const affectedItem = this.queuedItems.find(item => item.id === id)
-                affectedItem.queueStatus = response.queueStatus
+                affectedItem.queueStatus = response.queue_Status
                 affectedItem.retries = response.retries
-                affectedItem.processLog = response.processLog
+                affectedItem.processLog = response.process_log
             })
         },
 
@@ -137,7 +137,7 @@ export default {
                               item.queueStatus !== 'error' &&
                               item.queueStatus !== 'success'
                       )
-                    : this.queuedItems.filter(item => item.queueStatus !== 'failed' && item.queueStatus !== 'success')
+                    : this.queuedItems.filter(item => item.queue_status !== 'failed' && item.queue_status !== 'success')
             const processList = itemsWithStatus.slice(0, limit)
             const processIds = processList.map(item => item.id)
 
@@ -152,9 +152,9 @@ export default {
                 .then(response => {
                     response.forEach(responseItem => {
                         const affectedItem = this.queuedItems.find(item => item.id === responseItem.id)
-                        affectedItem.queueStatus = responseItem.queueStatus
+                        affectedItem.queueStatus = responseItem.queue_status
                         affectedItem.retries = responseItem.retries
-                        affectedItem.processLog = responseItem.processLog
+                        affectedItem.processLog = responseItem.process_log
                     })
                 })
                 .then(() => {
@@ -191,11 +191,11 @@ export default {
         },
 
         hasErrors() {
-            return this.queuedItems.filter(item => item.queueStatus === 'error').length > 0
+            return this.queuedItems.filter(item => item.queue_status === 'error').length > 0
         },
 
         hasFailed() {
-            return this.queuedItems.filter(item => item.queueStatus === 'failed').length > 0
+            return this.queuedItems.filter(item => item.queue_status === 'failed').length > 0
         },
 
         queueList() {
@@ -203,12 +203,13 @@ export default {
             this.pagination.total = 0
 
             this.queuedItems.forEach(queueEntry => {
+                const sourceLabel = queueEntry.source_service ? queueEntry.source_service.name : queueEntry.source_url
                 const newQueueItem = {
                     id: queueEntry.id,
-                    source: `<a href="${queueEntry.sourceUrl}?panelPreview=true" target="_blank">${queueEntry.sourceUrl}</a>`,
-                    target: `<a href="${queueEntry.targetUrl}" target="_blank">${queueEntry.targetUrl}</a>`,
-                    queueStatus: `<span class="status ${queueEntry.queueStatus}">${queueEntry.queueStatus}</span>`,
-                    message: queueEntry.processLog,
+                    source: `<a href="${queueEntry.source_url}?panelPreview=true" target="_blank">${sourceLabel}</a>`,
+                    target: `<a href="${queueEntry.target_url}" target="_blank">${queueEntry.target_url}</a>`,
+                    queueStatus: `<span class="status ${queueEntry.queue_status}">${queueEntry.queue_status}</span>`,
+                    message: queueEntry.process_log,
                     retries: queueEntry.retries ?? 0,
                 }
 

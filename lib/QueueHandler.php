@@ -35,7 +35,7 @@ class QueueHandler
 
             $this->indieDb->insert(
                 'queue',
-                ['id', 'sourceUrl', 'targetUrl', 'queueStatus'],
+                ['id', 'source_url', 'target_url', 'queue_status'],
                 [$uniqueHash, $sourceUrl, $targetUrl, 'queued']
             );
         } catch (Exception $e) {
@@ -63,11 +63,11 @@ class QueueHandler
     public function getQueuedItems(int $limit = 0, bool $includeFailed = false)
     {
         $limitQuery = $limit > 0 ? ' LIMIT ' . $limit : '';
-        $failedQuery = $includeFailed ? ' OR queueStatus = "failed"' : '';
+        $failedQuery = $includeFailed ? ' OR queue_status = "failed"' : '';
         return $this->indieDb->select(
             'queue',
-            ['id', 'sourceUrl', 'targetUrl', 'retries', 'queueStatus', 'processLog'],
-            'WHERE queueStatus = "queued" OR queueStatus = "error"' . $failedQuery . $limitQuery
+            ['id', 'source_url', 'target_url', 'retries', 'queue_status', 'process_log', 'source_service'],
+            'WHERE queue_status = "queued" OR queue_status = "error"' . $failedQuery . $limitQuery
         );
     }
 
@@ -75,12 +75,12 @@ class QueueHandler
     {
         $mention = $this->indieDb->select(
             'queue',
-            ['id', 'sourceUrl', 'targetUrl', 'retries', 'queueStatus'],
+            ['id', 'source_url', 'target_url', 'retries', 'queue_status'],
             'WHERE id = "' . $id . '"'
         )->first();
 
         if (empty($mention)) {
-            return ['id' => $id, 'queueStatus' => 'confusion', 'processLog' => 'Entry not found', 'retries' => 0];
+            return ['id' => $id, 'queue_status' => 'confusion', 'process_log' => 'Entry not found', 'retries' => 0];
         }
 
         return $this->processQueueItem($mention);
@@ -88,8 +88,8 @@ class QueueHandler
 
     public function processQueueItem($mention)
     {
-        $sourceUrl = $mention->sourceUrl();
-        $targetUrl = $mention->targetUrl();
+        $sourceUrl = $mention->source_url();
+        $targetUrl = $mention->target_url();
         $mentionId = $mention->id();
         $retries =  0;
 
@@ -100,12 +100,12 @@ class QueueHandler
         if ($retries >= $this->retries) {
             $this->indieDb->update(
                 'queue',
-                ['queueStatus', 'processLog'],
+                ['queue_status', 'process_log'],
                 ['failed', 'max retries reached'],
                 'WHERE id = "' . $mentionId . '"'
             );
 
-            return ['id' => $mentionId, 'queueStatus' => 'failed', 'processLog' => 'max retries reached', 'retries' => $retries];
+            return ['id' => $mentionId, 'queue_status' => 'failed', 'process_log' => 'max retries reached', 'retries' => $retries];
         }
 
         $result = $this->receiver->processWebmention($sourceUrl, $targetUrl);
@@ -113,20 +113,20 @@ class QueueHandler
         switch ($result['status']) {
             case 'success':
                 $this->indieDb->delete('queue', 'WHERE id = "' . $mentionId . '"');
-                return ['id' => $mentionId, 'queueStatus' => 'success', 'processLog' => 'done', 'retries' => $retries];
+                return ['id' => $mentionId, 'queue_status' => 'success', 'process_log' => 'done', 'retries' => $retries];
 
             case 'error':
                 $this->indieDb->update(
                     'queue',
-                    ['queueStatus', 'processLog', 'retries'],
+                    ['queue_status', 'process_log', 'retries'],
                     ['error', $result['message'], $retries + 1],
                     'WHERE id = "' . $mentionId . '"'
                 );
 
-                return ['id' => $mentionId, 'queueStatus' => 'error', 'processLog' => $result['message'], 'retries' => $retries + 1];
+                return ['id' => $mentionId, 'queue_status' => 'error', 'process_log' => $result['message'], 'retries' => $retries + 1];
         }
 
-        return ['id' => $mentionId, 'queueStatus' => $result['status'], 'processLog' => $result['message'], 'retries' => $retries + 1];
+        return ['id' => $mentionId, 'queue_status' => $result['status'], 'process_log' => $result['message'], 'retries' => $retries + 1];
     }
 
     public function deleteQueueItem(string $id)
@@ -141,6 +141,6 @@ class QueueHandler
             return [];
         }
 
-        return $this->indieDb->delete('queue', 'WHERE queueStatus = "' . $status . '"');
+        return $this->indieDb->delete('queue', 'WHERE queue_status = "' . $status . '"');
     }
 }

@@ -154,6 +154,7 @@ return [
                     'targetPage' => $targetPage->url(),
                     'responseUrl' => $response->response_url,
                     'responseDate' => $response->response_date,
+                    'responseSource' => 'ic-src-' . $response->response_source,
                     'responseId' => $responseId,
                     'authorName' => $response->author_name(),
                     'authorUrl' => $response->author_url,

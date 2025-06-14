@@ -125,7 +125,8 @@ return [
                 $webmention['type'],
                 $webmention['author']['avatar'],
                 $webmention['author']['name'],
-                $webmention['title']
+                $webmention['title'],
+                $webmention['service']
             );
         }
     },

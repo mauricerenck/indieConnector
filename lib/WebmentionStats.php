@@ -25,7 +25,8 @@ class WebmentionStats
         string $type,
         ?string $image,
         ?string $author,
-        ?string $title
+        ?string $title,
+        ?string $service
     ) {
         if ($this->doNotTrackHost($source)) {
             return false;
@@ -49,6 +50,10 @@ class WebmentionStats
             $title = '';
         }
 
+        if (is_null($service)) {
+            $service = 'web';
+        }
+
         try {
             $uniqueHash = md5($target . $source . $type . $mentionDate);
             $this->indieDb->insert(
@@ -60,10 +65,11 @@ class WebmentionStats
                     'mention_source',
                     'mention_target',
                     'mention_image',
+                    'mention_service',
                     'author',
                     'title',
                 ],
-                [$uniqueHash, $type, $mentionDate, $source, $target, $image, $author, $title]
+                [$uniqueHash, $type, $mentionDate, $source, $target, $image, $service, $author, $title]
             );
             return true;
         } catch (Exception $e) {
@@ -301,7 +307,7 @@ class WebmentionStats
 
             $result = $this->indieDb->select(
                 'webmentions',
-                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions, author, title'],
+                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'mention_service'],
                 'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_source, mention_type;'
             );
 
@@ -315,6 +321,10 @@ class WebmentionStats
                     $path = parse_url($webmention->mention_source, PHP_URL_PATH);
                     $pathParts = explode('/', $path);
                     $sourceType = $pathParts[2];
+                }
+
+                if (isset($webmention->mention_service) && !empty($webmention->mention_service)) {
+                    $sourceType = $webmention->mention_service;
                 }
 
                 if (!isset($sources[$sourceType])) {
@@ -349,7 +359,7 @@ class WebmentionStats
 
             $result = $this->indieDb->select(
                 'webmentions',
-                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions, author, title'],
+                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'mention_service'],
                 'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY author, mention_source, mention_type;'
             );
 
@@ -365,6 +375,10 @@ class WebmentionStats
                     $path = parse_url($webmention->mention_source, PHP_URL_PATH);
                     $pathParts = explode('/', $path);
                     $sourceType = $pathParts[2];
+                }
+
+                if (isset($webmention->mention_service) && !empty($webmention->mention_service)) {
+                    $sourceType = $webmention->mention_service;
                 }
 
                 // TODO hier nach author aufsplitten
