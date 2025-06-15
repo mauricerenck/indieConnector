@@ -1,3 +1,17 @@
+# [2.9.0](https://github.com/mauricerenck/indieConnector/compare/v2.8.0...v2.9.0) (2025-06-15)
+
+
+### Bug Fixes
+
+* author urls in panel and redirect for processed response urls ([8870111](https://github.com/mauricerenck/indieConnector/commit/887011148400dc0fba62f8189385eeed952f8d07))
+* move bluesky connect to prevent performance issues ([fdf67bb](https://github.com/mauricerenck/indieConnector/commit/fdf67bb90e3c69c1be1beb679db76d08991b999f))
+* response collector - handle deleted posts ([d9e5069](https://github.com/mauricerenck/indieConnector/commit/d9e5069b4978bc5230234dd3519c4b48c128483b)), closes [#27](https://github.com/mauricerenck/indieConnector/issues/27)
+
+
+### Features
+
+* detect service types like mastodon and bluesky [#25](https://github.com/mauricerenck/indieConnector/issues/25) ([efd1d08](https://github.com/mauricerenck/indieConnector/commit/efd1d0878a4587d581693a49733df9d700fe7a25))
+
 # [2.8.0](https://github.com/mauricerenck/indieConnector/compare/v2.7.3...v2.8.0) (2025-05-27)
 
 
