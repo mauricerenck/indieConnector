@@ -207,9 +207,14 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn($mockLastResponses);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb])
-            ->onlyMethods(['fetchMastodonLikes', 'fetchMastodonReblogs', 'fetchMastodonReplies'])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
+            ->onlyMethods(['fetchMastodonLikes', 'fetchMastodonReblogs', 'fetchMastodonReplies', 'cleanPostUrls'])
             ->getMock();
+
+        $collector->expects($this->once())
+            ->method('cleanPostUrls')
+            ->with(['url1', 'url2'], $this->mastodonMock)
+            ->willReturn(['valid' => ['url1', 'url2'], 'invalid' => []]);
 
         $collector->expects($this->once())
             ->method('fetchMastodonLikes')
@@ -238,29 +243,28 @@ final class ResponseCollectorTest extends TestCaseMocked
             'post_type' => 'mastodon'
         ];
 
-        $this->indieDb->expects($this->once())
-            ->method('query')
-            ->with($this->stringContains('IN ("")'))
-            ->willReturn($mockLastResponses);
+        $this->indieDb->expects($this->never())->method('query');
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
             ->setConstructorArgs([true, null, null, null, $this->indieDb])
-            ->onlyMethods(['fetchMastodonLikes', 'fetchMastodonReblogs', 'fetchMastodonReplies'])
+            ->onlyMethods(['fetchMastodonLikes', 'fetchMastodonReblogs', 'fetchMastodonReplies', 'cleanPostUrls'])
             ->getMock();
 
-        $collector->expects($this->once())
-            ->method('fetchMastodonLikes')
-            ->with([''], $mockLastResponses);
+        $collector->expects($this->never())
+            ->method('cleanPostUrls');
 
-        $collector->expects($this->once())
-            ->method('fetchMastodonReblogs')
-            ->with([''], $mockLastResponses);
+        $collector->expects($this->never())
+            ->method('fetchMastodonLikes');
 
-        $collector->expects($this->once())
-            ->method('fetchMastodonReplies')
-            ->with([''], $mockLastResponses);
+        $collector->expects($this->never())
+            ->method('fetchMastodonReblogs');
 
-        $collector->parseMastodonResponses('');
+        $collector->expects($this->never())
+            ->method('fetchMastodonReplies');
+
+        $result = $collector->parseMastodonResponses('');
+
+        $this->assertEquals(['urls' => 0, 'responses' => 0], $result);
     }
 
     /**
@@ -281,9 +285,14 @@ final class ResponseCollectorTest extends TestCaseMocked
             ->willReturn($mockLastResponses);
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb])
-            ->onlyMethods(['fetchBlueskyLikes', 'fetchBlueskyReposts', 'fetchBlueskyQuotes', 'fetchBlueskyReplies'])
+            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
+            ->onlyMethods(['fetchBlueskyLikes', 'fetchBlueskyReposts', 'fetchBlueskyQuotes', 'fetchBlueskyReplies', 'cleanPostUrls'])
             ->getMock();
+
+        $collector->expects($this->once())
+            ->method('cleanPostUrls')
+            ->with(['url1', 'url2'], $this->blueskyMock)
+            ->willReturn(['valid' => ['url1', 'url2'], 'invalid' => []]);
 
         $collector->expects($this->once())
             ->method('fetchBlueskyLikes')
@@ -310,39 +319,20 @@ final class ResponseCollectorTest extends TestCaseMocked
      */
     public function testParseBlueskyResponsesHandlesEmptyPostUrls()
     {
-        // Should still call query, but with empty postUrls
-        $mockLastResponses = (object)[
-            'ids' => '',
-            'post_type' => 'mastodon'
-        ];
 
-        $this->indieDb->expects($this->once())
-            ->method('query')
-            ->with($this->stringContains('IN ("")'))
-            ->willReturn($mockLastResponses);
+        $expected = [
+            'urls' => 0,
+            'responses' => 0
+        ];
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
             ->setConstructorArgs([true, null, null, null, $this->indieDb])
-            ->onlyMethods(['fetchBlueskyLikes', 'fetchBlueskyReposts', 'fetchBlueskyQuotes', 'fetchBlueskyReplies'])
+            ->onlyMethods(['fetchBlueskyLikes', 'fetchBlueskyReposts', 'fetchBlueskyQuotes', 'fetchBlueskyReplies', 'cleanPostUrls'])
             ->getMock();
 
-        $collector->expects($this->once())
-            ->method('fetchBlueskyLikes')
-            ->with([''], $mockLastResponses);
+        $result = $collector->parseBlueskyResponses('');
 
-        $collector->expects($this->once())
-            ->method('fetchBlueskyReposts')
-            ->with([''], $mockLastResponses);
-
-        $collector->expects($this->once())
-            ->method('fetchBlueskyQuotes')
-            ->with([''], $mockLastResponses);
-
-        $collector->expects($this->once())
-            ->method('fetchBlueskyReplies')
-            ->with([''], $mockLastResponses);
-
-        $collector->parseBlueskyResponses('');
+        $this->assertEquals($expected, $result);
     }
 
     /**
@@ -1273,8 +1263,8 @@ final class ResponseCollectorTest extends TestCaseMocked
     {
         $responseId = 'response-123';
         $this->indieDb->expects($this->once())
-            ->method('delete')
-            ->with('queue_responses', 'WHERE id = "response-123" AND queueStatus = "success"');
+            ->method('update')
+            ->with('queue_responses', ['queueStatus'], ['redirecting'], 'WHERE id = "response-123" AND queueStatus = "success"');
 
         $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
         $collector->removeFromQueue($responseId);

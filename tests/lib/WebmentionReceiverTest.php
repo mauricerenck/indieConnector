@@ -74,6 +74,7 @@ final class WebmentionReceiverTest extends TestCaseMocked
                 'avatar' => null,
                 'url' => 'https://maurice-renck.de',
             ],
+            'service' => 'web',
         ];
 
         $mf2 = [
@@ -190,6 +191,7 @@ final class WebmentionReceiverTest extends TestCaseMocked
                         'published' => ['2024-02-01 09:30:00'],
                         'in-reply-to' => ['https://unknown.url', 'https://indie-connector.tld'],
                         'like-of' => ['https://unknown.url', 'https://indie-connector.tld'],
+                        'category' => ['ic-src-mastodon'],
                         'content' => [
                             [
                                 'html' => 'This is a <strong>test</strong>.',
@@ -224,5 +226,6 @@ final class WebmentionReceiverTest extends TestCaseMocked
         $this->assertEquals('This is a summary', $webmentionData['content']);
         $this->assertEquals($expectedAuthor, $webmentionData['author']);
         $this->assertEquals('This is my blog post', $webmentionData['title']);
+        $this->assertEquals('mastodon', $webmentionData['service']);
     }
 }

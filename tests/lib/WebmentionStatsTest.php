@@ -2,16 +2,18 @@
 
 use mauricerenck\IndieConnector\WebmentionStats;
 use mauricerenck\IndieConnector\TestCaseMocked;
+use mauricerenck\IndieConnector\IndieConnectorDatabase;
 
 final class WebmentionStatsTest extends TestCaseMocked
 {
-    private $databaseMock;
+    private $indieDb;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->databaseMock = Mockery::mock(mauricerenck\IndieConnector\IndieConnectorDatabase::class);
+        // $this->databaseMock = Mockery::mock(mauricerenck\IndieConnector\IndieConnectorDatabase::class);
+        $this->indieDb = $this->createMock(IndieConnectorDatabase::class);
     }
     /**
      * @group webmentionStats
@@ -19,42 +21,27 @@ final class WebmentionStatsTest extends TestCaseMocked
      */
     public function testTrackMention()
     {
-        $queueHandler = new WebmentionStats(null, $this->databaseMock);
+        $statsHandler = $this->getMockBuilder(\mauricerenck\IndieConnector\WebmentionStats::class)
+            ->setConstructorArgs([null, $this->indieDb])
+            ->onlyMethods(['doNotTrackHost', 'webmentionIsUpdate'])
+            ->getMock();
 
-        $type = 'like-of';
-        $mentionDate = '0';
-        $source = 'source';
-        $target = 'target';
-        $image = 'image';
-        $author = 'author';
-        $title = 'title';
+        $statsHandler->expects($this->once())
+            ->method('doNotTrackHost')
+            ->willReturn(false);
 
-        $uniqueHash = md5($target . $source . $type . $mentionDate);
+        $statsHandler->expects($this->once())
+            ->method('webmentionIsUpdate')
+            ->willReturn(false);
 
-        $this->databaseMock->shouldReceive('getFormattedDate')->once()->andReturn('0');
-        $this->databaseMock->shouldReceive('connect')->once()->andReturn(true);
-        $this->databaseMock->shouldReceive('select')->once()->andReturn(true);
-        $this->databaseMock->shouldReceive('select')->once()->andReturn(true);
-        $this->databaseMock
-            ->shouldReceive('insert')
-            ->with(
-                'webmentions',
-                [
-                    'id',
-                    'mention_type',
-                    'mention_date',
-                    'mention_source',
-                    'mention_target',
-                    'mention_image',
-                    'author',
-                    'title',
-                ],
-                [$uniqueHash, $type, $mentionDate, $source, $target, $image, $author, $title]
-            )
-            ->once()
-            ->andReturn(true);
+        $this->indieDb->expects($this->once())->method('getFormattedDate')->willReturn('0');
 
-        $result = $queueHandler->trackMention('target', 'source', 'like-of', 'image', 'author', 'title');
+        $this->indieDb
+            ->expects($this->once())
+            ->method('insert')
+            ->willReturn(true);
+
+        $result = $statsHandler->trackMention('target', 'source', 'like-of', 'image', 'author', 'authorUrl', 'title', 'sourceService');
         $this->assertTrue($result);
     }
 

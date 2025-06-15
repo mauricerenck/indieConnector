@@ -26,9 +26,9 @@ final class QueueHandlerTest extends TestCaseMocked
     {
         $queueHandler = new QueueHandler(true, $this->databaseMock, $this->webmentionReceiverMock);
         $contentMock = new Content([
-            'sourceUrl' => 'https://source.tld',
-            'targetUrl' => 'https://target.tld',
-            'queueStatus' => 'queued',
+            'source_url' => 'https://source.tld',
+            'target_url' => 'https://target.tld',
+            'queue_status' => 'queued',
             'id' => '123',
             'retries' => 0,
         ]);
@@ -44,23 +44,23 @@ final class QueueHandlerTest extends TestCaseMocked
             ->shouldReceive('select')
             ->with(
                 'queue',
-                ['id', 'sourceUrl', 'targetUrl', 'retries', 'queueStatus', 'processLog'],
-                'WHERE queueStatus = "queued" OR queueStatus = "error"'
+                ['id', 'source_url', 'target_url', 'retries', 'queue_status', 'process_log', 'source_service'],
+                'WHERE queue_status = "queued" OR queue_status = "error"'
             )
             ->once()
             ->andReturn($dataCollection);
 
         $this->databaseMock
             ->shouldReceive('update')
-            ->with('queue', ['id', 'queueStatus', 'processLog'], ['failed', 'max retries reached'], 'WHERE id = "123"')
+            ->with('queue', ['id', 'queue_status', 'process_log'], ['failed', 'max retries reached'], 'WHERE id = "123"')
             ->once()
             ->andReturn($dataCollection);
         $this->databaseMock->shouldReceive('delete')->with('queue', 'WHERE id = "123"')->once()->andReturn(true);
 
         $expected = [[
             'id' => '123',
-            'queueStatus' => 'success',
-            'processLog' => 'done',
+            'queue_status' => 'success',
+            'process_log' => 'done',
             'retries' => 0,
         ]];
 
@@ -77,8 +77,8 @@ final class QueueHandlerTest extends TestCaseMocked
         $queueHandler = new QueueHandler(true, $this->databaseMock, $this->webmentionReceiverMock);
 
         $contentMock = new Content([
-            'sourceUrl' => 'https://source.tld',
-            'targetUrl' => 'https://target.tld',
+            'source_url' => 'https://source.tld',
+            'target_url' => 'https://target.tld',
             'type' => 'webmention',
             'status' => 'queued',
             'created' => date('Y-m-d H:i:s'),
@@ -97,8 +97,8 @@ final class QueueHandlerTest extends TestCaseMocked
             ->shouldReceive('select')
             ->with(
                 'queue',
-                ['id', 'sourceUrl', 'targetUrl', 'retries', 'queueStatus', 'processLog'],
-                'WHERE queueStatus = "queued" OR queueStatus = "error"'
+                ['id', 'source_url', 'target_url', 'retries', 'queue_status', 'process_log', 'source_service'],
+                'WHERE queue_status = "queued" OR queue_status = "error"'
             )
             ->once()
             ->andReturn($dataCollection);
@@ -107,7 +107,7 @@ final class QueueHandlerTest extends TestCaseMocked
             ->shouldReceive('update')
             ->with(
                 'queue',
-                ['queueStatus', 'processLog', 'retries'],
+                ['queue_status', 'process_log', 'retries'],
                 ['error', 'webmention processing error', 2],
                 'WHERE id = "123"'
             )
@@ -116,8 +116,8 @@ final class QueueHandlerTest extends TestCaseMocked
 
         $expected = [[
             'id' => '123',
-            'queueStatus' => 'error',
-            'processLog' => 'webmention processing error',
+            'queue_status' => 'error',
+            'process_log' => 'webmention processing error',
             'retries' => 2,
         ]];
 
@@ -139,8 +139,8 @@ final class QueueHandlerTest extends TestCaseMocked
             ->shouldReceive('select')
             ->with(
                 'queue',
-                ['id', 'sourceUrl', 'targetUrl', 'retries', 'queueStatus', 'processLog'],
-                'WHERE queueStatus = "queued" OR queueStatus = "error"'
+                ['id', 'source_url', 'target_url', 'retries', 'queue_status', 'process_log', 'source_service'],
+                'WHERE queue_status = "queued" OR queue_status = "error"'
             )
             ->once();
 

@@ -142,6 +142,13 @@ class ResponseCollector
 
     public function parseMastodonResponses(string $postUrls)
     {
+        if (empty($postUrls)) {
+            return [
+                'urls' => 0,
+                'responses' => 0
+            ];
+        }
+
         // get known responses
         $postUrls = explode(',', $postUrls);
         $lastResponses = $this->indieDb->query(
@@ -169,6 +176,14 @@ class ResponseCollector
 
     public function parseBlueskyResponses(string $postUrls)
     {
+
+        if (empty($postUrls)) {
+            return [
+                'urls' => 0,
+                'responses' => 0
+            ];
+        }
+
         // get known responses
         $postUrls = explode(',', $postUrls);
         $lastResponses = $this->indieDb->query(
