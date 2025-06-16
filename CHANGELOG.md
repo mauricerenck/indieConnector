@@ -1,3 +1,10 @@
+## [2.9.1](https://github.com/mauricerenck/indieConnector/compare/v2.9.0...v2.9.1) (2025-06-16)
+
+
+### Bug Fixes
+
+* removed missed debug code ([ff16b79](https://github.com/mauricerenck/indieConnector/commit/ff16b79537340a7f47a0967e531f162ecc51577b))
+
 # [2.9.0](https://github.com/mauricerenck/indieConnector/compare/v2.8.0...v2.9.0) (2025-06-15)
 
 
