@@ -132,9 +132,6 @@ class WebmentionReceiver extends Receiver
 
     public function triggerWebmentionHook($webmention, $pageUuid)
     {
-        $time = time();
-        file_put_contents('webmention_' . $time . '.log', print_r($webmention, true));
-
         kirby()->trigger('indieConnector.webmention.received', [
             'webmention' => $webmention,
             'targetPage' => $pageUuid,
