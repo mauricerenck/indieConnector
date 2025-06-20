@@ -1,3 +1,10 @@
+## [2.9.2](https://github.com/mauricerenck/indieConnector/compare/v2.9.1...v2.9.2) (2025-06-20)
+
+
+### Bug Fixes
+
+* handle empty string secrets ([2892f14](https://github.com/mauricerenck/indieConnector/commit/2892f14a3cd6f37a1479ae9e76c2efc89a2ffa8f))
+
 ## [2.9.1](https://github.com/mauricerenck/indieConnector/compare/v2.9.0...v2.9.1) (2025-06-16)
 
 
