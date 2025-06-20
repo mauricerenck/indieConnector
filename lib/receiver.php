@@ -52,7 +52,7 @@ class Receiver
 
     public function hasValidSecret($postBody)
     {
-        return isset($postBody['secret']) && $postBody['secret'] === option('mauricerenck.indieConnector.secret', '');
+        return isset($postBody['secret']) && $postBody['secret'] === option('mauricerenck.indieConnector.secret', '') && $postBody['secret'] !== '';
     }
 
     public function getPostDataUrls($postBody): array|bool
