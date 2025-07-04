@@ -17,9 +17,9 @@ Example for the image field:
 
 ```yaml
 postImage:
-  label: Post Image
-  type: files
-  multiple: false
+    label: Post Image
+    type: files
+    multiple: false
 ```
 
 ## Mastodon
@@ -61,7 +61,6 @@ If you want to use the permalink URL instead of the page URL, you can set the fo
 ```
 
 This url will never change, even if you change the slug of the page. This way you can ensure that the link in your Mastodon post will always work.
-
 
 ### Get the URL of the post
 
@@ -107,8 +106,31 @@ In addition you can also disable posting on a per page basis by setting the foll
 
 ```yaml
 fields:
-  indieConnector:
-    extends: indieconnector/fields/webmentions
+    indieConnector:
+        extends: indieconnector/fields/webmentions
 ```
 
 This will show a toggle in the panel that allows you to disable posting for this page.
+
+### Posting manually
+
+If you want to post manually, you can add the IndieConnector share button to your page blueprint:
+
+```yaml
+buttons:
+    icShare: true
+    preview: true
+    status: true
+```
+
+You have to add the regular buttons there too, if you want to keep them, for example:
+
+```yaml
+buttons:
+    icShare: true
+    preview: true
+    open: true
+    status: true
+```
+
+See https://getkirby.com/docs/reference/panel/blueprints/page#view-buttons for more information.

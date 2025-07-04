@@ -4,6 +4,7 @@ namespace mauricerenck\IndieConnector;
 
 use Exception;
 use Kirby\Filesystem\F;
+use Kirby\Toolkit\Str;
 use cjrasmussen\BlueskyApi\BlueskyApi;
 
 class BlueskySender extends ExternalPostSender
@@ -20,7 +21,7 @@ class BlueskySender extends ExternalPostSender
         $this->password = $password ?? option('mauricerenck.indieConnector.bluesky.password', false);
     }
 
-    public function sendPost($page)
+    public function sendPost($page, string | null $manualTextMessage = null)
     {
         if (!$this->enabled) {
             return false;
@@ -54,6 +55,7 @@ class BlueskySender extends ExternalPostSender
             $language = 'en';
 
             $message = $this->getTextFieldContent($page, $trimTextPosition);
+            $message = is_null($manualTextMessage) ? $this->getTextFieldContent($page, $trimTextPosition) : Str::short($manualTextMessage, $trimTextPosition);
             $message .= "\n" . $pageUrl;
 
             if ($defaultLanguage = kirby()->defaultLanguage()) {

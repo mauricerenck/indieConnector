@@ -2,6 +2,13 @@ options:
     changeSlug: false
     update: true
 
+buttons:
+    icShare: true
+    preview: true
+    open: true
+    status: true
+    settings: true
+
 sections:
     phpunit:
         type: fields

@@ -21,7 +21,7 @@ class ExternalPostSender extends Sender
 
         $this->textfields = $textfields ?? option('mauricerenck.indieConnector.post.textfields', ['description']);
         $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
-        $this->prefereLanguage = $prefereLanguage ?? option('mauricerenck.indieConnector.post.prefereLanguage', false);
+        $this->prefereLanguage = $prefereLanguage ?? option('mauricerenck.indieConnector.post.prefereLanguage', null);
         $this->usePermalinkUrl = $usePermalinkUrl ?? option('mauricerenck.indieConnector.post.usePermalinkUrl', false);
         $this->skipUrl = $skipUrl ?? option('mauricerenck.indieConnector.post.skipUrl', false);
         $this->skipUrlTemplates = $skipUrlTemplates ?? option('mauricerenck.indieConnector.post.skipUrlTemplates', []);
@@ -64,7 +64,8 @@ class ExternalPostSender extends Sender
             return Str::short($content[$field], $trimTextPosition);
         }
 
-        return Str::short($content['title'], $trimTextPosition);
+        $title = isset($content['title']) ? $content['title'] : '';
+        return Str::short($title, $trimTextPosition);
     }
 
     public function getPostUrl($page)
@@ -116,5 +117,94 @@ class ExternalPostSender extends Sender
         }
 
         return false;
+    }
+
+    public function getActiveServices($page)
+    {
+        $services = [];
+
+        if (option('mauricerenck.indieConnector.mastodon.enabled', false)) {
+            $postData = $this->getPostTargetUrlAndStatus('mastodon', $page);
+
+            $services[] = [
+                'name' => 'mastodon',
+                'label' => 'Mastodon',
+                'icon' => 'mastodon',
+                'url' => $postData['url'],
+                'status' => $postData['status']
+            ];
+        }
+
+        if (option('mauricerenck.indieConnector.bluesky.enabled', false)) {
+            $postData = $this->getPostTargetUrlAndStatus('bluesky', $page);
+
+            if (!is_null($postData['url'])) {
+                $bluesky = new Bluesky();
+                $url = $bluesky->getUrlFromDid($postData['url']);
+            } else {
+                $url = null;
+            }
+
+            $services[] = [
+                'name' => 'bluesky',
+                'label' => 'Bluesky',
+                'icon' => 'bluesky',
+                'url' => $url,
+                'status' => $postData['status']
+            ];
+        }
+
+        return $services;
+    }
+
+    public function getServicesDialogFields($page)
+    {
+        $fields = [];
+
+        $services = $this->getActiveServices($page);
+        $fields['text'] = [
+            'label' => 'Text',
+            'type' => 'textarea',
+            'buttons' => false,
+            'size' => 'small',
+            'maxlength' => 500,
+            'required' => true,
+        ];
+
+        $sentData = [];
+        foreach ($services as $service) {
+            $sentDataEntry = [
+                'text' => $service['label'],
+                'selecting' => true,
+                'selectable' => true,
+                'value' => $service['name'],
+                'link' => false,
+                'image' => [
+                    'icon' => $service['name'],
+                    'ratio' => '1/1',
+                    'back' => 'transparent'
+                ]
+            ];
+
+            if (!is_null($service['url']) && $service['status'] === 'success') {
+                $sentDataEntry['info'] = 'Published';
+                $sentDataEntry['selecting'] = false;
+                $sentDataEntry['selectable'] = false;
+                $sentDataEntry['buttons'] = [['icon' => 'open', 'link' => $service['url'], 'target' => '_blank']];
+            } else if (!is_null($service['url']) && $service['status'] === 'error') {
+                $sentDataEntry['info'] = 'Error';
+            }
+
+            $sentData[] = $sentDataEntry;
+        }
+
+        if (count($sentData) > 0) {
+            $fields['services'] = [
+                'type' => 'icPostStatus',
+                'serviceItems' => $sentData
+            ];
+        }
+
+        return $fields;
     }
 }

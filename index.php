@@ -7,10 +7,12 @@ use Kirby\Cms\App as Kirby;
 @require_once __DIR__ . '/dependencies/indieweb-comments.php';
 @include_once __DIR__ . '/vendor/autoload.php';
 
+
 Kirby::plugin('mauricerenck/indieConnector', [
     'api' => require_once __DIR__ . '/plugin/api.php',
     'hooks' => require_once __DIR__ . '/plugin/hooks.php',
     'areas' => require_once __DIR__ . '/plugin/areas.php',
+    'fields' => require_once __DIR__ . '/plugin/fields.php',
     'snippets' => [
         'webmention-endpoint' => __DIR__ . '/snippets/webmention-endpoint.php',
         'activitypub-wm' => __DIR__ . '/snippets/activitypub-webmention.php',

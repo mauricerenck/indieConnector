@@ -32,7 +32,7 @@
         "cjrasmussen/bluesky-api": "^2.0"
     },
     "require-dev": {
-        "getkirby/cms": "^4",
+        "getkirby/cms": "^5",
         "phpunit/phpunit": "^10",
         "mockery/mockery": "^1.5"
     },

@@ -32,8 +32,8 @@ return [
         $webmentions = new WebmentionSender();
         $webmentions->sendWebmentions($newPage);
 
-        if (!$newPage->isDraft() && $oldPage->isDraft()) {
 
+        if (option('mauricerenck.indieConnector.post.automatically', true) && !$newPage->isDraft() && $oldPage->isDraft()) {
             $postResults = [];
 
             $mastodonSender = new MastodonSender();

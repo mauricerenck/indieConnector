@@ -69,6 +69,7 @@
 | `post.imagefield`       | `''`              | Image source field for posting elsewhere, must be one image          |
 | `post.allowedTemplates` | `[]`              | Set templates allowed to send webmentions                            |
 | `post.blockedTemplates` | `[]`              | Block templates from sending webmentions                             |
+| `post.automatically`    | `true`            | Send posts automatically when a page is published                    |
 
 ### Mastodon ([details](mastodon.md))
 

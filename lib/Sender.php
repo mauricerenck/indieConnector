@@ -136,6 +136,34 @@ class Sender
         return $firstEntry['url'] ?? null;
     }
 
+    public function getPostTargetUrlAndStatus($target, $page)
+    {
+
+        if ($target === 'mastodon' && $page->mastodonStatusUrl()->isNotEmpty()) {
+            return ['url' => $page->mastodonStatusUrl()->value(), 'status' => 'success'];
+        }
+
+        if ($target === 'bluesky' && $page->blueskyStatusUrl()->isNotEmpty()) {
+            $bluesky = new Bluesky();
+            $bskUrl = $page->blueskyStatusUrl()->value();
+            $url = (str_starts_with('at://', $bskUrl)) ? $bluesky->getDidFromUrl($bskUrl) : $bskUrl;
+            return ['url' => $url, 'status' => 'success'];
+        }
+
+        $outbox = $this->readOutbox($page);
+
+        $posts = array_filter($outbox['posts'], function ($post) use ($target) {
+            return $post['target'] === $target;
+        });
+
+        if (!$posts) {
+            return ['url' => null, 'status' => null];
+        }
+
+        $firstEntry = reset($posts);
+        return ['url' => $firstEntry['url'], 'status' => $firstEntry['status']] ?? ['url' => null, 'status' => null];
+    }
+
     public function alreadySentToTarget($target, $page)
     {
         $post = $this->getPostTargetUrl($target, $page);

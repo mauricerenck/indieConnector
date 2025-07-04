@@ -5,6 +5,7 @@ namespace mauricerenck\IndieConnector;
 use Exception;
 use Kirby\Http\Remote;
 use Kirby\Filesystem\F;
+use Kirby\Toolkit\Str;
 
 class MastodonSender extends ExternalPostSender
 {
@@ -33,7 +34,7 @@ class MastodonSender extends ExternalPostSender
         }
     }
 
-    public function sendPost($page)
+    public function sendPost($page, string | null $manualTextMessage = null)
     {
         if (!$this->enabled) {
             return false;
@@ -69,8 +70,7 @@ class MastodonSender extends ExternalPostSender
         try {
             $pageUrl = $this->getPostUrl($page);
             $trimTextPosition = $this->calculatePostTextLength($pageUrl);
-
-            $message = $this->getTextFieldContent($page, $trimTextPosition);
+            $message = is_null($manualTextMessage) ? $this->getTextFieldContent($page, $trimTextPosition) : Str::short($manualTextMessage, $trimTextPosition);
             $message .= "\n" . $pageUrl;
 
             $headers = ['Authorization: Bearer ' . $this->token, 'Content-Type: application/json'];
@@ -86,6 +86,10 @@ class MastodonSender extends ExternalPostSender
 
             if ($this->prefereLanguage !== false) {
                 $requestBody['language'] = $this->prefereLanguage;
+            }
+
+            if (isset($requestBody['language']) && empty($requestBody['language'])) {
+                unset($requestBody['language']);
             }
 
             $mediaIds = [];
