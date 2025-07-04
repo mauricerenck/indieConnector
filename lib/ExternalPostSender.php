@@ -171,6 +171,12 @@ class ExternalPostSender extends Sender
             'required' => true,
         ];
 
+        $fields['skipUrl'] = [
+            'label' => 'Skip posting URL',
+            'type' => 'toggle',
+            'width' => '1/3'
+        ];
+
         $sentData = [];
         foreach ($services as $service) {
             $sentDataEntry = [

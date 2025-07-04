@@ -21,6 +21,7 @@ return [
                     'value' => [
                         'text' => $defaultText,
                         'pageUuid' => $page->uuid()->toString(),
+                        'skipUrl' => $page->icSkipUrl()->toBool(),
 
                     ],
                     'submitButton' => [
@@ -33,9 +34,14 @@ return [
         },
         'submit' => function () {
             $text = get('text');
+            $skipUrl = get('skipUrl');
             $services = get('services');
             $pageUuid = get('pageUuid');
             $page = page($pageUuid);
+
+            if (!$page) {
+                return true;
+            }
 
             if (!is_array($services)) {
                 return true;
@@ -44,6 +50,10 @@ return [
             try {
                 $postResults = [];
                 $sender = new Sender();
+
+                if ($page->isSkipUrl()->toBool() !== $skipUrl) {
+                    $page = $page->update(['icSkipUrl' => $skipUrl]);
+                }
 
                 if (in_array('mastodon', $services)) {
                     $mastodonSender = new MastodonSender();
