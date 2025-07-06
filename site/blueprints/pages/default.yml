@@ -4,6 +4,7 @@ options:
 
 buttons:
     icShare: true
+    icWebmentions: true
     preview: true
     open: true
     status: true

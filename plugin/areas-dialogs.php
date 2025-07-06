@@ -5,9 +5,13 @@ namespace mauricerenck\IndieConnector;
 use Exception;
 
 return [
-    'icShare' => [
-        'load' => function () {
-            $page = page(get('page'));
+    'icShare/(:any)' => [
+        'load' => function (string $id) {
+            $page = page('page://' . $id);
+
+            if (!$page) {
+                return true;
+            }
 
             $externalPostSender = new ExternalPostSender();
             $fields = $externalPostSender->getServicesDialogFields($page);
@@ -20,7 +24,6 @@ return [
                     'fields' => $fields,
                     'value' => [
                         'text' => $defaultText,
-                        'pageUuid' => $page->uuid()->toString(),
                         'skipUrl' => $page->icSkipUrl()->toBool(),
 
                     ],
@@ -32,12 +35,12 @@ return [
                 ],
             ];
         },
-        'submit' => function () {
+        'submit' => function (string $id) {
             $text = get('text');
             $skipUrl = get('skipUrl');
             $services = get('services');
-            $pageUuid = get('pageUuid');
-            $page = page($pageUuid);
+
+            $page = page('page://' . $id);
 
             if (!$page) {
                 return true;
@@ -75,6 +78,38 @@ return [
 
                 $sender->updateExternalPosts($postResults, $page);
                 $sender->updateResponseCollectionUrls($postResults, $page);
+
+                return true;
+            } catch (\Exception $e) {
+                return throw new Exception('Failed to send post to Mastodon: ' . $e->getMessage());
+            }
+        },
+    ],
+    'icSendWebmentions/(:any)' => [
+        'load' => function () {
+            return [
+                'component' => 'k-text-dialog',
+                'props' => [
+                    'size' => 'small',
+                    'text' => 'Sends Webmentions to all URLs found on this page.',
+                    'submitButton' => [
+                        'icon' => 'live',
+                        'text' => 'Send',
+                        'theme' => 'green'
+                    ],
+                ],
+            ];
+        },
+        'submit' => function (string $id) {
+            $page = page('page://' . $id);
+
+            if (!$page) {
+                return true;
+            }
+
+            try {
+                $webmentions = new WebmentionSender();
+                $webmentions->sendWebmentions($page);
 
                 return true;
             } catch (\Exception $e) {
