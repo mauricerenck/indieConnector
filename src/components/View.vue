@@ -68,7 +68,7 @@ export default {
     }
 
     .muted {
-        color: var(--color-gray-600);
+        color: light-dark(var(--color-gray-600), var(--color-gray-700));
     }
 
     .shortened-text {
@@ -94,7 +94,7 @@ export default {
     }
 
     .group-label {
-        background-color: var(--color-blue-800);
+        background-color: light-dark(var(--color-blue-700), var(--color-blue-800));
         color: var(--color-white);
         padding: 2px 5px;
         border-radius: var(--rounded-md);

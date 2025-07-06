@@ -20,11 +20,15 @@
         >
             <template #header="{ columnIndex, label}">
                 <span :title="label">
-                    <k-icon v-if="columnIndex === 'status'" type="live" style="color: var(--color-purple-700);" />
+                    <k-icon
+                        v-if="columnIndex === 'status'"
+                        type="live"
+                        style="color: light-dark(var(--color-purple-700),var(--color-purple-300));"
+                    />
                     <k-icon
                         v-else-if="columnIndex === 'updates'"
                         type="refresh"
-                        style="color: var(--color-purple-700);"
+                        style="color: light-dark(var(--color-purple-700),var(--color-purple-300));"
                     />
                     <span v-else>{{ label }}</span>
                 </span>
@@ -77,8 +81,8 @@ export default {
                         url: entry.url,
                         status:
                             entry.status === 'success'
-                                ? '<svg aria-hidden="true" data-type="check" class="k-icon" style="color: var(--color-green-700);"><use xlink:href="#icon-check"></use></svg>'
-                                : '<svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: var(--color-red-700);"><use xlink:href="#icon-cancel"></use></svg>',
+                                ? '<svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="#icon-check"></use></svg>'
+                                : '<svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="#icon-cancel"></use></svg>',
                         updates: entry.updates,
                     }
                     data.push(newEntry)
@@ -95,7 +99,7 @@ export default {
 .k-webmentions-view {
     .target {
         margin-left: 20px;
-        color: var(--color-gray-700);
+        color: light-dark(var(--color-gray-700), var(--color-white));
     }
     .source {
         font-weight: bold;

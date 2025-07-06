@@ -16,22 +16,30 @@
         >
             <template #header="{ columnIndex, label}">
                 <div class="center-icon">
-                    <k-icon v-if="columnIndex === 'likes'" type="heart-filled" style="color: var(--color-red-700);" />
-                    <k-icon v-else-if="columnIndex === 'replies'" type="chat" style="color: var(--color-yellow-700);" />
+                    <k-icon
+                        v-if="columnIndex === 'likes'"
+                        type="heart-filled"
+                        style="color: light-dark(var(--color-red-700), var(--color-red-300));"
+                    />
+                    <k-icon
+                        v-else-if="columnIndex === 'replies'"
+                        type="chat"
+                        style="color: light-dark(var(--color-yellow-700), var(--color-yellow-300));"
+                    />
                     <k-icon
                         v-else-if="columnIndex === 'reposts'"
                         type="indie-repost"
-                        style="color: var(--color-green-700);"
+                        style="color: light-dark(var(--color-green-700), var(--color-green-300));"
                     />
                     <k-icon
                         v-else-if="columnIndex === 'mentions'"
                         type="indie-mention"
-                        style="color: var(--color-blue-700);"
+                        style="color: light-dark(var(--color-blue-700), var(--color-blue-300));"
                     />
                     <k-icon
                         v-else-if="columnIndex === 'bookmarks'"
                         type="bookmark"
-                        style="color: var(--color-purple-700);"
+                        style="color: light-dark(var(--color-purple-700), var(--color-purple-300));"
                     />
                     <span v-else>{{ label }}</span>
                 </div>

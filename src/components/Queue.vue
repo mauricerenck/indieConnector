@@ -40,7 +40,7 @@ export default {
     }
 
     .muted {
-        color: var(--color-gray-600);
+        color: light-dark(var(--color-gray-600), var(--color-gray-300));
     }
 
     h2 {
@@ -54,29 +54,29 @@ export default {
 
     .status {
         border: 1px solid var(--color-gray-400);
-        background-color: var(--color-gray-200);
+        background-color: light-dark(var(--color-gray-200), var(--color-gray-700));
 
         border-radius: var(--rounded-md);
         padding: var(--spacing-1) var(--spacing-2);
 
         &.error {
             border: 1px solid var(--color-red-400);
-            background-color: var(--color-red-200);
+            background-color: light-dark(var(--color-red-600), var(--color-red-300));
         }
 
         &.running {
             border: 1px solid var(--color-blue-400);
-            background-color: var(--color-blue-200);
+            background-color: light-dark(var(--color-blue-600), var(--color-blue-300));
         }
 
         &.failed {
             border: 1px solid var(--color-red-600);
-            background-color: var(--color-red-400);
+            background-color: light-dark(var(--color-red-600), var(--color-red-300));
         }
 
         &.success {
             border: 1px solid var(--color-green-400);
-            background-color: var(--color-green-200);
+            background-color: light-dark(var(--color-green-600), var(--color-green-300));
         }
     }
 }

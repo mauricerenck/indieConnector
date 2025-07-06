@@ -29,27 +29,27 @@
                         <k-icon
                             v-if="columnIndex === 'likes'"
                             type="heart-filled"
-                            style="color: var(--color-red-700);"
+                            style="color: light-dark(var(--color-red-700),var(--color-red-300));"
                         />
                         <k-icon
                             v-else-if="columnIndex === 'replies'"
                             type="chat"
-                            style="color: var(--color-yellow-700);"
+                            style="color: light-dark(var(--color-yellow-700),var(--color-yellow-300));"
                         />
                         <k-icon
                             v-else-if="columnIndex === 'reposts'"
                             type="indie-repost"
-                            style="color: var(--color-green-700);"
+                            style="color: light-dark(var(--color-green-700),var(--color-green-300));"
                         />
                         <k-icon
                             v-else-if="columnIndex === 'mentions'"
                             type="indie-mention"
-                            style="color: var(--color-blue-700);"
+                            style="color: light-dark(var(--color-blue-700),var(--color-blue-300));"
                         />
                         <k-icon
                             v-else-if="columnIndex === 'bookmarks'"
                             type="bookmark"
-                            style="color: var(--color-purple-700);"
+                            style="color: light-dark(var(--color-purple-700),var(--color-purple-300));"
                         />
                         <span v-else>{{ label }}</span>
                     </span>
@@ -71,31 +71,35 @@
             >
                 <template #header="{ columnIndex, label}">
                     <span>
-                        <k-icon v-if="columnIndex === 'sum'" type="plus" style="color: var(--color-black);" />
+                        <k-icon
+                            v-if="columnIndex === 'sum'"
+                            type="plus"
+                            style="color: light-dark(var(--color-black),var(--color-white));"
+                        />
                         <k-icon
                             v-else-if="columnIndex === 'likes'"
                             type="heart-filled"
-                            style="color: var(--color-red-700);"
+                            style="color: light-dark(var(--color-red-700),var(--color-red-300));"
                         />
                         <k-icon
                             v-else-if="columnIndex === 'replies'"
                             type="chat"
-                            style="color: var(--color-yellow-700);"
+                            style="color: light-dark(var(--color-yellow-700),var(--color-yellow-300));"
                         />
                         <k-icon
                             v-else-if="columnIndex === 'reposts'"
                             type="indie-repost"
-                            style="color: var(--color-green-700);"
+                            style="color: light-dark(var(--color-green-700),var(--color-green-300));"
                         />
                         <k-icon
                             v-else-if="columnIndex === 'mentions'"
                             type="indie-mention"
-                            style="color: var(--color-blue-700);"
+                            style="color: light-dark(var(--color-blue-700),var(--color-blue-300));"
                         />
                         <k-icon
                             v-else-if="columnIndex === 'bookmarks'"
                             type="bookmark"
-                            style="color: var(--color-purple-700);"
+                            style="color: light-dark(var(--color-purple-700),var(--color-purple-300));"
                         />
                         <span v-else>{{ label }}</span>
                     </span>
@@ -172,14 +176,14 @@ export default {
         display: flex;
         gap: 10px;
         align-items: center;
-        color: var(--color-black);
+        color: light-dark(var(--color-black), var(--color-white));
         text-decoration: none;
     }
 
     .source-type-icon {
         width: 25px;
         height: 25px;
-        color: var(--color-gray-500);
+        color: light-dark(var(--color-gray-500), var(--color-gray-250));
     }
 }
 </style>
