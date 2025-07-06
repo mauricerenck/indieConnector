@@ -7,9 +7,11 @@ use Kirby\Cms\Page;
 return [
     'page.update:after' => function ($newPage, $oldPage) {
         $responseCollector = new ResponseCollector();
-        $webmentions = new WebmentionSender();
 
-        $webmentions->sendWebmentions($newPage);
+        if (option('mauricerenck.indieConnector.send.automatically', true)) {
+            $webmentions = new WebmentionSender();
+            $webmentions->sendWebmentions($newPage);
+        }
 
         if ($mastodonUrl = $newPage->mastodonStatusUrl()) {
             if ($oldPage->mastodonStatusUrl() === $mastodonUrl || $mastodonUrl->isEmpty()) {

@@ -13,6 +13,7 @@
 | Option                    | Default                                                        | Description                                                                                                        |
 | ------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `send.enabled`            | `true`                                                         | Enable sending webmentions                                                                                         |
+| `send.automatically`      | `true`                                                         | Enable sending webmentions automatically on page save                                                              |
 | `send.hook.enabled`       | `false`                                                        | Allow sending webmentions from Kirby hook triggered by other plugins                                               |
 | `send.maxRetries`         | `3`                                                            | How often should indieconnector try to send a mention if it failes                                                 |
 | `send.markDeleted`        | `false`                                                        | When you delete a page, mark it as gone, so webmention targets can get informed about that - **Needs a database!** |

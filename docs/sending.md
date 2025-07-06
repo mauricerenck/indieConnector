@@ -4,9 +4,9 @@ IndieConnector automatically sends webmentions from your site.
 
 A page has to fullfil some criteria before a webmention is sent. It has to be
 
-- No draft
-- On the allow list 
-- Not on the block list
+-   No draft
+-   On the allow list
+-   Not on the block list
 
 After saving a page fullfilling this criteria, IndieConnector looks for Urls in your content and tries to send a webmention to those urls. If it doesn't find a webmention endpoint on the target page, it tries to send a pingback.
 
@@ -19,6 +19,23 @@ If you don't want to send webmentions or pingbacks. You can disable this feature
 ```
 'mauricerenck.indieConnector.send.enabled' => false
 ```
+
+## Sending webmentions manually
+
+If you want to send webmentions manually, you can disable the automatic sending:
+
+```
+'mauricerenck.indieConnector.send.automatically' => false
+```
+
+Add the panel view button to your page blueprint:
+
+```yaml
+buttons:
+    icWebmentions: true
+```
+
+You can now send webmentions manually by clicking the button in the panel.
 
 ## Setting fields to look for urls
 
@@ -56,9 +73,9 @@ You can restrict sending webmention to certain templates, via allow or block lis
 IndieConnector first looks if the template is blocked and stops then.
 If it's not blocked, it'll go on and see if it's allowed.
 
-**Be aware!** Adding a template to the blocklist, will result in blocking only this template and sending webmention for *all* the other templates. Adding a template to the allowlist, will result in sending webmention *only* for the allowed templates.
+**Be aware!** Adding a template to the blocklist, will result in blocking only this template and sending webmention for _all_ the other templates. Adding a template to the allowlist, will result in sending webmention _only_ for the allowed templates.
 
-You can combine both options, but I recommend using the allow list *or* the block list.
+You can combine both options, but I recommend using the allow list _or_ the block list.
 
 **If you want to send webmentions from everywhere, just leave both options away, you don't have to set them at all.**
 
@@ -85,7 +102,7 @@ To enable this feature you have to set the following option:
 
 You also have to configure the path to the sqlite database, as described in the [database](database.md) documentation.
 
-**Be aware* that this will result in a database lookup for *every* page request. It would be good thing to inform receivers about deleted pages, but it may slow down your site. So use this feature with caution.
+\*_Be aware_ that this will result in a database lookup for _every_ page request. It would be good thing to inform receivers about deleted pages, but it may slow down your site. So use this feature with caution.
 
 ## Setting number of retries
 
