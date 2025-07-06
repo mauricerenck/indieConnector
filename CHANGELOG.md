@@ -1,3 +1,18 @@
+# [2.10.0](https://github.com/mauricerenck/indieConnector/compare/v2.9.2...v2.10.0) (2025-07-06)
+
+
+### Bug Fixes
+
+* allow duplicate ids from different mastodon instances ([14834d0](https://github.com/mauricerenck/indieConnector/commit/14834d0d027c2fa7abb94c0d8557ce322cfad8c8))
+* dark mode in panel view ([ec0f49c](https://github.com/mauricerenck/indieConnector/commit/ec0f49c26ea243d37b6191e074347698856dfd7b))
+
+
+### Features
+
+* disable automatic sending of webmentions ([62a0b7c](https://github.com/mauricerenck/indieConnector/commit/62a0b7c2aae4f311631f91bb154e9c471b0a1843))
+* post manually panel button ([eccf12a](https://github.com/mauricerenck/indieConnector/commit/eccf12a9c10a660e775a5b6a83a4da4495e71970))
+* trigger sending webmentions from view button ([2c07f00](https://github.com/mauricerenck/indieConnector/commit/2c07f00f1e56d4003706840daee2ab48d8e7b11d))
+
 ## [2.9.2](https://github.com/mauricerenck/indieConnector/compare/v2.9.1...v2.9.2) (2025-06-20)
 
 
