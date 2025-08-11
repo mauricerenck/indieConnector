@@ -1,3 +1,17 @@
+# [2.11.0](https://github.com/mauricerenck/indieConnector/compare/v2.10.0...v2.11.0) (2025-08-11)
+
+
+### Bug Fixes
+
+* bluesky detect hashtags  [#28](https://github.com/mauricerenck/indieConnector/issues/28) ([90625bb](https://github.com/mauricerenck/indieConnector/commit/90625bbe36a73390b01814d1c493303c7c940f3e))
+* mastodon text length option not considered ([c6d8e9f](https://github.com/mauricerenck/indieConnector/commit/c6d8e9fac26940965b4a1b534c697f6405f26192))
+
+
+### Features
+
+* include alt text when posting images ([63e6510](https://github.com/mauricerenck/indieConnector/commit/63e6510aae12626da3ecc56524295c5693b8adb7)), closes [#29](https://github.com/mauricerenck/indieConnector/issues/29)
+* use tags from tagfield when posting [#28](https://github.com/mauricerenck/indieConnector/issues/28) ([1187392](https://github.com/mauricerenck/indieConnector/commit/11873925443db03b37655caf62ba232e2e7307d6)), closes [#30](https://github.com/mauricerenck/indieConnector/issues/30)
+
 # [2.10.0](https://github.com/mauricerenck/indieConnector/compare/v2.9.2...v2.10.0) (2025-07-06)
 
 
