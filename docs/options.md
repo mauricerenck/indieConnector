@@ -83,7 +83,7 @@
 | `sendMastodon`          | `false`         | **DEPRECATED**                        |
 | `mastodon-bearer`       | `‘‘`            | **DEPRECATED**                        |
 | `mastodon-instance-url` | `‘‘`            | **DEPRECATED**                        |
-| `mastodon.text-length`  | `500`           | **DEPRECATED**                        |
+| `mastodon-text-length`  | `500`           | **DEPRECATED**                        |
 | `mastodon-text-field`   | `‘description‘` | **DEPRECATED**                        |
 
 ### Bluesky ([details](bluesky.md))

@@ -25,7 +25,7 @@ class ExternalPostSender extends Sender
         $this->usePermalinkUrl = $usePermalinkUrl ?? option('mauricerenck.indieConnector.post.usePermalinkUrl', false);
         $this->skipUrl = $skipUrl ?? option('mauricerenck.indieConnector.post.skipUrl', false);
         $this->skipUrlTemplates = $skipUrlTemplates ?? option('mauricerenck.indieConnector.post.skipUrlTemplates', []);
-        $this->maxPostLength = $maxPostLength ?? 300;
+        $this->maxPostLength = $maxPostLength ?? option('mauricerenck.indieConnector.mastodon.text-length', 300);
 
         $this->urlChecks = $urlChecks ?? new UrlChecks();
         $this->pageChecks = $pageChecks ?? new PageChecks();
