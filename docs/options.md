@@ -69,6 +69,7 @@
 | `post.textfields`       | `['description']` | Text source fields for posting elsewhere                                       |
 | `post.imagefield`       | `''`              | Image source field for posting elsewhere, must be one image                    |
 | `post.imagealtfield`    | `alt`             | Name of the field containing the alt text for the image in your file blueprint |
+| `post.tagsfield`        | `tags`            | A Kirby tag field to use for hashtags on mastodon and bluesky                  |
 | `post.allowedTemplates` | `[]`              | Set templates allowed to send webmentions                                      |
 | `post.blockedTemplates` | `[]`              | Block templates from sending webmentions                                       |
 | `post.automatically`    | `true`            | Send posts automatically when a page is published                              |

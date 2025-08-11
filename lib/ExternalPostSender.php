@@ -10,6 +10,7 @@ class ExternalPostSender extends Sender
         public ?array $textfields = null,
         public ?string $imagefield = null,
         public ?string $imageAltField = null,
+        public ?string $tagsField = null,
         public ?string $prefereLanguage = null,
         public ?bool $usePermalinkUrl = null,
         public ?bool $skipUrl = null,
@@ -23,6 +24,7 @@ class ExternalPostSender extends Sender
         $this->textfields = $textfields ?? option('mauricerenck.indieConnector.post.textfields', ['description']);
         $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
         $this->imageAltField = $imageAltField ?? option('mauricerenck.indieConnector.post.imagealtfield', 'alt');
+        $this->tagsField = $tagsField ?? option('mauricerenck.indieConnector.post.tagsfield', null);
         $this->prefereLanguage = $prefereLanguage ?? option('mauricerenck.indieConnector.post.prefereLanguage', null);
         $this->usePermalinkUrl = $usePermalinkUrl ?? option('mauricerenck.indieConnector.post.usePermalinkUrl', false);
         $this->skipUrl = $skipUrl ?? option('mauricerenck.indieConnector.post.skipUrl', false);
@@ -51,23 +53,35 @@ class ExternalPostSender extends Sender
     {
         $pageOfLanguage = !$this->prefereLanguage ? null : $page->translation($this->prefereLanguage);
         $content = !is_null($pageOfLanguage) ? $pageOfLanguage->content() : $page->content()->toArray();
+        $tagString = '';
+
+        if (!is_null($this->tagsField)) {
+            $lowercaseTagField = strtolower($this->tagsField);
+            if ($page->{$lowercaseTagField}()->isNotEmpty()) {
+                $tags = $page->{$lowercaseTagField}()->split();
+
+                if (count($tags) > 0) {
+                    $tagString = ' #' . implode(' #', $tags);
+                }
+            }
+        }
 
         if (is_array($this->textfields)) {
             foreach ($this->textfields as $field) {
                 $lowercaseField = strtolower($field);
                 if (isset($content[$lowercaseField]) && !empty($content[$lowercaseField])) {
-                    return Str::short($content[$lowercaseField], $trimTextPosition);
+                    return Str::short($content[$lowercaseField] . $tagString, $trimTextPosition);
                 }
             }
         }
 
         $field = $this->textfields;
         if (!is_array($this->textfields) && isset($content[$field]) && !empty($content[$field])) {
-            return Str::short($content[$field], $trimTextPosition);
+            return Str::short($content[$field] . $tagString, $trimTextPosition);
         }
 
         $title = isset($content['title']) ? $content['title'] : '';
-        return Str::short($title, $trimTextPosition);
+        return Str::short($title . $tagString, $trimTextPosition);
     }
 
     public function getPostUrl($page)

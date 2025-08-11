@@ -22,6 +22,9 @@ sections:
             textfield:
                 type: textarea
                 label: Text
+            postTags:
+                type: tags
+                label: Mastodon Tags
             layouteditor:
                 type: layout
                 label: Layout
