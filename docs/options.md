@@ -60,17 +60,18 @@
 
 ## Posting to external services
 
-| Option                  | Default           | Description                                                          |
-| ----------------------- | ----------------- | -------------------------------------------------------------------- |
-| `post.prefereLanguage`  | `-`               | Use another language than your default language to use the text from |
-| `post.usePermalinkUrl`  | `false`           | Use the permalink url instead of the page url                        |
-| `post.skipUrl`          | `false`           | NEVER add the url to the post                                        |
-| `post.skipUrlTemplates` | `[]`              | Do not add the url to the post when using the given templates        |
-| `post.textfields`       | `['description']` | Text source fields for posting elsewhere                             |
-| `post.imagefield`       | `''`              | Image source field for posting elsewhere, must be one image          |
-| `post.allowedTemplates` | `[]`              | Set templates allowed to send webmentions                            |
-| `post.blockedTemplates` | `[]`              | Block templates from sending webmentions                             |
-| `post.automatically`    | `true`            | Send posts automatically when a page is published                    |
+| Option                  | Default           | Description                                                                    |
+| ----------------------- | ----------------- | ------------------------------------------------------------------------------ |
+| `post.prefereLanguage`  | `-`               | Use another language than your default language to use the text from           |
+| `post.usePermalinkUrl`  | `false`           | Use the permalink url instead of the page url                                  |
+| `post.skipUrl`          | `false`           | NEVER add the url to the post                                                  |
+| `post.skipUrlTemplates` | `[]`              | Do not add the url to the post when using the given templates                  |
+| `post.textfields`       | `['description']` | Text source fields for posting elsewhere                                       |
+| `post.imagefield`       | `''`              | Image source field for posting elsewhere, must be one image                    |
+| `post.imagealtfield`    | `alt`             | Name of the field containing the alt text for the image in your file blueprint |
+| `post.allowedTemplates` | `[]`              | Set templates allowed to send webmentions                                      |
+| `post.blockedTemplates` | `[]`              | Block templates from sending webmentions                                       |
+| `post.automatically`    | `true`            | Send posts automatically when a page is published                              |
 
 ### Mastodon ([details](mastodon.md))
 

@@ -6,6 +6,7 @@ use Exception;
 use Kirby\Http\Remote;
 use Kirby\Filesystem\F;
 use Kirby\Toolkit\Str;
+use CURLFile;
 
 class MastodonSender extends ExternalPostSender
 {
@@ -93,6 +94,8 @@ class MastodonSender extends ExternalPostSender
             }
 
             $mediaIds = [];
+            $altField = $this->imageAltField;
+
             if ($images = $this->getImages($page)) {
 
                 foreach ($images->toFiles()->limit(4) as $image) {
@@ -101,7 +104,8 @@ class MastodonSender extends ExternalPostSender
                     }
 
                     $imagePath = $image->root();
-                    $mediaId = $this->uploadImage($imagePath);
+                    $imageAlt = $image->{$altField}()->isNotEmpty() ? $image->{$altField}()->value() : '';
+                    $mediaId = $this->uploadImage($imagePath, $imageAlt);
 
                     if (!$mediaId) {
                         continue;
@@ -138,46 +142,31 @@ class MastodonSender extends ExternalPostSender
         }
     }
 
-    public function uploadImage($imagePath)
+    public function uploadImage($imagePath, $imageAlt)
     {
         try {
             if (!F::exists($imagePath)) {
                 return false;
             }
 
-            $boundary = uniqid();
-            $delimiter = '-------------' . $boundary;
-
-            $fileData = file_get_contents($imagePath);
-            $postData =
-                '--' .
-                $delimiter .
-                "\r\n" .
-                'Content-Disposition: form-data; name="file"; filename="' .
-                basename($imagePath) .
-                '"' .
-                "\r\n" .
-                'Content-Type: ' .
-                mime_content_type($imagePath) .
-                "\r\n\r\n" .
-                $fileData .
-                "\r\n" .
-                '--' .
-                $delimiter .
-                "--\r\n";
-
-            $response = Remote::request($this->instanceUrl . '/api/v2/media', [
-                'method' => 'POST',
-                'headers' => [
-                    'Authorization: Bearer ' . $this->token,
-                    'Content-Type' => 'multipart/form-data; boundary=' . $delimiter,
-                ],
-                'data' => $postData,
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $this->instanceUrl . '/api/v2/media');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: Bearer ' . $this->token
             ]);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, [
+                'file' => new CURLFile($imagePath),
+                'description' => $imageAlt
+            ]);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-            $responseData = $response->json();
+            $response = curl_exec($ch);
+            curl_close($ch);
 
-            if ($response->code() !== 200) {
+            $responseData = json_decode($response, true);
+
+            if (!isset($responseData['id'])) {
                 return false;
             }
 

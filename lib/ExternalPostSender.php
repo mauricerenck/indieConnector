@@ -9,6 +9,7 @@ class ExternalPostSender extends Sender
     public function __construct(
         public ?array $textfields = null,
         public ?string $imagefield = null,
+        public ?string $imageAltField = null,
         public ?string $prefereLanguage = null,
         public ?bool $usePermalinkUrl = null,
         public ?bool $skipUrl = null,
@@ -21,6 +22,7 @@ class ExternalPostSender extends Sender
 
         $this->textfields = $textfields ?? option('mauricerenck.indieConnector.post.textfields', ['description']);
         $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
+        $this->imageAltField = $imageAltField ?? option('mauricerenck.indieConnector.post.imagealtfield', 'alt');
         $this->prefereLanguage = $prefereLanguage ?? option('mauricerenck.indieConnector.post.prefereLanguage', null);
         $this->usePermalinkUrl = $usePermalinkUrl ?? option('mauricerenck.indieConnector.post.usePermalinkUrl', false);
         $this->skipUrl = $skipUrl ?? option('mauricerenck.indieConnector.post.skipUrl', false);

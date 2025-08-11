@@ -53,6 +53,7 @@ class BlueskySender extends ExternalPostSender
             $pageUrl = $this->getPostUrl($page);
             $trimTextPosition = $this->calculatePostTextLength($pageUrl);
             $language = 'en';
+            $altField = $this->imageAltField;
 
             $message = $this->getTextFieldContent($page, $trimTextPosition);
             $message = is_null($manualTextMessage) ? $this->getTextFieldContent($page, $trimTextPosition) : Str::short($manualTextMessage, $trimTextPosition);
@@ -88,6 +89,7 @@ class BlueskySender extends ExternalPostSender
                     }
 
                     $mediaAttachment = $this->getMediaAttachment($image);
+                    $altText = $image->{$altField}()->isNotEmpty() ? $image->{$altField}()->value() : '';
 
                     if (!$mediaAttachment) {
                         continue;
@@ -103,7 +105,7 @@ class BlueskySender extends ExternalPostSender
 
                     $image = $response->blob;
                     $imageList[] = [
-                        'alt' => $page->title()->value(),
+                        'alt' => $altText ?? '',
                         'image' => $image,
                         'aspectRatio' => [
                             'width'  => $mediaAttachment['width'],
