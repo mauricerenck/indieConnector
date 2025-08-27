@@ -1,5 +1,10 @@
 <?php
-$originalTag = Kirby\Text\KirbyTag::$types['link'];
+
+use Kirby\Http\Remote;
+use Kirby\Text\KirbyTag;
+
+$originalTag = KirbyTag::$types['link'];
+
 return [
     'like' => [
         'attr' => $originalTag['attr'],
@@ -45,4 +50,23 @@ return [
             return $markup;
         },
     ],
+    'mastodonpost' => [
+        'html' => function ($tag) {
+            $embedUrl = $tag->mastodonpost;
+
+            $hostname = parse_url($embedUrl, PHP_URL_HOST);
+
+            $oEmbedResult = Remote::get('https://' . $hostname . '/api/oembed?format=json&url=' . $embedUrl);
+            if (isset($oEmbedResult)) {
+                $oEmbedJson = $oEmbedResult->json();
+
+                if (isset($oEmbedJson['html'])) {
+                    return $oEmbedJson['html'];
+                }
+            }
+
+            return null;
+        },
+    ],
+    'mastodonpost'
 ];
