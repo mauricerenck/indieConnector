@@ -1,3 +1,10 @@
+## [2.12.1](https://github.com/mauricerenck/indieConnector/compare/v2.12.0...v2.12.1) (2025-08-27)
+
+
+### Bug Fixes
+
+* copy and paste error ([4c35b93](https://github.com/mauricerenck/indieConnector/commit/4c35b93af30d52e493e158e052bae87cd352df0a))
+
 # [2.12.0](https://github.com/mauricerenck/indieConnector/compare/v2.11.0...v2.12.0) (2025-08-27)
 
 
