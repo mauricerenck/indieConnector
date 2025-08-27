@@ -68,5 +68,4 @@ return [
             return null;
         },
     ],
-    'mastodonpost'
 ];
