@@ -1,6 +1,6 @@
 {
     "name": "mauricerenck/indieconnector",
-    "version": "2.11.0",
+    "version": "2.12.0",
     "description": "A Kirby IndieWeb plugin",
     "type": "kirby-plugin",
     "license": "MIT",

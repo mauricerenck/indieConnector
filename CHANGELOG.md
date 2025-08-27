@@ -1,3 +1,10 @@
+# [2.12.0](https://github.com/mauricerenck/indieConnector/compare/v2.11.0...v2.12.0) (2025-08-27)
+
+
+### Features
+
+* mastodonpost kirby tag ([043aaf4](https://github.com/mauricerenck/indieConnector/commit/043aaf4cdcf61e50faec4472648e3086943ea308))
+
 # [2.11.0](https://github.com/mauricerenck/indieConnector/compare/v2.10.0...v2.11.0) (2025-08-11)
 
 
