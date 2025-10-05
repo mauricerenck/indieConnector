@@ -74,7 +74,11 @@ class MastodonSender extends ExternalPostSender
             $message = is_null($manualTextMessage) ? $this->getTextFieldContent($page, $trimTextPosition) : Str::short($manualTextMessage, $trimTextPosition);
             $message .= "\n" . $pageUrl;
 
-            $headers = ['Authorization: Bearer ' . $this->token, 'Content-Type: application/json'];
+            $headers = [
+                'Authorization: Bearer ' . $this->token, 
+                'Content-Type: application/json',
+                'User-Agent: IndieConnector/1.0 (+' . site()->url() . ')'
+            ];
 
             $requestBody = [
                 'status' => $message,
@@ -149,28 +153,48 @@ class MastodonSender extends ExternalPostSender
                 return false;
             }
 
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $this->instanceUrl . '/api/v2/media');
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Authorization: Bearer ' . $this->token
-            ]);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, [
-                'file' => new CURLFile($imagePath),
-                'description' => $imageAlt
-            ]);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            // Verwende das ursprünglich übergebene Bild direkt
+            // (Die Größenoptimierung können wir später hinzufügen wenn nötig)
+            $optimizedImagePath = $imagePath;
 
-            $response = curl_exec($ch);
+            // 2) CURLFile erzeugen
+            $cfile = curl_file_create(
+                $optimizedImagePath,
+                mime_content_type($optimizedImagePath),
+                basename($optimizedImagePath)
+            );
+
+            // 3) cURL-Request mit verbesserter Kompatibilität
+            $url = rtrim($this->instanceUrl, '/') . '/api/v1/media';
+            $ch = curl_init($url);
+
+            curl_setopt_array($ch, [
+                CURLOPT_POST           => true,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POSTFIELDS     => [
+                    'file' => $cfile,
+                    'description' => $imageAlt
+                ],
+                CURLOPT_HTTPHEADER     => [
+                    'Authorization: Bearer ' . $this->token,
+                    'Accept: application/json',
+                    'User-Agent: IndieConnector/1.0 (+' . site()->url() . ')',
+                    'Expect:',  // verhindert "100-continue"-Handshake
+                ],
+            ]);
+
+            $responseBody = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
 
-            $responseData = json_decode($response, true);
-
-            if (!isset($responseData['id'])) {
+            // 4) Erfolg prüfen und ID zurückgeben
+            if ($httpCode !== 200 || empty($responseBody)) {
                 return false;
             }
 
-            return $responseData['id'];
+            $responseData = json_decode($responseBody, true);
+            return $responseData['id'] ?? false;
+
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
             return false;
