@@ -170,7 +170,7 @@ export default {
     },
 }
 </script>
-<style lang="scss">
+<style lang="css">
 .k-webmentions-view {
     .source-entry {
         display: flex;

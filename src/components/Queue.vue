@@ -30,7 +30,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="css">
 .k-webmentions-queue-view {
     .wrapper {
         background: #fff;
