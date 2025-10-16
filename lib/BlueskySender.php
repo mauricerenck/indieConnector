@@ -32,7 +32,7 @@ class BlueskySender extends ExternalPostSender
             return false;
         }
 
-        if (!$this->pageChecks->pageHasNeededStatus($page)) {
+        if (!$this->pageChecks->pageFullfillsCriteria($page, 'post')) {
             return false;
         }
 

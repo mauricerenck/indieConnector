@@ -43,6 +43,10 @@ class WebmentionSender extends Sender
             return false;
         }
 
+        if (!$this->pageChecks->pageHasEnabledWebmentions($page)) {
+            return false;
+        }
+
         if (!$this->pageChecks->pageFullfillsCriteria($page)) {
             return false;
         }

@@ -14,9 +14,9 @@ class PageChecks
         $this->blockedTemplates = $blockedTemplates ?? option('mauricerenck.indieConnector.send.blockedTemplates', []);
 
         $this->allowedPostTemplates =
-            $allowedPosseTemplates ?? option('mauricerenck.indieConnector.post.allowedTemplates', []);
+            $allowedPostTemplates ?? option('mauricerenck.indieConnector.post.allowedTemplates', []);
         $this->blockedPostTemplates =
-            $blockedPosseTemplates ?? option('mauricerenck.indieConnector.post.blockedTemplates', []);
+            $blockedPostTemplates ?? option('mauricerenck.indieConnector.post.blockedTemplates', []);
 
         // backwards compatibility
         if (!$allowedTemplates && option('mauricerenck.indieConnector.allowedTemplates', false)) {
@@ -28,21 +28,17 @@ class PageChecks
         }
     }
 
-    public function pageFullfillsCriteria($page)
+    public function pageFullfillsCriteria($page, ?string $type = 'webmention')
     {
         if (!$this->pageHasNeededStatus($page)) {
             return false;
         }
 
-        if (!$this->pageHasEnabledWebmentions($page)) {
+        if ($this->templateIsBlocked($page->intendedTemplate(), $type)) {
             return false;
         }
 
-        if ($this->templateIsBlocked($page->intendedTemplate())) {
-            return false;
-        }
-
-        if (!$this->templateIsAllowed($page->intendedTemplate())) {
+        if (!$this->templateIsAllowed($page->intendedTemplate(), $type)) {
             return false;
         }
 
