@@ -1,3 +1,11 @@
+## [2.12.2](https://github.com/mauricerenck/indieConnector/compare/v2.12.1...v2.12.2) (2025-10-16)
+
+
+### Bug Fixes
+
+* limit templates for posse ([82993be](https://github.com/mauricerenck/indieConnector/commit/82993bef5e3b8fbd659acf850205047f4cbcdff9))
+* no more scss style lang ([1a603be](https://github.com/mauricerenck/indieConnector/commit/1a603be5dbf963bbe1a0a36820c83209e6a7ff8d))
+
 ## [2.12.1](https://github.com/mauricerenck/indieConnector/compare/v2.12.0...v2.12.1) (2025-08-27)
 
 
