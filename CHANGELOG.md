@@ -1,3 +1,11 @@
+# [2.14.0](https://github.com/mauricerenck/indieConnector/compare/v2.13.0...v2.14.0) (2025-11-14)
+
+
+### Features
+
+* get post data ([cea1b9a](https://github.com/mauricerenck/indieConnector/commit/cea1b9ab43d98489f7f5e306c3e4ee64751d9396))
+* option for resizing images before upload ([26d11b2](https://github.com/mauricerenck/indieConnector/commit/26d11b206f4894b1bd26bd6c4cf08b177e5ff545))
+
 # [2.13.0](https://github.com/mauricerenck/indieConnector/compare/v2.12.2...v2.13.0) (2025-11-14)
 
 
