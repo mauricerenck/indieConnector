@@ -6,7 +6,6 @@ use Exception;
 use Kirby\Http\Remote;
 use Kirby\Filesystem\F;
 use Kirby\Toolkit\Str;
-use CURLFile;
 
 class MastodonSender extends ExternalPostSender
 {
@@ -14,12 +13,14 @@ class MastodonSender extends ExternalPostSender
         private ?string $instanceUrl = null,
         private ?string $token = null,
         private ?bool $enabled = null,
+        private ?int $resizeImages = null,
     ) {
         parent::__construct();
 
         $this->enabled = $enabled ?? option('mauricerenck.indieConnector.mastodon.enabled', false);
         $this->instanceUrl = $instanceUrl ?? option('mauricerenck.indieConnector.mastodon.instance-url', false);
         $this->token = $token ?? option('mauricerenck.indieConnector.mastodon.bearer', false);
+        $this->resizeImages = $resizeImages ?? option('mauricerenck.indieConnector.mastodon.resizeImages', 0);
 
         // backwards compatibility
         if (!$instanceUrl && option('mauricerenck.indieConnector.mastodon-instance-url', false)) {
@@ -75,7 +76,7 @@ class MastodonSender extends ExternalPostSender
             $message .= "\n" . $pageUrl;
 
             $headers = [
-                'Authorization: Bearer ' . $this->token, 
+                'Authorization: Bearer ' . $this->token,
                 'Content-Type: application/json',
                 'User-Agent: IndieConnector/1.0 (+' . site()->url() . ')'
             ];
@@ -105,6 +106,12 @@ class MastodonSender extends ExternalPostSender
                 foreach ($images->toFiles()->limit(4) as $image) {
                     if (is_null($image)) {
                         continue;
+                    }
+
+                    if ($this->resizeImages !== 0) {
+                        $resizedImage = $image->resize($this->resizeImages);
+                        $resizedImage->base64(); // this forces kirby to generate the image
+                        $image = $resizedImage;
                     }
 
                     $imagePath = $image->root();
@@ -194,7 +201,6 @@ class MastodonSender extends ExternalPostSender
 
             $responseData = json_decode($responseBody, true);
             return $responseData['id'] ?? false;
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
             return false;
