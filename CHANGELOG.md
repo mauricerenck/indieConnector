@@ -1,3 +1,10 @@
+# [2.13.0](https://github.com/mauricerenck/indieConnector/compare/v2.12.2...v2.13.0) (2025-11-14)
+
+
+### Features
+
+* Enhance cURL requests with User-Agent and error handling ([#32](https://github.com/mauricerenck/indieConnector/issues/32)) ([42e3d4b](https://github.com/mauricerenck/indieConnector/commit/42e3d4bd4970efdf2df446fe90981faac91d4244))
+
 ## [2.12.2](https://github.com/mauricerenck/indieConnector/compare/v2.12.1...v2.12.2) (2025-10-16)
 
 
