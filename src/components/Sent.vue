@@ -95,7 +95,7 @@ export default {
     },
 }
 </script>
-<style lang="scss">
+<style lang="css">
 .k-webmentions-view {
     .target {
         margin-left: 20px;

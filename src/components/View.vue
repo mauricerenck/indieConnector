@@ -58,7 +58,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="css">
 .k-webmentions-view {
     .wrapper {
         background: #fff;
