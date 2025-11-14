@@ -76,25 +76,27 @@
 
 ### Mastodon ([details](mastodon.md))
 
-| Option                  | Default         | Description                           |
-| ----------------------- | --------------- | ------------------------------------- |
-| `mastodon.enabled`      | `false`         | Enable posting to mastodon on publish |
-| `mastodon.bearer`       | `‘‘`            | Your API Token                        |
-| `mastodon.instance-url` | `‘‘`            | Your mastodon instance url            |
-| `mastodon.text-length`  | `500`           | When to trim the text                 |
-| `sendMastodon`          | `false`         | **DEPRECATED**                        |
-| `mastodon-bearer`       | `‘‘`            | **DEPRECATED**                        |
-| `mastodon-instance-url` | `‘‘`            | **DEPRECATED**                        |
-| `mastodon-text-length`  | `500`           | **DEPRECATED**                        |
-| `mastodon-text-field`   | `‘description‘` | **DEPRECATED**                        |
+| Option                  | Default         | Description                                                   |
+| ----------------------- | --------------- | ------------------------------------------------------------- |
+| `mastodon.enabled`      | `false`         | Enable posting to mastodon on publish                         |
+| `mastodon.bearer`       | `‘‘`            | Your API Token                                                |
+| `mastodon.instance-url` | `‘‘`            | Your mastodon instance url                                    |
+| `mastodon.text-length`  | `500`           | When to trim the text                                         |
+| `mastodon.resizeImages` | `0`             | Resize images before upload, value in pixel, 0 means disabled |
+| `sendMastodon`          | `false`         | **DEPRECATED**                                                |
+| `mastodon-bearer`       | `‘‘`            | **DEPRECATED**                                                |
+| `mastodon-instance-url` | `‘‘`            | **DEPRECATED**                                                |
+| `mastodon-text-length`  | `500`           | **DEPRECATED**                                                |
+| `mastodon-text-field`   | `‘description‘` | **DEPRECATED**                                                |
 
 ### Bluesky ([details](bluesky.md))
 
-| Option             | Default | Description                          |
-| ------------------ | ------- | ------------------------------------ |
-| `bluesky.enabled`  | `false` | Enable posting to bluesky on publish |
-| `bluesky.handle`   | `‘‘`    | Your user handle                     |
-| `bluesky.password` | `‘‘`    | Your bluesky app password            |
+| Option                 | Default | Description                                 |
+| ---------------------- | ------- | ------------------------------------------- |
+| `bluesky.enabled`      | `false` | Enable posting to bluesky on publish        |
+| `bluesky.handle`       | `‘‘`    | Your user handle                            |
+| `bluesky.password`     | `‘‘`    | Your bluesky app password                   |
+| `bluesky.resizeImages` | `800`   | Resize images before upload, value in pixel |
 
 ## Collecting responses ([details](responses.md))
 

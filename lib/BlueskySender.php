@@ -13,12 +13,14 @@ class BlueskySender extends ExternalPostSender
         private ?string $handle = null,
         private ?string $password = null,
         private ?bool $enabled = null,
+        private ?int $resizeImages = null,
     ) {
         parent::__construct();
 
         $this->enabled = $enabled ?? option('mauricerenck.indieConnector.bluesky.enabled', false);
         $this->handle = $password ?? option('mauricerenck.indieConnector.bluesky.handle', false);
         $this->password = $password ?? option('mauricerenck.indieConnector.bluesky.password', false);
+        $this->resizeImages = $resizeImages ?? option('mauricerenck.indieConnector.bluesky.resizeImages', 800);
     }
 
     public function sendPost($page, string | null $manualTextMessage = null)
@@ -211,7 +213,7 @@ class BlueskySender extends ExternalPostSender
     {
         try {
             $imageMimeType = $image->mime();
-            $resizedImage = $image->resize(800); // image size must be very low, so we need to resize it
+            $resizedImage = $image->resize($this->resizeImages); // image size must be very low, so we need to resize it
             $resizedImage->base64(); // this forces kirby to generate the image
 
             if (!F::exists($resizedImage->root())) {
