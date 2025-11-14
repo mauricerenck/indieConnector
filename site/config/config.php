@@ -39,12 +39,14 @@ return [
         'imagefield' => 'mastodonimage',
         'allowedTemplates' => ['phpunit', 'default'],
         'blockedTemplates' => ['blocked-template'],
+        // 'skipUrl' => false,
+        // 'skipUrlTemplates' => ['default'],
     ],
 
     'mauricerenck.indieConnector.responses' => [
         'enabled' => true,
-        'limit' => 1,
-        'ttl' => 2,
-        'queue.limit' => 1,
+        'limit' => 5,
+        'ttl' => 5,
+        'queue.limit' => 5,
     ],
 ];

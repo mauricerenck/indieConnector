@@ -639,4 +639,18 @@ class ResponseCollector
             'invalid' => $invalidUrls
         ];
     }
+
+    public function getMastodonPostResponseStats(string $postUrl)
+    {
+        $results = ['like-of' => 0, 'repost-of' => 0, 'in-reply-to' => 0, 'mention-of' => 0];
+        $stats = $this->indieDb->select('queue_responses', ['count(response_type) as response_count', 'response_type'], 'WHERE response_url = "' . $postUrl . '" GROUP BY response_type');
+
+        if (!is_null($stats)) {
+            foreach ($stats as $stat) {
+                $results[$stat->response_type()] = $stat->response_count();
+            }
+        }
+
+        return $results;
+    }
 }

@@ -15,6 +15,7 @@
 
     <div>
         <?= $page->text()->kt() ?>
+        <?= $page->textfield()->kt() ?>
     </div>
 
     <div>

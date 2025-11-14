@@ -2,4 +2,48 @@ Title: Home
 
 ----
 
+Webmentionsstatus: true
+
+----
+
+Enableexternalposting: true
+
+----
+
+Mastodonstatusurl: 
+
+----
+
+Blueskystatusurl: 
+
+----
+
+Icskipurl: false
+
+----
+
+Description: 
+
+----
+
+Textfield: HALLO! (mastodonpost: https://mastodon.online/deck/@mauricerenck/114976190861883619)
+
+----
+
+Posttags: 
+
+----
+
+Layouteditor: 
+
+----
+
+Blockeditor: 
+
+----
+
+Mastodonimage: 
+
+----
+
 Uuid: AO975CNkYvmQSn5H

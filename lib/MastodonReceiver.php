@@ -158,4 +158,17 @@ class MastodonReceiver
         }
         return true;
     }
+
+    public function fetchMastodonPostText(string $postUrl)
+    {
+        $response = Remote::get($postUrl, [
+            'headers' => ['Accept: application/activity+json']
+        ]);
+
+        if ($response->code() === 200) {
+            $data = json_decode($response->content(), true);
+            return $data['content'];
+        }
+        return null;
+    }
 }
