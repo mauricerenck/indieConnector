@@ -1,3 +1,10 @@
+## [2.14.1](https://github.com/mauricerenck/indieConnector/compare/v2.14.0...v2.14.1) (2025-11-28)
+
+
+### Bug Fixes
+
+* never trim tags [#33](https://github.com/mauricerenck/indieConnector/issues/33) ([385536e](https://github.com/mauricerenck/indieConnector/commit/385536e477d2cd89072fd4a8c37f4d3cdeb415d6))
+
 # [2.14.0](https://github.com/mauricerenck/indieConnector/compare/v2.13.0...v2.14.0) (2025-11-14)
 
 
