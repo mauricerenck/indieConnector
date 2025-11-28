@@ -16,6 +16,7 @@ class ExternalPostSender extends Sender
         public ?bool $skipUrl = null,
         public ?array $skipUrlTemplates = null,
         private ?int $maxPostLength = null,
+        public ?bool $neverTrimTags = null,
         public ?UrlChecks $urlChecks = null,
         public ?PageChecks $pageChecks = null
     ) {
@@ -30,6 +31,7 @@ class ExternalPostSender extends Sender
         $this->skipUrl = $skipUrl ?? option('mauricerenck.indieConnector.post.skipUrl', false);
         $this->skipUrlTemplates = $skipUrlTemplates ?? option('mauricerenck.indieConnector.post.skipUrlTemplates', []);
         $this->maxPostLength = $maxPostLength ?? option('mauricerenck.indieConnector.mastodon.text-length', 300);
+        $this->neverTrimTags = $neverTrimTags ?? option('mauricerenck.indieConnector.post.neverTrimTags', true);
 
         $this->urlChecks = $urlChecks ?? new UrlChecks();
         $this->pageChecks = $pageChecks ?? new PageChecks();
@@ -49,42 +51,50 @@ class ExternalPostSender extends Sender
         }
     }
 
-    public function getTextFieldContent($page, $trimTextPosition)
+    public function getTextFieldContent($page): string
     {
         $pageOfLanguage = !$this->prefereLanguage ? null : $page->translation($this->prefereLanguage);
         $content = !is_null($pageOfLanguage) ? $pageOfLanguage->content() : $page->content()->toArray();
-        $tagString = '';
-
-        if (!is_null($this->tagsField)) {
-            $lowercaseTagField = strtolower($this->tagsField);
-            if ($page->{$lowercaseTagField}()->isNotEmpty()) {
-                $tags = $page->{$lowercaseTagField}()->split();
-
-                if (count($tags) > 0) {
-                    $tagString = ' #' . implode(' #', $tags);
-                }
-            }
-        }
 
         if (is_array($this->textfields)) {
             foreach ($this->textfields as $field) {
                 $lowercaseField = strtolower($field);
                 if (isset($content[$lowercaseField]) && !empty($content[$lowercaseField])) {
-                    return Str::short($content[$lowercaseField] . $tagString, $trimTextPosition);
+                    return $content[$lowercaseField];
                 }
             }
         }
 
         $field = $this->textfields;
         if (!is_array($this->textfields) && isset($content[$field]) && !empty($content[$field])) {
-            return Str::short($content[$field] . $tagString, $trimTextPosition);
+            return $content[$field];
         }
 
-        $title = isset($content['title']) ? $content['title'] : '';
-        return Str::short($title . $tagString, $trimTextPosition);
+        return isset($content['title']) ? $content['title'] : '';
     }
 
-    public function getPostUrl($page)
+    public function getPostTags($page): string
+    {
+        if (is_null($this->tagsField)) {
+            return '';
+        }
+
+        $lowercaseTagField = strtolower($this->tagsField);
+
+        if ($page->{$lowercaseTagField}()->isEmpty()) {
+            return '';
+        }
+
+        $tags = $page->{$lowercaseTagField}()->split();
+
+        if (count($tags) > 0) {
+            return '#' . implode(' #', $tags);
+        }
+
+        return '';
+    }
+
+    public function getPostUrl($page): string
     {
         if ($this->skipUrl) {
             return '';
@@ -108,10 +118,45 @@ class ExternalPostSender extends Sender
         return $url;
     }
 
+
     public function calculatePostTextLength(string $url)
     {
         $urlLength = Str::length($url);
         return $this->maxPostLength - $urlLength - 2;
+    }
+
+    public function getTrimmedFullMessage(string $message, string $url, string $tags, string $service): string
+    {
+        $maxLength = $service == 'mastodon' ? $this->maxPostLength : 300;
+        $appendix = '...';
+
+        $appendixLength = Str::length($appendix);
+        $linebreakLength = 1;
+        $metaTextLength = $appendixLength; // FIXME until kirby bug is not fixed @see https://github.com/getkirby/kirby/issues/7722
+
+        $urlLength = Str::length($url);
+        $tagsLength = Str::length($tags);
+
+        if ($urlLength > 0) {
+            $metaTextLength += $urlLength + $linebreakLength;
+        }
+
+        if ($this->neverTrimTags && $tagsLength > 0) {
+            $metaTextLength += $tagsLength + $linebreakLength * 2;
+        }
+
+        $maxLength -= $metaTextLength;
+        $fullMessage = Str::Short($message, $maxLength, $appendix);
+
+        if ($urlLength > 0) {
+            $fullMessage .= "\n" . $url;
+        }
+
+        if ($tagsLength > 0) {
+            $fullMessage .= "\n\n" . $tags;
+        }
+
+        return $fullMessage;
     }
 
     public function updatePosts($id, $url, $statusCode, $page, $target)

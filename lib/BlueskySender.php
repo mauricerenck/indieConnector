@@ -52,14 +52,14 @@ class BlueskySender extends ExternalPostSender
         }
 
         try {
+
             $pageUrl = $this->getPostUrl($page);
-            $trimTextPosition = $this->calculatePostTextLength($pageUrl);
+            $message = is_null($manualTextMessage) ? $this->getTextFieldContent($page) : $manualTextMessage;
+            $tags = $this->getPostTags($page);
             $language = 'en';
             $altField = $this->imageAltField;
 
-            $message = $this->getTextFieldContent($page, $trimTextPosition);
-            $message = is_null($manualTextMessage) ? $this->getTextFieldContent($page, $trimTextPosition) : Str::short($manualTextMessage, $trimTextPosition);
-            $message .= "\n" . $pageUrl;
+            $fullMessage = $this->getTrimmedFullMessage(message: $message, url: $pageUrl, tags: $tags, service: 'bluesky');
 
             if ($defaultLanguage = kirby()->defaultLanguage()) {
                 $language = $defaultLanguage->code();
@@ -75,7 +75,7 @@ class BlueskySender extends ExternalPostSender
             $args = [
                 'collection' => 'app.bsky.feed.post',
                 'record' => [
-                    'text' => $message,
+                    'text' => $fullMessage,
                     'langs' => [$language],
                     'createdAt' => date('c'),
                     '$type' => 'app.bsky.feed.post',
@@ -123,7 +123,7 @@ class BlueskySender extends ExternalPostSender
             }
 
             $args['repo'] = $bluesky->getAccountDid();
-            $args['record']['facets'] = array_merge($this->getLinks($message), $this->getHashtags($message));
+            $args['record']['facets'] = array_merge($this->getLinks($fullMessage), $this->getHashtags($fullMessage));
 
             $response = $bluesky->request('POST', 'com.atproto.repo.createRecord', $args);
 

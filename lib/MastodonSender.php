@@ -71,9 +71,10 @@ class MastodonSender extends ExternalPostSender
 
         try {
             $pageUrl = $this->getPostUrl($page);
-            $trimTextPosition = $this->calculatePostTextLength($pageUrl);
-            $message = is_null($manualTextMessage) ? $this->getTextFieldContent($page, $trimTextPosition) : Str::short($manualTextMessage, $trimTextPosition);
-            $message .= "\n" . $pageUrl;
+            $message = is_null($manualTextMessage) ? $this->getTextFieldContent($page) : $manualTextMessage;
+            $tags = $this->getPostTags($page);
+
+            $fullMessage = $this->getTrimmedFullMessage(message: $message, url: $pageUrl, tags: $tags, service: 'mastodon');
 
             $headers = [
                 'Authorization: Bearer ' . $this->token,
@@ -82,7 +83,7 @@ class MastodonSender extends ExternalPostSender
             ];
 
             $requestBody = [
-                'status' => $message,
+                'status' => $fullMessage,
                 'visibility' => 'public',
             ];
 
