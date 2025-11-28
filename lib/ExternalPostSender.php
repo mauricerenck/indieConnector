@@ -220,9 +220,12 @@ class ExternalPostSender extends Sender
 
     public function getServicesDialogFields($page)
     {
-        $fields = [];
+        $textfield = (is_array($this->textfields)) ? $this->textfields[0] : $this->textfields;
 
         $services = $this->getActiveServices($page);
+        $isDraft = $page->isDraft();
+
+        $fields = [];
         $fields['text'] = [
             'label' => 'Text',
             'type' => 'textarea',
@@ -237,6 +240,26 @@ class ExternalPostSender extends Sender
             'type' => 'toggle',
             'width' => '1/3'
         ];
+
+        $fields['savePostText'] = [
+            'label' => 'Overwrite field "' . $textfield . '" with this text',
+            'type' => 'toggle',
+            'width' => '2/3',
+            'disabled' => $isDraft
+        ];
+
+        $fields['overwriteField'] = [
+            'type' => 'hidden',
+            'value' => $textfield,
+        ];
+
+        if ($isDraft) {
+            $fields['overwriteField'] = [
+                'type' => 'info',
+                'theme' => 'info',
+                'text' => 'This will post to all configured services once the page is published!',
+            ];
+        }
 
         $sentData = [];
         foreach ($services as $service) {
@@ -265,7 +288,7 @@ class ExternalPostSender extends Sender
             $sentData[] = $sentDataEntry;
         }
 
-        if (count($sentData) > 0) {
+        if (count($sentData) > 0 && !$isDraft) {
             $fields['services'] = [
                 'type' => 'icPostStatus',
                 'serviceItems' => $sentData
