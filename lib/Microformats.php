@@ -28,6 +28,7 @@ class Microformats
             }
 
             $trimmedUrl = trim(Url::stripQuery($url));
+
             if ($trimmedUrl === $this->pageUrl) {
                 return true;
             }
@@ -52,6 +53,36 @@ class Microformats
         return false;
     }
 
+    public function extractUrlsFromProperty(array $values): array
+    {
+        $urls = [];
+
+        foreach ($values as $value) {
+            if (is_string($value)) {
+                // Fall 1: Direct URL-String
+                $urls[] = $value;
+            } elseif (is_array($value)) {
+                // Fall 2: h-cite or another Microformat-Object
+                if (isset($value['properties']['url'])) {
+                    foreach ($value['properties']['url'] as $url) {
+                        if (is_string($url)) {
+                            $urls[] = $url;
+                        }
+                    }
+                }
+
+                // Fall 3: 'value' property as Fallback
+                if (isset($value['value']) && is_string($value['value'])) {
+                    if (filter_var($value['value'], FILTER_VALIDATE_URL)) {
+                        $urls[] = $value['value'];
+                    }
+                }
+            }
+        }
+
+        return array_unique($urls);
+    }
+
     public function getTypes(array $microformats): array | null
     {
         if (empty($microformats['items'])) {
@@ -71,8 +102,13 @@ class Microformats
                 }
 
                 foreach ($item['properties'] as $property => $values) {
-                    if (in_array($property, $this->urlTypes) && $this->includesPageUrl($values)) {
-                        $types[] = $property;
+
+                    if (in_array($property, $this->urlTypes)) {
+                        $urls = $this->extractUrlsFromProperty($values);
+
+                        if($this->includesPageUrl($urls)) {
+                            $types[] = $property;
+                        }
                     }
                 }
 

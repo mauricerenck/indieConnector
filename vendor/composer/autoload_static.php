@@ -11,39 +11,39 @@ class ComposerStaticInit84944e4200b9284446d234824c8e9dcc
     );
 
     public static $prefixLengthsPsr4 = array (
-        'm' => 
+        'm' =>
         array (
             'mauricerenck\\IndieConnector\\' => 28,
         ),
-        'c' => 
+        'c' =>
         array (
             'cjrasmussen\\BlueskyApi\\' => 23,
         ),
-        'K' => 
+        'K' =>
         array (
             'Kirby\\' => 6,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'mauricerenck\\IndieConnector\\' => 
+        'mauricerenck\\IndieConnector\\' =>
         array (
             0 => __DIR__ . '/../..' . '/lib',
         ),
-        'cjrasmussen\\BlueskyApi\\' => 
+        'cjrasmussen\\BlueskyApi\\' =>
         array (
             0 => __DIR__ . '/..' . '/cjrasmussen/bluesky-api/src',
         ),
-        'Kirby\\' => 
+        'Kirby\\' =>
         array (
             0 => __DIR__ . '/..' . '/getkirby/composer-installer/src',
         ),
     );
 
     public static $prefixesPsr0 = array (
-        'I' => 
+        'I' =>
         array (
-            'IndieWeb' => 
+            'IndieWeb' =>
             array (
                 0 => __DIR__ . '/..' . '/indieweb/mention-client/src',
             ),
