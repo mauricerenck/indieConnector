@@ -1,3 +1,10 @@
+## [2.14.2](https://github.com/mauricerenck/indieConnector/compare/v2.14.1...v2.14.2) (2026-01-09)
+
+
+### Bug Fixes
+
+* more rebost webmention type detection ([215ae61](https://github.com/mauricerenck/indieConnector/commit/215ae612dcb5f861c8219f0cfe027392fa566d53))
+
 ## [2.14.1](https://github.com/mauricerenck/indieConnector/compare/v2.14.0...v2.14.1) (2025-11-28)
 
 
