@@ -14,13 +14,13 @@ class Sender
         private ?bool $activityPubBridge = null,
         private ?string $outboxFilename = null,
 
-        private ?UrlChecks $urlChecks = null
+        private ?UrlHandler $urlHandler = null
     ) {
         $this->fieldsToParseUrls =
             $fieldsToParseUrls ??
             option('mauricerenck.indieConnector.send.url-fields', ['text:text', 'description:text', 'intro:text']);
         $this->activityPubBridge = $activityPubBridge ?? option('mauricerenck.indieConnector.activityPubBridge', false);
-        $this->urlChecks = $urlChecks ?? new UrlChecks();
+        $this->urlHandler = $urlHandler ?? new UrlHandler();
         $this->outboxFilename =
             $outboxFilename ?? option('mauricerenck.indieConnector.send.outboxFilename', 'indieConnector.json');
 
@@ -36,20 +36,20 @@ class Sender
 
     public function isValidTarget(string $url)
     {
-        if (!$this->urlChecks->urlIsValid($url)) {
+        if (!$this->urlHandler->urlIsValid($url)) {
             return false;
         }
 
-        if ($this->urlChecks->isLocalUrl($url)) {
+        if ($this->urlHandler->isLocalUrl($url)) {
             return false;
         }
 
-        if (!$this->urlChecks->urlExists($url)) {
+        if (!$this->urlHandler->urlExists($url)) {
             // TODO Log this in new json format for error reporting in panel and retries
             return false;
         }
 
-        if ($this->urlChecks->isBlockedTarget($url)) {
+        if ($this->urlHandler->isBlockedTarget($url)) {
             return false;
         }
 

@@ -3,6 +3,7 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Http\Response;
+use Kirby\Cms\Url;
 
 return [
     'routes' => [
@@ -80,6 +81,18 @@ return [
                 $collector->markProcessed($processedIds);
 
                 return new Response(json_encode($results), 'application/json');
+            },
+        ],
+        [
+            'pattern' => 'indieconnector/block/url',
+            'method' => 'POST',
+            'action' => function () {
+                $postBody = kirby()->request()->data();
+
+                $urlHandler = new UrlHandler();
+                $urlHandler->blockUrl($postBody['url'], $postBody['direction'], $postBody['hostOnly']);
+
+                return new Response(json_encode([]), 'application/json');
             },
         ],
     ],

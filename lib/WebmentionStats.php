@@ -15,7 +15,6 @@ class WebmentionStats
         private ?IndieConnectorDatabase $indieDatabase = null
     ) {
         $this->doNotTrack = $doNotTrack ?? option('mauricerenck.indieConnector.stats.doNotTrack', ['fed.brid.gy']);
-
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
     }
 

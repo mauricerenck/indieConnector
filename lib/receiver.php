@@ -14,7 +14,7 @@ class Receiver
 
     public function processIncomingWebmention($data)
     {
-        $urlChecks = new UrlChecks();
+        $urlHandler = new UrlHandler();
         $pageChecks = new PageChecks();
 
         if (!$this->receiveWebmention) {
@@ -22,15 +22,15 @@ class Receiver
         }
 
         $urls = $this->getPostDataUrls($data);
-        if (!$urlChecks->urlIsValid($urls['source'])) {
+        if (!$urlHandler->urlIsValid($urls['source'])) {
             return new Response('Source URL is not valid', 'text/plain', 400); // Not Acceptable
         }
 
-        if (!$urlChecks->urlIsValid($urls['target'])) {
+        if (!$urlHandler->urlIsValid($urls['target'])) {
             return new Response('Target URL is not valid', 'text/plain', 400); // Not Acceptable
         }
 
-        if ($urlChecks->isBlockedSource($urls['source'])) {
+        if ($urlHandler->isBlockedSource($urls['source'])) {
             return new Response('Source URL is blocked', 'text/plain', 400); // Not Acceptable
         }
 

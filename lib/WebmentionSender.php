@@ -15,7 +15,7 @@ class WebmentionSender extends Sender
         private ?int $markDeletedPages = null,
 
         private $mentionClient = null,
-        private ?UrlChecks $urlChecks = null,
+        private ?UrlHandler $urlHandler = null,
         private ?PageChecks $pageChecks = null,
         private ?IndieConnectorDatabase $indieDatabase = null
     ) {
@@ -26,7 +26,7 @@ class WebmentionSender extends Sender
         $this->markDeletedPages = $markDeletedPages ?? option('mauricerenck.indieConnector.send.markDeleted', false);
 
         $this->mentionClient = new MentionClient();
-        $this->urlChecks = $urlChecks ?? new UrlChecks();
+        $this->urlHandler = $urlHandler ?? new UrlHandler();
         $this->pageChecks = $pageChecks ?? new PageChecks();
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
 
@@ -193,7 +193,7 @@ class WebmentionSender extends Sender
 
         $cleanedUrls = [];
         foreach ($urls as $url) {
-            if ($this->urlChecks->skipSameHost($url)) {
+            if ($this->urlHandler->skipSameHost($url)) {
                 continue;
             }
 

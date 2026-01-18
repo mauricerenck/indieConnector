@@ -17,7 +17,7 @@ class ExternalPostSender extends Sender
         public ?array $skipUrlTemplates = null,
         private ?int $maxPostLength = null,
         public ?bool $neverTrimTags = null,
-        public ?UrlChecks $urlChecks = null,
+        public ?UrlHandler $urlHandler = null,
         public ?PageChecks $pageChecks = null
     ) {
         parent::__construct();
@@ -33,7 +33,7 @@ class ExternalPostSender extends Sender
         $this->maxPostLength = $maxPostLength ?? option('mauricerenck.indieConnector.mastodon.text-length', 300);
         $this->neverTrimTags = $neverTrimTags ?? option('mauricerenck.indieConnector.post.neverTrimTags', true);
 
-        $this->urlChecks = $urlChecks ?? new UrlChecks();
+        $this->urlHandler = $urlHandler ?? new UrlHandler();
         $this->pageChecks = $pageChecks ?? new PageChecks();
 
         // backwards compatibility

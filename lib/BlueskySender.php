@@ -38,7 +38,7 @@ class BlueskySender extends ExternalPostSender
             return false;
         }
 
-        if ($this->urlChecks->isLocalUrl($page->url())) {
+        if ($this->urlHandler->isLocalUrl($page->url())) {
             throw new Exception('Local url');
             return false;
         }

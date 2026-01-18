@@ -11,7 +11,7 @@ final class MastodonSenderTest extends TestCaseMocked
     {
         parent::setUp();
 
-        $this->urlCheckMock = Mockery::mock('mauricerenck\IndieConnector\UrlChecks')->makePartial();
+        $this->urlCheckMock = Mockery::mock('mauricerenck\IndieConnector\UrlHandler')->makePartial();
     }
 
     /**
