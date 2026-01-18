@@ -30,7 +30,7 @@ return array(
     'mauricerenck\\IndieConnector\\ResponseCollector' => $baseDir . '/lib/ResponseCollector.php',
     'mauricerenck\\IndieConnector\\Sender' => $baseDir . '/lib/Sender.php',
     'mauricerenck\\IndieConnector\\TestCaseMocked' => $baseDir . '/lib/TestCaseMocked.php',
-    'mauricerenck\\IndieConnector\\UrlChecks' => $baseDir . '/lib/UrlChecks.php',
+    'mauricerenck\\IndieConnector\\UrlHandler' => $baseDir . '/lib/UrlHandler.php',
     'mauricerenck\\IndieConnector\\WebmentionIo' => $baseDir . '/lib/WebmentionIo.php',
     'mauricerenck\\IndieConnector\\WebmentionReceiver' => $baseDir . '/lib/WebmentionReceiver.php',
     'mauricerenck\\IndieConnector\\WebmentionSender' => $baseDir . '/lib/WebmentionSender.php',

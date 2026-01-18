@@ -7,6 +7,7 @@ import Queue from './components/Queue.vue'
 import QueueList from './components/QueueList.vue'
 import ResponseList from './components/ResponseList.vue'
 import ExternalPostField from './fields/ExternalPost.vue'
+import PluginStatus from './components/PluginStatus.vue'
 
 panel.plugin('mauricerenck/indieConnector', {
     components: {
@@ -18,6 +19,7 @@ panel.plugin('mauricerenck/indieConnector', {
         'k-webmentions-queue-view': Queue,
         QueueList: QueueList,
         ResponseList: ResponseList,
+        'k-webmentions-status-view': PluginStatus,
     },
     fields: {
         icPostStatus: ExternalPostField,

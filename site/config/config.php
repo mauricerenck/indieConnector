@@ -25,7 +25,6 @@ return [
     'mauricerenck.indieConnector.receive' => [
         'enabled' => true,
         'useHtmlContent' => false,
-        'blockedSources' => [],
     ],
 
     'mauricerenck.indieConnector.queue' => [

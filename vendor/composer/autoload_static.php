@@ -75,7 +75,7 @@ class ComposerStaticInit84944e4200b9284446d234824c8e9dcc
         'mauricerenck\\IndieConnector\\ResponseCollector' => __DIR__ . '/../..' . '/lib/ResponseCollector.php',
         'mauricerenck\\IndieConnector\\Sender' => __DIR__ . '/../..' . '/lib/Sender.php',
         'mauricerenck\\IndieConnector\\TestCaseMocked' => __DIR__ . '/../..' . '/lib/TestCaseMocked.php',
-        'mauricerenck\\IndieConnector\\UrlChecks' => __DIR__ . '/../..' . '/lib/UrlChecks.php',
+        'mauricerenck\\IndieConnector\\UrlHandler' => __DIR__ . '/../..' . '/lib/UrlHandler.php',
         'mauricerenck\\IndieConnector\\WebmentionIo' => __DIR__ . '/../..' . '/lib/WebmentionIo.php',
         'mauricerenck\\IndieConnector\\WebmentionReceiver' => __DIR__ . '/../..' . '/lib/WebmentionReceiver.php',
         'mauricerenck\\IndieConnector\\WebmentionSender' => __DIR__ . '/../..' . '/lib/WebmentionSender.php',

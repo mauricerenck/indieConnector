@@ -4,7 +4,7 @@ namespace mauricerenck\IndieConnector;
 
 return function () {
     return [
-        'label' => 'Webmentions',
+        'label' => 'IndieConnector',
         'icon' => 'live',
         'menu' => true,
         'link' => 'webmentions',
@@ -100,7 +100,7 @@ return function () {
 
                     return [
                         'component' => 'k-webmentions-queue-view',
-                        'title' => 'Test',
+                        'title' => 'Queue',
                         'props' => [
                             'disabled' => !$queueHandler->queueEnabled(),
                             'itemsInQueue' => $itemsInQueue ?? 0,
@@ -114,6 +114,205 @@ return function () {
                                     'mastodon' => $urlCounts['mastodon'],
                                     'bluesky' => $urlCounts['bluesky'],
                                 ],
+                            ],
+                        ],
+                    ];
+                }
+            ],
+            [
+                'pattern' => ['webmentions/status'],
+                'action' => function () {
+                    return [
+                        'component' => 'k-webmentions-status-view',
+                        'title' => 'Plugin Status',
+                        'props' => [
+                            'features' => [
+                                [
+                                    'label' => 'Receive Webmentions',
+                                    'description' => 'Receive Webmentions from sites linking to your site',
+                                    'enabled' => option('mauricerenck.indieConnector.receive.enabled'),
+                                ],
+                                [
+                                    'label' => 'Send Webmentions',
+                                    'description' => 'Send Webmentions to sites linked in your content',
+                                    'enabled' => option('mauricerenck.indieConnector.send.enabled'),
+                                ],
+                                [
+                                    'label' => 'Webmention Queue',
+                                    'description' => 'Queue all incoming webmentions before processing them',
+                                    'enabled' => option('mauricerenck.indieConnector.queue.enabled'),
+                                ],
+                                [
+                                    'label' => 'Webmention Stats',
+                                    'description' => 'View statistics about your webmentions',
+                                    'enabled' => option('mauricerenck.indieConnector.stats.enabled'),
+                                ],
+                                [
+                                    'label' => 'Mastodon',
+                                    'description' => 'Post to Mastodon when publishing pages',
+                                    'enabled' => option('mauricerenck.indieConnector.mastodon.enabled'),
+                                ],
+                                [
+                                    'label' => 'Bluesky',
+                                    'description' => 'Post to Bluesky when publishing pages',
+                                    'enabled' => option('mauricerenck.indieConnector.bluesky.enabled'),
+                                ],
+                                [
+                                    'label' => 'Response Collection',
+                                    'description' => 'Collect responses from Bluesky and Mastodon',
+                                    'enabled' => option('mauricerenck.indieConnector.responses.enabled'),
+                                ],
+                                [
+                                    'label' => 'ActivityPub',
+                                    'description' => 'Act as an ActivityPub instance',
+                                    'enabled' => option('mauricerenck.indieConnector.activityPubBridge'),
+                                ],
+                            ],
+                            'webmentionsSend' => [
+                                [
+                                    'label' => 'automatically',
+                                    'enabled' => option('mauricerenck.indieConnector.send.automatically'),
+                                    'description' => 'Automatically send Webmentions',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'allowedTemplates',
+                                    'enabled' => option('mauricerenck.indieConnector.send.allowedTemplates', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.send.allowedTemplates', []),
+                                    'description' => 'Only these template are allowed to send webmentions',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'blockedTemplates',
+                                    'enabled' => option('mauricerenck.indieConnector.send.blockedTemplates', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.send.blockedTemplates', []),
+                                    'description' => 'These templates cannot send webmentions',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'url-fields',
+                                    'enabled' => option('mauricerenck.indieConnector.send.url-fields', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.send.url-fields', []),
+                                    'description' => 'Set fieldnames and types to look for urls in',
+                                    'docs' => '#',
+                                ],
+                            ],
+                            'webmentionsReceive' => [
+                                [
+                                    'label' => 'useHtmlContent',
+                                    'enabled' => option('mauricerenck.indieConnector.receive.useHtmlContent'),
+                                    'description' => 'Render received html content from the sender',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'blockedSources',
+                                    'enabled' => option('mauricerenck.indieConnector.receive.blockedSources', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.receive.blockedSources', []),
+                                    'description' => 'These source URLs are blocked',
+                                    'docs' => '#',
+                                ],
+                            ],
+                            'posting' => [
+                                [
+                                    'label' => 'automatically',
+                                    'enabled' => option('mauricerenck.indieConnector.post.automatically', true) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.post.automatically'),
+                                    'description' => 'Send posts automatically when a page is published',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'prefereLanguage',
+                                    'enabled' => option('mauricerenck.indieConnector.post.prefereLanguage', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.post.prefereLanguage'),
+                                    'description' => 'Use another language than your default language to use the text from',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'usePermalinkUrl',
+                                    'enabled' => option('mauricerenck.indieConnector.post.usePermalinkUrl', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.post.usePermalinkUrl'),
+                                    'description' => 'Use the permalink url instead of the page url',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'skipUrl',
+                                    'enabled' => option('mauricerenck.indieConnector.post.skipUrl', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.post.skipUrl'),
+                                    'description' => 'NEVER add the url to the post',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'skipUrlTemplates',
+                                    'enabled' => option('mauricerenck.indieConnector.post.skipUrlTemplates', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.post.skipUrlTemplates', []),
+                                    'description' => 'Do not add the url to the post when using the given templates',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'textfields',
+                                    'enabled' => option('mauricerenck.indieConnector.post.textfields', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.post.textfields', []),
+                                    'description' => 'Text source fields for posting elsewhere',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'imagefield',
+                                    'enabled' => option('mauricerenck.indieConnector.post.imagefield', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.post.imagefield'),
+                                    'description' => 'Image source field for posting elsewhere',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'tagsfield',
+                                    'enabled' => option('mauricerenck.indieConnector.post.tagsfield', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.post.tagsfield', []),
+                                    'description' => 'A Kirby tag field to use for hashtags on mastodon and bluesky',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'allowedTemplates',
+                                    'enabled' => option('mauricerenck.indieConnector.post.allowedTemplates', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.post.allowedTemplates', []),
+                                    'description' => 'Set templates allowed to create posts',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'blockedTemplates',
+                                    'enabled' => option('mauricerenck.indieConnector.post.blockedTemplates', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.post.blockedTemplates', []),
+                                    'description' => 'Block templates from sending webmentions',
+                                    'docs' => '#',
+                                ],
+
+                                [
+                                    'label' => 'instance-url',
+                                    'enabled' => option('mauricerenck.indieConnector.mastodon.instance-url', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.mastodon.instance-url'),
+                                    'description' => 'Your mastodon instance url',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'text-length',
+                                    'enabled' => option('mauricerenck.indieConnector.mastodon.text-length', false) === false ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.mastodon.text-length'),
+                                    'description' => 'When to trim the text',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'resizeImages',
+                                    'enabled' => option('mauricerenck.indieConnector.mastodon.resizeImages', 0) === 0 ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.mastodon.resizeImages', 0),
+                                    'description' => 'Resize images before upload, value in pixel, 0 means disabled',
+                                    'docs' => '#',
+                                ],
+                                [
+                                    'label' => 'resizeImages',
+                                    'enabled' => option('mauricerenck.indieConnector.bluesky.resizeImages', 0) === 0 ? false : true,
+                                    'setting' => option('mauricerenck.indieConnector.bluesky.resizeImages', 0),
+                                    'description' => 'Resize images before upload, value in pixel, 0 means disabled',
+                                    'docs' => '#',
+                                ],
+
                             ],
                         ],
                     ];
