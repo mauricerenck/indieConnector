@@ -10,6 +10,7 @@ class BlueskyReceiver extends Bluesky
     private $bskClient = null;
     private $connected = false;
 
+    // FIXME: moved to Bluesky::class
     public function __construct(
         private ?bool $enabled = null,
         private ?string $handle = null,
@@ -31,13 +32,13 @@ class BlueskyReceiver extends Bluesky
         $this->bskClient = $bskClient ?: new BlueskyApi();
     }
 
-    public function connect()
+    public function connect() // FIXME: moved to Bluesky::class
     {
         $this->bskClient->auth($this->handle, $this->password);
         $this->connected = true;
     }
 
-    public function getResponses(string $did, string $type, array $knownIds)
+    public function getResponses(string $did, string $type, array $knownIds) // FIXME: moved to Bluesky::class
     {
         if (!$this->enabled) {
             return [];
@@ -72,12 +73,12 @@ class BlueskyReceiver extends Bluesky
      * Check the list and return bool, we will filter out the entry later we just
      * want to stop the pagination at this point
     */
-    public function responsesIncludeKnownId($responses, $knownIds): bool
+    public function responsesIncludeKnownId($responses, $knownIds): bool // FIXME: moved to Bluesky::class
     {
         return !empty(array_intersect(array_map(fn($response) => $response->indieConnectorId, $responses), $knownIds));
     }
 
-    public function paginateResponses(string $did, $type, $cursor)
+    public function paginateResponses(string $did, $type, $cursor) // FIXME: moved to Bluesky::class
     {
         $args = [
             'uri' => $did,
@@ -152,7 +153,7 @@ class BlueskyReceiver extends Bluesky
     /*
     *   unfortunately bluesky does not have Ids for every result entry, so we create them here
     */
-    public function appendIndieConnectorId(array $responses, string $responseType): array
+    public function appendIndieConnectorId(array $responses, string $responseType): array // FIXME: moved to Bluesky::class
     {
         return array_map(function ($response) use ($responseType) {
             switch ($responseType) {

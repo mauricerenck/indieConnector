@@ -23,7 +23,7 @@ final class BlueskyReceiverTest extends TestCaseMocked
     }
 
     /**
-     * @group mastodonReceiver
+     * @group blueskyReceiver
      * @testdox get responses - return responses when known id in first page
      */
     public function testGetResponsesReturnsWhenKnownIdInFirstPage()
@@ -36,7 +36,7 @@ final class BlueskyReceiverTest extends TestCaseMocked
     }
 
     /**
-     * @group mastodonReceiver
+     * @group blueskyReceiver
      * @testdox get responses - return responses when known id in second page
      */
     public function testReturnsWhenKnownIdInSecondPage()
@@ -59,7 +59,7 @@ final class BlueskyReceiverTest extends TestCaseMocked
     }
 
     /**
-     * @group mastodonReceiver
+     * @group blueskyReceiver
      * @testdox get responses - handle errors
      */
     public function testThrowsException()
@@ -70,7 +70,7 @@ final class BlueskyReceiverTest extends TestCaseMocked
     }
 
     /**
-     * @group mastodonReceiver
+     * @group blueskyReceiver
      * @testdox known Ids - return true when match exists
      */
     public function testResponsesIncludeKnownIdReturnsTrueWhenMatchExists()
@@ -89,7 +89,7 @@ final class BlueskyReceiverTest extends TestCaseMocked
     }
 
     /**
-     * @group mastodonReceiver
+     * @group blueskyReceiver
      * @testdox known Ids - return false when no match
      */
     public function testResponsesIncludeKnownIdReturnsFalseWhenNoMatch()
@@ -108,7 +108,7 @@ final class BlueskyReceiverTest extends TestCaseMocked
     }
 
     /**
-     * @group mastodonReceiver
+     * @group blueskyReceiver
      * @testdox known Ids - return false when empty responses
      */
     public function testResponsesIncludeKnownIdReturnsFalseWhenResponsesEmpty()
@@ -124,7 +124,7 @@ final class BlueskyReceiverTest extends TestCaseMocked
     }
 
     /**
-     * @group mastodonReceiver
+     * @group blueskyReceiver
      * @testdox known Ids - return false when no known ids
      */
     public function testResponsesIncludeKnownIdReturnsFalseWhenKnownIdsEmpty()
@@ -142,7 +142,7 @@ final class BlueskyReceiverTest extends TestCaseMocked
     }
 
     /**
-     * @group mastodonReceiver
+     * @group blueskyReceiver
      * @testdox set id - set id for likes
      */
     public function testAppendIndieConnectorIdLikes()
@@ -161,7 +161,7 @@ final class BlueskyReceiverTest extends TestCaseMocked
     }
 
     /**
-     * @group mastodonReceiver
+     * @group blueskyReceiver
      * @testdox set id - set id for reposts
      */
     public function testAppendIndieConnectorIdReposts()
@@ -180,7 +180,7 @@ final class BlueskyReceiverTest extends TestCaseMocked
     }
 
     /**
-     * @group mastodonReceiver
+     * @group blueskyReceiver
      * @testdox set id - set id for quotes
      */
     public function testAppendIndieConnectorIdQuotes()
@@ -197,7 +197,7 @@ final class BlueskyReceiverTest extends TestCaseMocked
     }
 
     /**
-     * @group mastodonReceiver
+     * @group blueskyReceiver
      * @testdox set id - set id for replies
      */
     public function testAppendIndieConnectorIdReplies()

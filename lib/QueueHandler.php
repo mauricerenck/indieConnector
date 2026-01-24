@@ -33,10 +33,25 @@ class QueueHandler
         try {
             $uniqueHash = md5($targetUrl . $sourceUrl . $mentionDate);
 
+            $sourceHost = parse_url($sourceUrl, PHP_URL_HOST);
+            $kirbyHost = kirby()->environment()->host();
+
+            $sourceService = 'webmention';
+            if ($sourceHost === $kirbyHost) {
+                $path = parse_url($sourceHost, PHP_URL_PATH);
+                $pathParts = explode('/', $path);
+
+                if ($pathParts[0] === 'indieconnector' && isset($pathParts[2])) {
+                    $responseCollector = new ResponseCollector();
+                    $response = $responseCollector->getSingleResponse($pathParts[2]);
+                    $sourceService = $response->response_source;
+                }
+            }
+
             $this->indieDb->insert(
                 'queue',
-                ['id', 'source_url', 'target_url', 'queue_status'],
-                [$uniqueHash, $sourceUrl, $targetUrl, 'queued']
+                ['id', 'source_url', 'target_url', 'queue_status', 'source_service'],
+                [$uniqueHash, $sourceUrl, $targetUrl, 'queued', $sourceService]
             );
         } catch (Exception $e) {
             echo 'Could not queue webmention: ', $e->getMessage(), "\n";

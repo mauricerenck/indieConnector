@@ -45,7 +45,7 @@ return [
     'mauricerenck.indieConnector.responses' => [
         'enabled' => true,
         'limit' => 5,
-        'ttl' => 5,
+        'ttl' => 1,
         'queue.limit' => 5,
     ],
 ];

@@ -27,14 +27,9 @@ return [
         return new Content($postData);
     },
     'icGetBlueskyUrl' => function () {
-        $blueskySender = new BlueskySender();
         $bluesky = new Bluesky();
-        $atUri = $blueskySender->getPostTargetUrl('bluesky', $this);
 
-        if (is_null($atUri)) {
-            return '';
-        }
-
-        return $bluesky->getUrlFromDid($atUri);
+        $urls = $bluesky->getBlueskyUrl($this);
+        return $urls['http'];
     },
 ];
