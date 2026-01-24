@@ -131,6 +131,23 @@ class WebmentionStats
         }
     }
 
+    public function updateOutboxStatus(string $id, string $status)
+    {
+        try {
+            $this->indieDb->update(
+                'outbox',
+                ['status'],
+                [$status],
+                'WHERE id = "' . $id . '"'
+            );
+
+            return true;
+        } catch (Exception $e) {
+            echo 'Database error: ', $e->getMessage(), "\n";
+            return false;
+        }
+    }
+
     public function getSummaryByMonth(int $year, int $month)
     {
         try {
@@ -365,7 +382,7 @@ class WebmentionStats
 
             $result = $this->indieDb->select(
                 'webmentions',
-                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'mention_service', 'author_url'],
+                ['id', 'mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'mention_service', 'author_url'],
                 'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY author, mention_source, mention_type;'
             );
 
@@ -390,6 +407,7 @@ class WebmentionStats
                 // TODO hier nach author aufsplitten
                 if (!isset($authors[$index])) {
                     $authors[$index] = [
+                        'id' => $webmention->id,
                         'host' => $host,
                         'sourceType' => $sourceType,
                         'source' => $webmention->mention_source,
@@ -426,7 +444,7 @@ class WebmentionStats
 
             $result = $this->indieDb->select(
                 'outbox',
-                ['page_uuid', 'target', 'status', 'updates'],
+                ['id', 'page_uuid', 'target', 'status', 'updates'],
                 'WHERE created_at LIKE "' . $year . '-' . $month . '-%" ORDER BY created_at DESC;'
             );
 
@@ -458,6 +476,7 @@ class WebmentionStats
                 }
 
                 $targets[$webmention->page_uuid]['entries'][] = [
+                    'id' => $webmention->id,
                     'url' => $webmention->target,
                     'status' => $webmention->status,
                     'updates' => $webmention->updates

@@ -3,7 +3,6 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Http\Response;
-use Kirby\Cms\Url;
 
 return [
     'routes' => [
@@ -91,6 +90,9 @@ return [
 
                 $urlHandler = new UrlHandler();
                 $urlHandler->blockUrl($postBody['url'], $postBody['direction'], $postBody['hostOnly']);
+
+                $webmentionStats = new WebmentionStats();
+                $webmentionStats->updateOutboxStatus($postBody['id'], 'blocked');
 
                 return new Response(json_encode([]), 'application/json');
             },

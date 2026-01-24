@@ -203,7 +203,9 @@ export default {
             this.pagination.total = 0
 
             this.queuedItems.forEach(queueEntry => {
-                const sourceLabel = queueEntry.source_service ? queueEntry.source_service.name : queueEntry.source_url
+                const sourceLabel = queueEntry.source_service
+                    ? queueEntry.source_service.charAt(0).toUpperCase()
+                    : queueEntry.source_url
                 const newQueueItem = {
                     id: queueEntry.id,
                     source: `<a href="${queueEntry.source_url}?panelPreview=true" target="_blank">${sourceLabel}</a>`,
