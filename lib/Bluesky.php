@@ -228,10 +228,32 @@ class Bluesky
         }
     }
 
-    public function getLikes(string $did, array $knownIds)
+    public function fetchResponseByType(string $postUrl, array $knownIds, string $type)
     {
-        $postUrl = $did; //FIXME hier crasht es schon, sicherstellen, dass wir immer mit dem gleichen typ arbeiten
-        $likes = $this->getResponses($did, 'likes', $knownIds);
+        $did = $this->getDidFromUrl($postUrl);
+
+        switch ($type) {
+            case 'like-of':
+                return $this->getLikes(did: $did, knownIds: $knownIds, postUrl: $postUrl);
+                break;
+            case 'repost-of':
+                return $this->getReposts(did: $did, knownIds: $knownIds, postUrl: $postUrl);
+                break;
+            case 'mention-of':
+                return $this->getQuotes(did: $did, knownIds: $knownIds, postUrl: $postUrl);
+                break;
+            case 'in-reply-to':
+                return $this->getReplies(did: $did, knownIds: $knownIds, postUrl: $postUrl);
+                break;
+            default:
+                return [];
+                break;
+        }
+    }
+
+    public function getLikes(string $did, array $knownIds, string $postUrl)
+    {
+        $likes = $this->getResponses($did, 'like-of', $knownIds);
 
         if (count($likes) === 0) {
             return [];
@@ -270,10 +292,9 @@ class Bluesky
         ];
     }
 
-    public function getReposts(string $did, array $knownIds)
+    public function getReposts(string $did, array $knownIds, string $postUrl)
     {
-        $postUrl = $did; //FIXME hier crasht es schon, sicherstellen, dass wir immer mit dem gleichen typ arbeiten
-        $reposts = $this->getResponses($did, 'reposts', $knownIds);
+        $reposts = $this->getResponses($did, 'repost-of', $knownIds);
 
         if (count($reposts) === 0) {
             return [];
@@ -294,7 +315,7 @@ class Bluesky
                     'responseSource' => 'bluesky',
                     'responseDate' => $repost->createdAt,
                     'responseText' => '',
-                    'responseUrl' => $postUrl, // 'response_url' likes don't have a url, use post url instead
+                    'responseUrl' => $postUrl,
                     'authorId' => $repost->did,
                     'authorName' => $displayName,
                     'authorUsername' => $repost->handle,
@@ -312,10 +333,9 @@ class Bluesky
         ];
     }
 
-    public function getQuotes(string $did, array $knownIds)
+    public function getQuotes(string $did, array $knownIds, string $postUrl)
     {
-        $postUrl = $did; //FIXME hier crasht es schon, sicherstellen, dass wir immer mit dem gleichen typ arbeiten
-        $quotes = $this->getResponses($did, 'quotes', $knownIds);
+        $quotes = $this->getResponses($did, 'mention-of', $knownIds);
 
         if (count($quotes) === 0) {
             return [];
@@ -328,6 +348,7 @@ class Bluesky
             if (!in_array($quote->indieConnectorId, $knownIds)) {
                 $displayName = (!empty($quote->author->displayName)) ? $quote->author->displayName : $quote->author->handle;
                 $avatar = isset($quote->author->avatar) ? $quote->author->avatar : '';
+                $responseUrl = $this->getUrlFromDid($quote->uri);
 
                 $quotesQueueData[] = [
                     'postUrl' => $postUrl,
@@ -336,7 +357,7 @@ class Bluesky
                     'responseSource' => 'bluesky',
                     'responseDate' => $quote->record->createdAt,
                     'responseText' => $quote->record->text ?? '',
-                    'responseUrl' => $quote->uri, // 'response_url' likes don't have a url, use post url instead
+                    'responseUrl' =>  $responseUrl,
                     'authorId' => $quote->author->did,
                     'authorName' => $displayName,
                     'authorUsername' => $quote->author->handle,
@@ -354,10 +375,9 @@ class Bluesky
         ];
     }
 
-    public function getReplies(string $did, array $knownIds)
+    public function getReplies(string $did, array $knownIds, string $postUrl)
     {
-        $postUrl = $did; //FIXME hier crasht es schon, sicherstellen, dass wir immer mit dem gleichen typ arbeiten
-        $replies = $this->getResponses($did, 'replies', $knownIds);
+        $replies = $this->getResponses($did, 'in-reply-to', $knownIds);
 
         if (count($replies) === 0) {
             return [];
@@ -370,6 +390,7 @@ class Bluesky
             if (!in_array($reply->indieConnectorId, $knownIds)) {
                 $displayName = (!empty($reply->post->author->displayName)) ? $reply->post->author->displayName : $reply->post->author->handle;
                 $avatar = isset($reply->post->author->avatar) ? $reply->post->author->avatar : '';
+                $responseUrl = $this->getUrlFromDid($reply->post->uri);
 
                 $quotesQueueData[] = [
                     'postUrl' => $postUrl,
@@ -378,7 +399,7 @@ class Bluesky
                     'responseSource' => 'bluesky',
                     'responseDate' => $reply->post->record->createdAt,
                     'responseText' => $reply->post->record->text ?? '',
-                    'responseUrl' => $reply->post->uri, // 'response_url' likes don't have a url, use post url instead
+                    'responseUrl' => $responseUrl,
                     'authorId' => $reply->post->author->did,
                     'authorName' => $displayName,
                     'authorUsername' => $reply->post->author->handle,
@@ -403,7 +424,7 @@ class Bluesky
         return !empty(array_intersect(array_map(fn($response) => $response->indieConnectorId, $responses), $knownIds));
     }
 
-    public function paginateResponses(string $did, $type, $cursor)
+    public function paginateResponses(string $did, string $type, $cursor)
     {
         $args = [
             'uri' => $did,
@@ -411,16 +432,16 @@ class Bluesky
         ];
 
         switch ($type) {
-            case 'likes':
+            case 'like-of':
                 $endpoint = 'getLikes';
                 break;
-            case 'reposts':
+            case 'repost-of':
                 $endpoint = 'getRepostedBy';
                 break;
-            case 'quotes':
+            case 'mention-of':
                 $endpoint = 'getQuotes';
                 break;
-            case 'replies':
+            case 'in-reply-to':
                 $endpoint = 'getPostThread';
                 $args['depth'] = 1;
                 $args['parentHeight'] = 0;
@@ -449,17 +470,17 @@ class Bluesky
             $response = $this->bskClient->request('GET', 'app.bsky.feed.' . $endpoint, $args);
 
             switch ($type) {
-                case 'likes':
-                    $data = isset($response->likes) ? $this->appendIndieConnectorId($response->likes, 'likes') : [];
+                case 'like-of':
+                    $data = isset($response->likes) ? $this->appendIndieConnectorId($response->likes, 'like-of') : [];
                     break;
-                case 'reposts':
-                    $data = isset($response->repostedBy) ? $this->appendIndieConnectorId($response->repostedBy, 'reposts') : [];
+                case 'repost-of':
+                    $data = isset($response->repostedBy) ? $this->appendIndieConnectorId($response->repostedBy, 'repost-of') : [];
                     break;
-                case 'quotes':
-                    $data = isset($response->posts) ? $this->appendIndieConnectorId($response->posts, 'quotes') : [];
+                case 'mention-of':
+                    $data = isset($response->posts) ? $this->appendIndieConnectorId($response->posts, 'mention-of') : [];
                     break;
-                case 'replies':
-                    $data = isset($response->thread->replies) ? $this->appendIndieConnectorId($response->thread->replies, 'replies') : [];
+                case 'in-reply-to':
+                    $data = isset($response->thread->replies) ? $this->appendIndieConnectorId($response->thread->replies, 'in-reply-to') : [];
                     break;
             }
 
@@ -480,16 +501,16 @@ class Bluesky
     {
         return array_map(function ($response) use ($responseType) {
             switch ($responseType) {
-                case 'likes':
+                case 'like-of':
                     $id = md5($response->actor->did . $response->createdAt);
                     break;
-                case 'reposts':
+                case 'repost-of':
                     $id = md5($response->did . $response->createdAt);
                     break;
-                case 'quotes':
+                case 'mention-of':
                     $id = $response->cid;
                     break;
-                case 'replies':
+                case 'in-reply-to':
                     $id = $response->post->cid;
                     break;
             }

@@ -16,12 +16,12 @@ class ResponseCollector
         private ?int $queueLimit = null,
         private ?IndieConnectorDatabase $indieDatabase = null,
         private ?MastodonReceiver $mastodonReceiver = null,
-        private ?BlueskyReceiver $blueskyReceiver = null,
+
         private ?Bluesky $bluesky = null,
         private ?UrlHandler $urlHandler = null,
     ) {
         $this->mastodonReceiver = $mastodonReceiver ?? new MastodonReceiver();
-        $this->blueskyReceiver = $blueskyReceiver ?? new BlueskyReceiver();
+
         $this->bluesky = $bluesky ?? new Bluesky();
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
         $this->urlHandler = $urlHandler ?? new UrlHandler();
@@ -199,11 +199,12 @@ class ResponseCollector
             $this->disablePostUrls(postUrls: $cleanedPostUrls['invalid']);
         }
 
+
         $count = 0;
-        $count += $this->fetchBlueskyResponseByType($cleanedPostUrls['valid'], $lastResponses, 'like-of');
-        $count += $this->fetchBlueskyResponseByType($cleanedPostUrls['valid'], $lastResponses, 'repost-of');
-        $count += $this->fetchBlueskyResponseByType($cleanedPostUrls['valid'], $lastResponses, 'mention-of');
-        $count += $this->fetchBlueskyResponseByType($cleanedPostUrls['valid'], $lastResponses, 'in-reply-to');
+        $blueskyTypes = ['like-of', 'repost-of', 'mention-of', 'in-reply-to'];
+        foreach ($blueskyTypes as $type) {
+            $count += $this->fetchBlueskyResponseByType($cleanedPostUrls['valid'], $lastResponses, $type);
+        }
 
         $this->updateLastFetched($postUrls);
 
@@ -359,36 +360,25 @@ class ResponseCollector
         $knownIds = $this->getKnownIds($lastResponses, $type);
 
         foreach ($postUrls as $postUrl) {
-
-            switch ($type) {
-                case 'like-of':
-                    $responses = $this->bluesky->getLikes($postUrl, $knownIds);
-                    break;
-                case 'repost-of':
-                    $responses = $this->bluesky->getReposts($postUrl, $knownIds);
-                    break;
-                default:
-                    $responses = [];
-                    break;
-            }
+            $responses = $this->bluesky->fetchResponseByType(postUrl: $postUrl, knownIds: $knownIds, type: $type);
 
             if (count($responses) === 0) {
                 continue;
             }
 
-            foreach ($responses as $response) {
+            foreach ($responses['data'] as $response) {
                 if ($this->urlHandler->isBlockedSource($response['authorUrl'])) {
                     continue;
                 }
 
                 $this->addToQueue(
                     postUrl: $response['postUrl'],
-                    responseId: $response['indieConnectorId'],
-                    responseType: $type,
+                    responseId: $response['responseId'],
+                    responseType: $response['responseType'],
                     responseSource: $response['responseSource'],
-                    responseDate: $response['createdAt'],
+                    responseDate: $response['responseDate'],
                     responseText: $response['responseText'],
-                    responseUrl: $response['postUrl'],
+                    responseUrl: $response['responseUrl'],
                     authorId: $response['authorId'],
                     authorName: $response['authorName'],
                     authorUsername: $response['authorUsername'],
