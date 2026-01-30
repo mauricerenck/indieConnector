@@ -29,7 +29,7 @@ return [
     'icGetBlueskyUrl' => function () {
         $bluesky = new Bluesky();
 
-        $urls = $bluesky->getBlueskyUrl($this);
+        $urls = $bluesky->getUrlsFromPage($this);
         return $urls['http'];
     },
 ];

@@ -38,6 +38,10 @@ class ResponseCollector
             return;
         }
 
+        if ($postType === 'bluesky') {
+            $postUrl = $this->bluesky->getUrlFromDid($postUrl);
+        }
+
         $existingPostUrls = $this->indieDb->select(
             'external_post_urls',
             ['id'],

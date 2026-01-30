@@ -34,7 +34,6 @@ return [
         $webmentions = new WebmentionSender();
         $webmentions->sendWebmentions($newPage);
 
-
         if (option('mauricerenck.indieConnector.post.automatically', true) && !$newPage->isDraft() && $oldPage->isDraft()) {
             $postResults = [];
 
@@ -44,13 +43,13 @@ return [
                 $postResults[] = $mastodonPost;
             }
 
-            $blueskySender = new BlueskySender();
-            $blueskyPost = $blueskySender->sendPost($newPage);
-
+            $bluesky = new Bluesky();
+            $blueskyPost = $bluesky->sendPost(page: $newPage);
             if ($blueskyPost !== false) {
                 $postResults[] = $blueskyPost;
             }
 
+            // FIXME Sender
             $mastodonSender->updateExternalPosts($postResults, $newPage);
             $mastodonSender->updateResponseCollectionUrls($postResults, $newPage);
         }

@@ -4,6 +4,7 @@ namespace mauricerenck\IndieConnector;
 
 use cjrasmussen\BlueskyApi\BlueskyApi;
 use Kirby\Http\Remote;
+use Kirby\Filesystem\F;
 use Exception;
 
 class Bluesky
@@ -14,17 +15,19 @@ class Bluesky
         private ?bool $enabled = null,
         private ?string $handle = null,
         private ?string $password = null,
+        private ?int $resizeImages = null,
 
-        private ?Sender $sender = null,
         private ?Outbox $outbox = null,
-        private ?BlueskyApi $bskClient = null
+        private ?BlueskyApi $bskClient = null,
+        private ?ExternalPostSender $externalPostSender = null
     ) {
         $this->enabled = $enabled ?? option('mauricerenck.indieConnector.bluesky.enabled', false);
         $this->handle = $password ?? option('mauricerenck.indieConnector.bluesky.handle', false);
         $this->password = $password ?? option('mauricerenck.indieConnector.bluesky.password', false);
+        $this->resizeImages = $resizeImages ?? option('mauricerenck.indieConnector.bluesky.resizeImages', 800);
 
-        $this->sender = $sender ?? new Sender();
         $this->outbox = $outbox ?? new Outbox();
+        $this->externalPostSender = $externalPostSender ?? new ExternalPostSender();
 
         if (!$this->handle) {
             return;
@@ -43,9 +46,109 @@ class Bluesky
         $this->connected = true;
     }
 
-    public function getBlueskyUrl($page)
+    public function sendPost($page, string | null $manualTextMessage = null): mixed
     {
+        if (!$this->enabled) {
+            return false;
+        }
 
+        if (!$this->password) {
+            throw new Exception('No bluesky app password set');
+            return false;
+        }
+
+        if (!$this->externalPostSender->preconditionsMet($page)) {
+            return false;
+        }
+
+        try {
+            if (!$this->bskClient->auth($this->handle, $this->password)) {
+                return false;
+            }
+
+            $fullMessage = $this->externalPostSender->getTrimmedFullMessage(page: $page, manualTextMessage: $manualTextMessage, service: 'bluesky');
+            $language = $this->externalPostSender->getPreferedLanguage();
+            $altField = $this->externalPostSender->imageAltField;
+
+            $imageList = [];
+            if ($images = $this->externalPostSender->getImages($page)) {
+                foreach ($images->toFiles()->limit(4) as $image) {
+                    if (is_null($image)) {
+                        continue;
+                    }
+
+                    $mediaAttachment = $this->getMediaAttachment($image);
+
+                    if (!$mediaAttachment) {
+                        continue;
+                    }
+
+                    $altText = $image->{$altField}()->isNotEmpty() ? $image->{$altField}()->value() : '';
+
+                    $response = $this->bskClient->request(
+                        'POST',
+                        'com.atproto.repo.uploadBlob',
+                        [],
+                        $mediaAttachment['content'],
+                        $mediaAttachment['mime']
+                    );
+
+                    $image = $response->blob;
+                    $imageList[] = [
+                        'alt' => $altText ?? '',
+                        'image' => $image,
+                        'aspectRatio' => [
+                            'width'  => $mediaAttachment['width'],
+                            'height' => $mediaAttachment['height'],
+                        ],
+                    ];
+                }
+            }
+
+            $postArgs = [
+                'repo' => $this->bskClient->getAccountDid(),
+                'collection' => 'app.bsky.feed.post',
+                'record' => [
+                    'text' => $fullMessage,
+                    'langs' => [$language],
+                    'createdAt' => date('c'),
+                    '$type' => 'app.bsky.feed.post',
+                    'facets' => array_merge($this->getLinks($fullMessage), $this->getHashtags($fullMessage))
+                ],
+            ];
+
+            if (count($imageList) > 0) {
+                $postArgs['record']['embed'] = [
+                    '$type' => 'app.bsky.embed.images',
+                    'images' => $imageList,
+                ];
+            }
+
+            $response = $this->bskClient->request('POST', 'com.atproto.repo.createRecord', $postArgs);
+
+            if (isset($response->error)) {
+                return [
+                    'id' => null,
+                    'uri' => null,
+                    'status' => 500,
+                    'target' => 'bluesky'
+                ];
+            }
+
+            return [
+                'id' => $response->cid,
+                'uri' => $response->uri,
+                'status' => 200,
+                'target' => 'bluesky'
+            ];
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+            return false;
+        }
+    }
+
+    public function getUrlsFromPage($page)
+    {
         // if the user manually entered a Bluesky URL, we will use it directly
         if ($page->blueskyStatusUrl()->isNotEmpty()) {
             $bskUrl = $page->blueskyStatusUrl()->value();
@@ -518,5 +621,88 @@ class Bluesky
             $response->indieConnectorId = $id;
             return $response;
         }, $responses);
+    }
+
+    public function getMediaAttachment($image)
+    {
+        try {
+            $imageMimeType = $image->mime();
+            $resizedImage = $image->resize($this->resizeImages); // image size must be very low, so we need to resize it
+            $resizedImage->base64(); // this forces kirby to generate the image
+
+            if (!F::exists($resizedImage->root())) {
+                return false;
+            }
+
+            return [
+                'content' => file_get_contents($resizedImage->root()),
+                'mime' => $imageMimeType,
+                'width' => $resizedImage->width(),
+                'height' => $resizedImage->height()
+            ];
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public function getLinks($message)
+    {
+        $links = [];
+        $regex = '/(https?:\/\/[^\s]+)/';
+        preg_match_all($regex, $message, $matches, PREG_OFFSET_CAPTURE);
+
+        foreach ($matches[0] as $match) {
+            $url = $match[0];
+            $start = $match[1];
+            $end = $start + strlen($url);
+
+            $links[] = [
+                'index' => [
+                    'byteStart' => $start,
+                    'byteEnd' => $end,
+                ],
+                'features' => [
+                    [
+                        '$type' => 'app.bsky.richtext.facet#link',
+                        'uri' => $url,
+                    ],
+                ],
+            ];
+        }
+
+        return $links;
+    }
+
+    public function getHashtags($message)
+    {
+        $hashtags = [];
+        $regex = '/(^|\s)#(\p{L}[\p{L}\p{N}_]*)/u'; // captures #tag with letters/numbers/underscore
+
+        preg_match_all($regex, $message, $matches, PREG_OFFSET_CAPTURE);
+
+        foreach ($matches[0] as $index => $match) {
+            $fullMatch = $match[0];
+            $start = $match[1] + (substr($fullMatch, 0, 1) === '#' ? 0 : 1); // skip space if present
+            $tagText = $matches[2][$index][0]; // without the '#'
+
+            // Bluesky wants byte offsets, not character positions
+            $byteStart = strlen(mb_strcut($message, 0, $start, 'UTF-8'));
+            $byteEnd   = $byteStart + strlen($fullMatch) - ($fullMatch[0] === '#' ? 0 : 1);
+
+            $hashtags[] = [
+                'index' => [
+                    'byteStart' => $byteStart,
+                    'byteEnd'   => $byteEnd,
+                ],
+                'features' => [
+                    [
+                        '$type' => 'app.bsky.richtext.facet#tag',
+                        'tag'   => $tagText,
+                    ],
+                ],
+            ];
+        }
+
+        return $hashtags;
     }
 }

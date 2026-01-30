@@ -38,7 +38,7 @@ final class BlueskyTest extends TestCaseMocked
             ->getMock();
 
         // Act
-        $result = $bluesky->getBlueskyUrl('dummyPage');
+        $result = $bluesky->getUrlsFromPage('dummyPage');
 
         // Assert
         $this->assertEquals([

@@ -3,6 +3,7 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Toolkit\Str;
+use Exception;
 
 class ExternalPostSender extends Sender
 {
@@ -49,6 +50,28 @@ class ExternalPostSender extends Sender
         if (!$maxPostLength && option('mauricerenck.indieConnector.mastodon-text-length', false)) {
             $this->maxPostLength = option('mauricerenck.indieConnector.mastodon-text-length');
         }
+    }
+
+    public function preconditionsMet($page): bool
+    {
+        if (!$this->pageChecks->pageFullfillsCriteria($page, 'post')) {
+            return false;
+        }
+
+        if ($this->urlHandler->isLocalUrl($page->url())) {
+            throw new Exception('Local url');
+            return false;
+        }
+
+        if (!$this->pageChecks->pageHasEnabledExternalPosting($page)) {
+            return false;
+        }
+
+        if ($this->alreadySentToTarget('bluesky', $page)) {
+            return false;
+        }
+
+        return true;
     }
 
     public function getTextFieldContent($page): string
@@ -118,14 +141,13 @@ class ExternalPostSender extends Sender
         return $url;
     }
 
-
     public function calculatePostTextLength(string $url)
     {
         $urlLength = Str::length($url);
         return $this->maxPostLength - $urlLength - 2;
     }
 
-    public function getTrimmedFullMessage(string $message, string $url, string $tags, string $service): string
+    public function getTrimmedFullMessage($page,  string | null $manualTextMessage = null, string $service): string
     {
         $maxLength = $service == 'mastodon' ? $this->maxPostLength : 300;
         $appendix = '...';
@@ -133,6 +155,10 @@ class ExternalPostSender extends Sender
         $appendixLength = Str::length($appendix);
         $linebreakLength = 1;
         $metaTextLength = $appendixLength; // FIXME until kirby bug is not fixed @see https://github.com/getkirby/kirby/issues/7722
+
+        $url = $this->getPostUrl($page);
+        $tags = $this->getPostTags($page);
+        $message = is_null($manualTextMessage) ? $this->getTextFieldContent($page) : $manualTextMessage;
 
         $urlLength = Str::length($url);
         $tagsLength = Str::length($tags);
@@ -157,6 +183,21 @@ class ExternalPostSender extends Sender
         }
 
         return $fullMessage;
+    }
+
+    public function getPreferedLanguage(): string
+    {
+        $language = 'en';
+
+        if ($defaultLanguage = kirby()->defaultLanguage()) {
+            $language = $defaultLanguage->code();
+        }
+
+        if ($this->prefereLanguage !== false && !empty($this->prefereLanguage)) {
+            $language = $this->prefereLanguage;
+        }
+
+        return $language;
     }
 
     public function updatePosts($id, $url, $statusCode, $page, $target)
