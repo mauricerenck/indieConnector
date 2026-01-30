@@ -13,13 +13,13 @@ return [
             $webmentions->sendWebmentions($newPage);
         }
 
-        if ($mastodonUrl = $newPage->mastodonStatusUrl()) {
-            if ($oldPage->mastodonStatusUrl() === $mastodonUrl || $mastodonUrl->isEmpty()) {
-                return;
-            }
+        // if ($mastodonUrl = $newPage->mastodonStatusUrl()) {
+        //     if ($oldPage->mastodonStatusUrl() === $mastodonUrl || $mastodonUrl->isEmpty()) {
+        //         return;
+        //     }
 
-            $responseCollector->registerPostUrl($newPage->uuid()->id(), $mastodonUrl->value(), 'mastodon');
-        }
+        //     $responseCollector->registerPostUrl($newPage->uuid()->id(), $mastodonUrl->value(), 'mastodon');
+        // }
 
         if ($blueskyUrl = $newPage->blueskyStatusUrl()) {
             if ($oldPage->blueskyStatusUrl() === $blueskyUrl || $blueskyUrl->isEmpty()) {
@@ -35,13 +35,16 @@ return [
         $webmentions->sendWebmentions($newPage);
 
         if (option('mauricerenck.indieConnector.post.automatically', true) && !$newPage->isDraft() && $oldPage->isDraft()) {
+            $sender = new Sender();
+
             $postResults = [];
 
-            $mastodonSender = new MastodonSender();
-            $mastodonPost = $mastodonSender->sendPost($newPage);
-            if ($mastodonPost !== false) {
-                $postResults[] = $mastodonPost;
-            }
+            // FIXME
+            // $mastodonSender = new MastodonSender();
+            // $mastodonPost = $mastodonSender->sendPost($newPage);
+            // if ($mastodonPost !== false) {
+            //     $postResults[] = $mastodonPost;
+            // }
 
             $bluesky = new Bluesky();
             $blueskyPost = $bluesky->sendPost(page: $newPage);
@@ -49,9 +52,8 @@ return [
                 $postResults[] = $blueskyPost;
             }
 
-            // FIXME Sender
-            $mastodonSender->updateExternalPosts($postResults, $newPage);
-            $mastodonSender->updateResponseCollectionUrls($postResults, $newPage);
+            $sender->updateExternalPosts($postResults, $newPage);
+            $sender->updateResponseCollectionUrls($postResults, $newPage);
         }
     },
 

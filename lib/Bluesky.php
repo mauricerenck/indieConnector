@@ -52,6 +52,7 @@ class Bluesky
             return false;
         }
 
+
         if (!$this->password) {
             throw new Exception('No bluesky app password set');
             return false;
@@ -137,7 +138,7 @@ class Bluesky
 
             return [
                 'id' => $response->cid,
-                'uri' => $response->uri,
+                'uri' => $this->getUrlFromDid($response->uri),
                 'status' => 200,
                 'target' => 'bluesky'
             ];

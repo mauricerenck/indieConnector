@@ -147,7 +147,7 @@ class ExternalPostSender extends Sender
         return $this->maxPostLength - $urlLength - 2;
     }
 
-    public function getTrimmedFullMessage($page,  string | null $manualTextMessage = null, string $service): string
+    public function getTrimmedFullMessage($page, string $service,  string | null $manualTextMessage = null): string
     {
         $maxLength = $service == 'mastodon' ? $this->maxPostLength : 300;
         $appendix = '...';
