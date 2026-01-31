@@ -327,7 +327,7 @@ class Bluesky
 
             return $entries;
         } catch (Exception $e) {
-            // throw new Exception($e->getMessage()); FIXME this shouldnt be here?
+            throw new Exception($e->getMessage());
             return [];
         }
     }
