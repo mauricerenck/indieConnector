@@ -15,12 +15,12 @@ class ResponseCollector
         private ?int $ttl = null,
         private ?int $queueLimit = null,
         private ?IndieConnectorDatabase $indieDatabase = null,
-        private ?MastodonReceiver $mastodonReceiver = null,
+        private ?Mastodon $mastodon = null,
 
         private ?Bluesky $bluesky = null,
         private ?UrlHandler $urlHandler = null,
     ) {
-        $this->mastodonReceiver = $mastodonReceiver ?? new MastodonReceiver();
+        $this->mastodon = $mastodon ?? new Mastodon();
 
         $this->bluesky = $bluesky ?? new Bluesky();
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
@@ -87,21 +87,15 @@ class ResponseCollector
         $countPostUrls = 0;
         $countResponses = 0;
 
-        $mastodonPostUrls = $postUrls->filterBy('post_type', 'mastodon')->first(); // we only get one resultset here, so we use first()
-        if (!is_null($mastodonPostUrls)) {
-            $result = $this->parseMastodonResponses($mastodonPostUrls->post_urls);
-            if (!is_null($result)) {
-                $countResponses += $result['responses'];
-                $countPostUrls += $result['urls'];
-            }
-        }
-
-        $blueskyPostUrls = $postUrls->filterBy('post_type', 'bluesky')->first(); // we only get one resultset here, so we use first()
-        if (!is_null($blueskyPostUrls)) {
-            $result = $this->parseBlueskyResponses($blueskyPostUrls->post_urls); // we only get one resultset here, so we use first()
-            if (!is_null($result)) {
-                $countResponses += $result['responses'];
-                $countPostUrls += $result['urls'];
+        $services = ['mastodon', 'bluesky'];
+        foreach ($services as $service) {
+            $servicePostUrls = $postUrls->filterBy('post_type', $service)->first(); // we only get one resultset here, so we use first()
+            if (!is_null($servicePostUrls)) {
+                $result = $this->parseResponses($servicePostUrls->post_urls, $service);
+                if (!is_null($result)) {
+                    $countResponses += $result['responses'];
+                    $countPostUrls += $result['urls'];
+                }
             }
         }
 
@@ -148,7 +142,7 @@ class ResponseCollector
         ];
     }
 
-    public function parseMastodonResponses(string $postUrls)
+    public function parseResponses(string $postUrls, string $service)
     {
         if (empty($postUrls)) {
             return [
@@ -163,51 +157,29 @@ class ResponseCollector
             'SELECT GROUP_CONCAT(id, ",") AS ids, post_type FROM known_responses WHERE post_url IN ("' . implode('", "', $postUrls) . '") GROUP BY post_type;'
         );
 
-        $cleanedPostUrls = $this->cleanPostUrls($postUrls, $this->mastodonReceiver);
+        switch ($service) {
+            case 'bluesky':
+                $serviceClass = $this->bluesky;
+                break;
+            case 'mastodon':
+                $serviceClass = $this->mastodon;
+                break;
+            default:
+                return [
+                    'urls' => 0,
+                    'responses' => 0
+                ];
+        }
 
+        $cleanedPostUrls = $this->cleanPostUrls($postUrls, $serviceClass);
         if (count($cleanedPostUrls['invalid']) > 0) {
             $this->disablePostUrls($cleanedPostUrls['invalid']);
         }
 
         $count = 0;
-        $count += $this->fetchMastodonLikes($cleanedPostUrls['valid'], $lastResponses);
-        $count += $this->fetchMastodonReblogs($cleanedPostUrls['valid'], $lastResponses);
-        $count += $this->fetchMastodonReplies($cleanedPostUrls['valid'], $lastResponses);
-
-        $this->updateLastFetched($postUrls);
-
-        return [
-            'urls' => count($postUrls),
-            'responses' => $count
-        ];
-    }
-
-    public function parseBlueskyResponses(string $postUrls)
-    {
-        if (empty($postUrls)) {
-            return [
-                'urls' => 0,
-                'responses' => 0
-            ];
-        }
-
-        // get known responses
-        $postUrls = explode(',', $postUrls);
-        $lastResponses = $this->indieDb->query(
-            'SELECT GROUP_CONCAT(id, ",") AS ids, post_type FROM known_responses WHERE post_url IN ("' . implode('", "', $postUrls) . '") GROUP BY post_type;'
-        );
-
-        $cleanedPostUrls = $this->cleanPostUrls(postUrls: $postUrls, plattformClass: $this->bluesky);
-
-        if (count($cleanedPostUrls['invalid']) > 0) {
-            $this->disablePostUrls(postUrls: $cleanedPostUrls['invalid']);
-        }
-
-
-        $count = 0;
-        $blueskyTypes = ['like-of', 'repost-of', 'mention-of', 'in-reply-to'];
-        foreach ($blueskyTypes as $type) {
-            $count += $this->fetchBlueskyResponseByType($cleanedPostUrls['valid'], $lastResponses, $type);
+        $responseTypes = $service === 'mastodon' ? ['like-of', 'repost-of', 'in-reply-to'] : ['like-of', 'repost-of', 'mention-of', 'in-reply-to'];
+        foreach ($responseTypes as $type) {
+            $count += $this->fetchResponseByType(postUrls: $cleanedPostUrls['valid'], lastResponses: $lastResponses, type: $type, serviceClass: $serviceClass);
         }
 
         $this->updateLastFetched($postUrls);
@@ -218,153 +190,13 @@ class ResponseCollector
         ];
     }
 
-    public function fetchMastodonLikes(array $postUrls, $lastResponses)
-    {
-        $count = 0;
-        $knownIds = $this->getKnownIds($lastResponses, 'like-of');
-
-        foreach ($postUrls as $postUrl) {
-            $favs = $this->mastodonReceiver->getResponses($postUrl, 'likes', $knownIds);
-
-            if (count($favs) === 0) {
-                continue;
-            }
-
-            $latestId = $favs[0]['id'];
-            foreach ($favs as $fav) {
-
-                if ($this->urlHandler->isBlockedSource($fav['url'])) {
-                    continue;
-                }
-
-                if (!in_array($fav['id'], $knownIds)) {
-                    $this->addToQueue(
-                        postUrl: $postUrl,
-                        responseId: $fav['id'], // 'response_id' likes dont have ids use author id instead
-                        responseType: 'like-of',
-                        responseSource: 'mastodon',
-                        responseDate: $this->currentDateTime(),
-                        responseUrl: $postUrl, // 'response_url' likes don't have a url, use post url instead
-                        authorId: $fav['id'],
-                        authorName: $fav['display_name'],
-                        authorUsername: $fav['username'],
-                        authorAvatar: $fav['avatar_static'],
-                        authorUrl: $fav['url']
-                    );
-                    $count++;
-                } else {
-                    break;
-                }
-            }
-
-            $this->updateKnownReponses($postUrl, $latestId, 'like-of');
-        }
-
-        return $count;
-    }
-
-    public function fetchMastodonReblogs(array $postUrls, $lastResponses)
-    {
-        $count = 0;
-        $knownIds = $this->getKnownIds($lastResponses, 'repost-of');
-
-        foreach ($postUrls as $postUrl) {
-            $reblogs = $this->mastodonReceiver->getResponses($postUrl, 'reposts', $knownIds);
-
-            if (count($reblogs) === 0) {
-                continue;
-            }
-
-            $latestId = $reblogs[0]['id'];
-            foreach ($reblogs as $repost) {
-                if (!in_array($repost['id'], $knownIds)) {
-
-                    if ($this->urlHandler->isBlockedSource($repost['url'])) {
-                        continue;
-                    }
-
-                    $this->addToQueue(
-                        postUrl: $postUrl,
-                        responseId: $repost['id'], // 'response_id' likes dont have ids use author id instead
-                        responseType: 'repost-of',
-                        responseSource: 'mastodon',
-                        responseDate: $this->currentDateTime(),
-                        responseUrl: $postUrl, // 'response_url' likes don't have a url, use post url instead
-                        authorId: $repost['id'],
-                        authorName: $repost['display_name'],
-                        authorUsername: $repost['username'],
-                        authorAvatar: $repost['avatar_static'],
-                        authorUrl: $repost['url']
-                    );
-                    $count++;
-                } else {
-                    break;
-                }
-            }
-
-            $this->updateKnownReponses($postUrl, $latestId, 'repost-of');
-        }
-
-        return $count;
-    }
-
-    public function fetchMastodonReplies(array $postUrls, $lastResponses)
-    {
-        $count = 0;
-        $knownIds = $this->getKnownIds($lastResponses, 'in-reply-to');
-
-        foreach ($postUrls as $postUrl) {
-            $replies = $this->mastodonReceiver->getResponses($postUrl, 'replies', $knownIds);
-
-            if (count($replies) === 0) {
-                continue;
-            }
-
-            list($_urlHost, $postId) = $this->mastodonReceiver->getPostUrlData($postUrl);
-            $latestId = $replies[0]['id'];
-            foreach ($replies as $reply) {
-                if (!in_array($reply['id'], $knownIds)) {
-
-                    if ($this->urlHandler->isBlockedSource($reply['account']['url'])) {
-                        continue;
-                    }
-
-                    if ($reply['in_reply_to_id'] === $postId && $reply['visibility'] === 'public') {
-                        $this->addToQueue(
-                            postUrl: $postUrl,
-                            responseId: $reply['id'],
-                            responseType: 'in-reply-to',
-                            responseSource: 'mastodon',
-                            responseDate: $reply['created_at'],
-                            responseText: $reply['content'],
-                            responseUrl: $reply['url'],
-                            authorId: $reply['account']['id'],
-                            authorName: $reply['account']['display_name'],
-                            authorUsername: $reply['account']['username'],
-                            authorAvatar: $reply['account']['avatar_static'],
-                            authorUrl: $reply['account']['url']
-                        );
-
-                        $count++;
-                    }
-                } else {
-                    break;
-                }
-            }
-
-            $this->updateKnownReponses($postUrl, $latestId, 'in-reply-to');
-        }
-
-        return $count;
-    }
-
-    public function fetchBlueskyResponseByType(array $postUrls, $lastResponses, string $type)
+    public function fetchResponseByType(array $postUrls, $lastResponses, string $type, $serviceClass)
     {
         $count = 0;
         $knownIds = $this->getKnownIds($lastResponses, $type);
 
         foreach ($postUrls as $postUrl) {
-            $responses = $this->bluesky->fetchResponseByType(postUrl: $postUrl, knownIds: $knownIds, type: $type);
+            $responses = $serviceClass->fetchResponseByType(postUrl: $postUrl, knownIds: $knownIds, type: $type);
 
             if (count($responses) === 0) {
                 continue;
@@ -492,13 +324,6 @@ class ResponseCollector
         return $this->enabled;
     }
 
-    /*
-    * this class helps with testing date stuff as we can hand in a fixed date
-    */
-    public function currentDateTime($dateTime = null)
-    {
-        return $dateTime ?? date('Y-m-d H:i:s');
-    }
 
     public function cleanPostUrls(array $postUrls, $plattformClass): array
     {
