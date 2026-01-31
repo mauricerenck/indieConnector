@@ -13,13 +13,13 @@ return [
             $webmentions->sendWebmentions($newPage);
         }
 
-        // if ($mastodonUrl = $newPage->mastodonStatusUrl()) {
-        //     if ($oldPage->mastodonStatusUrl() === $mastodonUrl || $mastodonUrl->isEmpty()) {
-        //         return;
-        //     }
+        if ($mastodonUrl = $newPage->mastodonStatusUrl()) {
+            if ($oldPage->mastodonStatusUrl() === $mastodonUrl || $mastodonUrl->isEmpty()) {
+                return;
+            }
 
-        //     $responseCollector->registerPostUrl($newPage->uuid()->id(), $mastodonUrl->value(), 'mastodon');
-        // }
+            $responseCollector->registerPostUrl($newPage->uuid()->id(), $mastodonUrl->value(), 'mastodon');
+        }
 
         if ($blueskyUrl = $newPage->blueskyStatusUrl()) {
             if ($oldPage->blueskyStatusUrl() === $blueskyUrl || $blueskyUrl->isEmpty()) {
@@ -36,15 +36,13 @@ return [
 
         if (option('mauricerenck.indieConnector.post.automatically', true) && !$newPage->isDraft() && $oldPage->isDraft()) {
             $sender = new Sender();
-
             $postResults = [];
 
-            // FIXME
-            // $mastodonSender = new MastodonSender();
-            // $mastodonPost = $mastodonSender->sendPost($newPage);
-            // if ($mastodonPost !== false) {
-            //     $postResults[] = $mastodonPost;
-            // }
+            $mastodon = new Mastodon();
+            $mastodonPost = $mastodon->sendPost($newPage);
+            if ($mastodonPost !== false) {
+                $postResults[] = $mastodonPost;
+            }
 
             $bluesky = new Bluesky();
             $blueskyPost = $bluesky->sendPost(page: $newPage);
