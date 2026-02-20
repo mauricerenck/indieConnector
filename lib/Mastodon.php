@@ -5,6 +5,7 @@ namespace mauricerenck\IndieConnector;
 use Exception;
 use Kirby\Http\Remote;
 use Kirby\Filesystem\F;
+use Kirby\Toolkit\V;
 
 class Mastodon
 {
@@ -271,7 +272,7 @@ class Mastodon
             $headers = $response->headers();
 
             switch ($type) {
-                case 'replies':
+                case 'in-reply-to':
                     $data = isset($json['descendants']) ? $json['descendants'] : [];
                     break;
                 default:
@@ -352,10 +353,12 @@ class Mastodon
         $favs = $this->getResponses($postUrl, 'like-of', $knownIds);
 
         if (count($favs) === 0) {
-            continue;
+            return [];
         }
 
         $latestId = $favs[0]['id'];
+        $likeQueueData = [];
+
         foreach ($favs as $fav) {
             if (!in_array($fav['id'], $knownIds)) {
                 $likeQueueData[] = [
@@ -388,13 +391,15 @@ class Mastodon
         $reposts = $this->getResponses($postUrl, 'repost-of', $knownIds);
 
         if (count($reposts) === 0) {
-            continue;
+            return [];
         }
 
         $latestId = $reposts[0]['id'];
+        $repostQueueData = [];
+
         foreach ($reposts as $repost) {
             if (!in_array($repost['id'], $knownIds)) {
-                $likeQueueData[] = [
+                $repostQueueData[] = [
                     'postUrl' => $postUrl,
                     'responseId' => $repost['id'],
                     'responseType' => 'repost-of',
@@ -415,7 +420,7 @@ class Mastodon
 
         return [
             'latestId' => $latestId,
-            'data' => $likeQueueData,
+            'data' => $repostQueueData,
         ];
     }
 
@@ -424,15 +429,17 @@ class Mastodon
         $replies = $this->getResponses($postUrl, 'in-reply-to', $knownIds);
 
         if (count($replies) === 0) {
-            continue;
+            return [];
         }
 
         list($_urlHost, $postId) = $this->getPostUrlData($postUrl);
         $latestId = $replies[0]['id'];
+        $replyQueueData = [];
+
         foreach ($replies as $reply) {
             if (!in_array($reply['id'], $knownIds)) {
                 if ($reply['in_reply_to_id'] === $postId && $reply['visibility'] === 'public') {
-                    $likeQueueData[] = [
+                    $replyQueueData[] = [
                         'postUrl' => $postUrl,
                         'responseId' => $reply['id'],
                         'responseType' => 'in-reply-to',
@@ -454,7 +461,7 @@ class Mastodon
 
         return [
             'latestId' => $latestId,
-            'data' => $likeQueueData,
+            'data' => $replyQueueData,
         ];
     }
     /*
