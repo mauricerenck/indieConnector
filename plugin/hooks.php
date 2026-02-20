@@ -72,20 +72,6 @@ return [
         $webmentions->removePageFromDeleted($newPage);
     },
 
-    'page.render:after' => function (string $contentType, array $data, string $html, Page $page) {
-        $reponseId = $page->responseId();
-
-        if (is_null($reponseId) || $reponseId->isEmpty()) {
-            return;
-        }
-
-        $isPanelPreview = $page->panelPreview();
-        if (is_null($isPanelPreview) || $isPanelPreview->isEmpty() || $isPanelPreview->isFalse()) {
-            $responseCollector = new ResponseCollector();
-            $responseCollector->removeFromQueue($reponseId->value());
-        }
-    },
-
     'system.loadPlugins:after' => function () {
         $migrations = new Migrations();
         $migrations->migrate();

@@ -367,9 +367,6 @@ class Bluesky
         $likeQueueData = [];
 
         foreach ($likes as $like) {
-
-            // FIXME blocked source?
-
             if (!in_array($like->indieConnectorId, $knownIds)) {
                 $displayName = (!empty($like->actor->displayName)) ? $like->actor->displayName : $like->actor->handle;
                 $avatar = isset($like->actor->avatar) ? $like->actor->avatar : '';

@@ -1257,21 +1257,6 @@ final class ResponseCollectorTest extends TestCaseMocked
 
     /**
      * @group responseCollector
-     * @testdox removeFromQueue - deletes correctly
-     */
-    public function testRemoveFromQueueDeletesCorrectly()
-    {
-        $responseId = 'response-123';
-        $this->indieDb->expects($this->once())
-            ->method('update')
-            ->with('queue_responses', ['queueStatus'], ['redirecting'], 'WHERE id = "response-123" AND queueStatus = "success"');
-
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
-        $collector->removeFromQueue($responseId);
-    }
-
-    /**
-     * @group responseCollector
      * @testdox getSingleResponse - returns correct response
      */
     public function testGetSingleResponseReturnsCorrectResponse()

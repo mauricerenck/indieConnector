@@ -33,7 +33,6 @@ class ResponseCollector
 
     public function registerPostUrl(string $pageUuid, string $postUrl, string $postType): void
     {
-
         if (!$this->isEnabled()) {
             return;
         }
@@ -283,7 +282,46 @@ class ResponseCollector
     public function processResponses()
     {
         $responses = $this->indieDb->select('queue_responses', ['*'], 'WHERE queueStatus = "pending" LIMIT ' . $this->queueLimit);
-        return $responses;
+
+        if (is_null($responses)) {
+            return [];
+        }
+
+        return $this->convertToWebmentionHookData($responses);
+    }
+
+    public function convertToWebmentionHookData($responses)
+    {
+        $sourceBaseUrl = kirby()->url() . '/indieconnector/response/';
+
+        $data = [];
+        foreach ($responses as $response) {
+            $targetPage = page('page://' . $response->page_uuid);
+
+            if (is_null($targetPage)) {
+                continue;
+            }
+
+            $data[] = [
+                'id' => $response->id,
+                'page_uuid' => 'page://' . $response->page_uuid,
+                'type' => $response->response_type,
+                'target' => $targetPage->url(),
+                'source' => $sourceBaseUrl . $response->id,
+                'published' => $response->response_date,
+                'title' => $response->response_type,
+                'content' => $response->response_text,
+                'service' => $response->response_source,
+                'author' => [
+                    'type' => 'card',
+                    'name' => $response->author_name,
+                    'avatar' => $response->author_avatar,
+                    'url' => $response->author_url,
+                ],
+            ];
+        }
+
+        return $data;
     }
 
     public function updateLastFetched(array $postUrls)
@@ -299,18 +337,13 @@ class ResponseCollector
 
     public function markProcessed($responseIds)
     {
-        $this->indieDb->update('queue_responses', ['queueStatus'], ['success'], 'WHERE id IN ("' . implode('","', $responseIds) . '")');
+        $this->indieDb->update('queue_responses', ['queueStatus'], ['redirecting'], 'WHERE id IN ("' . implode('","', $responseIds) . '")');
     }
 
     public function updateKnownReponses($postUrl, $latestId, $verb)
     {
         $selector = str_replace(['https://', 'at://'], ['', ''], $postUrl) . '_' . $verb;
         $this->indieDb->upsert('known_responses', ['id', 'post_url', 'post_type', 'post_selector'], [$latestId, $postUrl, $verb, $selector], 'post_selector', 'id = "' . $latestId . '"');
-    }
-
-    public function removeFromQueue($responseId)
-    {
-        $this->indieDb->update('queue_responses', ['queueStatus'], ['redirecting'], 'WHERE id = "' . $responseId . '" AND queueStatus = "success"');
     }
 
     public function getSingleResponse($responseId)

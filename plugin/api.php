@@ -55,25 +55,16 @@ return [
                     return new Response(json_encode($results), 204);
                 }
 
-                if ($responses->count() === 0) {
+                if (count($responses) === 0) {
                     return new Response(json_encode($results), 204);
                 }
 
-                $webmentions = new WebmentionSender();
-                $sourceBaseUrl = kirby()->url() . '/indieconnector/response/';
+                $webmentionReceiver = new WebmentionReceiver();
 
                 $processedIds = [];
                 foreach ($responses as $response) {
-
-                    $targetPage = page('page://' . $response->page_uuid);
-                    $sourceUrl = $sourceBaseUrl . $response->id;
-
-                    if (is_null($targetPage)) {
-                        continue;
-                    }
-
-                    $webmentions->send($targetPage->url(), $sourceUrl);
-                    $processedIds[] = $response->id;
+                    $webmentionReceiver->triggerWebmentionHook($response, $response['page_uuid']);
+                    $processedIds[] = $response['id'];
                 }
 
                 $results['processed'] = count($processedIds);
