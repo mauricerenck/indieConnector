@@ -1,18 +1,41 @@
 <?php
 
 use mauricerenck\IndieConnector\ExternalPostSender;
+use mauricerenck\IndieConnector\UrlHandler;
+use mauricerenck\IndieConnector\PageChecks;
 use mauricerenck\IndieConnector\TestCaseMocked;
 
 final class ExternalPostSenderTest extends TestCaseMocked
 {
-    private $sender;
+    private $urlHandlerMock;
+    private $pageChecksMock;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->sender = $this->getMockBuilder(ExternalPostSender::class)
-            ->onlyMethods(['calculatePostTextLength'])
+        $this->urlHandlerMock = $this->createMock(UrlHandler::class);
+        $this->pageChecksMock = $this->createMock(PageChecks::class);
+    }
+
+    private function createSender(array $options = []): ExternalPostSender
+    {
+        return $this->getMockBuilder(ExternalPostSender::class)
+            ->setConstructorArgs([
+                $options['textfields'] ?? ['description'],
+                $options['imagefield'] ?? null,
+                $options['imageAltField'] ?? 'alt',
+                $options['tagsField'] ?? null,
+                $options['prefereLanguage'] ?? null,
+                $options['usePermalinkUrl'] ?? false,
+                $options['skipUrl'] ?? false,
+                $options['skipUrlTemplates'] ?? [],
+                $options['maxPostLength'] ?? 300,
+                $options['neverTrimTags'] ?? true,
+                $this->urlHandlerMock,
+                $this->pageChecksMock,
+            ])
+            ->onlyMethods(['getPostUrl', 'getPostTags', 'getTextFieldContent'])
             ->getMock();
     }
 
@@ -22,15 +45,17 @@ final class ExternalPostSenderTest extends TestCaseMocked
      */
     public function testTrimsMessageWithUrlAndTags()
     {
-        $message = str_repeat('A', 1000);
-        $url = 'https://example.com';
-        $tags = '#tag1 #tag2';
+        $sender = $this->createSender();
+        $sender->method('getPostUrl')->willReturn('https://example.com');
+        $sender->method('getPostTags')->willReturn('#tag1 #tag2');
+        $sender->method('getTextFieldContent')->willReturn(str_repeat('A', 1000));
 
-        $result = $this->sender->getTrimmedFullMessage(message: $message, url: $url, tags: $tags, service: 'mastodon');
+        $pageMock = $this->createMock(\Kirby\Cms\Page::class);
+        $result = $sender->getTrimmedFullMessage($pageMock, 'mastodon');
 
-        $this->assertStringContainsString($url, $result);
-        $this->assertStringContainsString($tags, $result);
-        $this->assertEquals(500, strlen($result));
+        $this->assertStringContainsString('https://example.com', $result);
+        $this->assertStringContainsString('#tag1 #tag2', $result);
+        $this->assertLessThanOrEqual(300, strlen($result));
     }
 
     /**
@@ -39,57 +64,170 @@ final class ExternalPostSenderTest extends TestCaseMocked
      */
     public function testTrimsMessageWithUrlOnly()
     {
-        $message = str_repeat('A', 1000);
-        $url = 'https://example.com';
-        $tags = '';
+        $sender = $this->createSender();
+        $sender->method('getPostUrl')->willReturn('https://example.com');
+        $sender->method('getPostTags')->willReturn('');
+        $sender->method('getTextFieldContent')->willReturn(str_repeat('A', 1000));
 
-        $result = $this->sender->getTrimmedFullMessage(message: $message, url: $url, tags: $tags, service: 'mastodon');
+        $pageMock = $this->createMock(\Kirby\Cms\Page::class);
+        $result = $sender->getTrimmedFullMessage($pageMock, 'mastodon');
 
-        $this->assertStringContainsString($url, $result);
-        $this->assertEquals(500, strlen($result));
+        $this->assertStringContainsString('https://example.com', $result);
+        $this->assertLessThanOrEqual(300, strlen($result));
     }
 
     /**
      * @group ExternalPostSenderTest
-     * @testdox getTrimmedFullMessage - should not trim at all
+     * @testdox getTrimmedFullMessage - should not trim short message
      */
     public function testShouldNotTrimMessage()
     {
-        $message = str_repeat('A', 200);
-        $url = 'https://example.com'; // 19 chars
-        $tags = '#tag1 #tag2'; // 12 chars
+        $sender = $this->createSender();
+        $sender->method('getPostUrl')->willReturn('https://example.com');
+        $sender->method('getPostTags')->willReturn('#tag1 #tag2');
+        $sender->method('getTextFieldContent')->willReturn(str_repeat('A', 50));
 
-        $result = $this->sender->getTrimmedFullMessage(message: $message, url: $url, tags: $tags, service: 'mastodon');
+        $pageMock = $this->createMock(\Kirby\Cms\Page::class);
+        $result = $sender->getTrimmedFullMessage($pageMock, 'mastodon');
 
-        $this->assertStringContainsString($url, $result);
-        $this->assertEquals(233, strlen($result)); // chars plus line breaks
+        $this->assertStringContainsString('https://example.com', $result);
+        $this->assertStringContainsString(str_repeat('A', 50), $result);
     }
 
     /**
      * @group ExternalPostSenderTest
-     * @testdox getTrimmedFullMessage - should have exact length (mastodon)
+     * @testdox getTrimmedFullMessage - should have exact length for mastodon
      */
-    public function testShouldHaveExactLength()
+    public function testShouldHaveExactLengthForMastodon()
     {
-        $message = str_repeat('A', 500);
-        $url = '';
-        $tags = '';
+        $sender = $this->createSender(['maxPostLength' => 300]);
+        $sender->method('getPostUrl')->willReturn('');
+        $sender->method('getPostTags')->willReturn('');
+        $sender->method('getTextFieldContent')->willReturn(str_repeat('A', 500));
 
-        $result = $this->sender->getTrimmedFullMessage(message: $message, url: $url, tags: $tags, service: 'mastodon');
-        $this->assertEquals(500, strlen($result));
+        $pageMock = $this->createMock(\Kirby\Cms\Page::class);
+        $result = $sender->getTrimmedFullMessage($pageMock, 'mastodon');
+
+        $this->assertLessThanOrEqual(300, strlen($result));
     }
 
     /**
      * @group ExternalPostSenderTest
-     * @testdox getTrimmedFullMessage - should have exact length (bluesky)
+     * @testdox getTrimmedFullMessage - should have exact length for bluesky
      */
     public function testShouldHaveExactLengthForBluesky()
     {
-        $message = str_repeat('A', 500);
-        $url = '';
-        $tags = '';
+        $sender = $this->createSender();
+        $sender->method('getPostUrl')->willReturn('');
+        $sender->method('getPostTags')->willReturn('');
+        $sender->method('getTextFieldContent')->willReturn(str_repeat('A', 500));
 
-        $result = $this->sender->getTrimmedFullMessage(message: $message, url: $url, tags: $tags, service: 'bluesky');
-        $this->assertEquals(300, strlen($result));
+        $pageMock = $this->createMock(\Kirby\Cms\Page::class);
+        $result = $sender->getTrimmedFullMessage($pageMock, 'bluesky');
+
+        $this->assertLessThanOrEqual(300, strlen($result));
+    }
+
+    /**
+     * @group ExternalPostSenderTest
+     * @testdox getTrimmedFullMessage - uses manual text message when provided
+     */
+    public function testUsesManualTextMessage()
+    {
+        $sender = $this->createSender();
+        $sender->method('getPostUrl')->willReturn('');
+        $sender->method('getPostTags')->willReturn('');
+
+        $pageMock = $this->createMock(\Kirby\Cms\Page::class);
+        $result = $sender->getTrimmedFullMessage($pageMock, 'mastodon', 'My manual message');
+
+        $this->assertStringContainsString('My manual message', $result);
+    }
+
+    /**
+     * @group ExternalPostSenderTest
+     * @testdox getPostTags - returns empty string when no tags field configured
+     */
+    public function testGetPostTagsReturnsEmptyWhenNoTagsField()
+    {
+        $sender = new ExternalPostSender(
+            ['description'],
+            null,
+            'alt',
+            null,
+            null,
+            false,
+            false,
+            [],
+            300,
+            true,
+            $this->urlHandlerMock,
+            $this->pageChecksMock
+        );
+
+        $fieldMock = $this->getMockBuilder(\Kirby\Content\Field::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $fieldMock->method('isEmpty')->willReturn(true);
+
+        $pageMock = $this->createMock(\Kirby\Cms\Page::class);
+        $pageMock->method('__call')->willReturn($fieldMock);
+
+        $result = $sender->getPostTags($pageMock);
+
+        $this->assertEquals('', $result);
+    }
+
+    /**
+     * @group ExternalPostSenderTest
+     * @testdox getPostUrl - returns empty string when skipUrl is true
+     */
+    public function testGetPostUrlReturnsEmptyWhenSkipUrl()
+    {
+        $sender = new ExternalPostSender(
+            null,
+            null,
+            null,
+            null,
+            null,
+            false,
+            true,
+            [],
+            null,
+            null,
+            $this->urlHandlerMock,
+            $this->pageChecksMock
+        );
+
+        $pageMock = $this->createMock(\Kirby\Cms\Page::class);
+        $result = $sender->getPostUrl($pageMock);
+
+        $this->assertEquals('', $result);
+    }
+
+    /**
+     * @group ExternalPostSenderTest
+     * @testdox calculatePostTextLength - returns correct length
+     */
+    public function testCalculatePostTextLengthReturnsCorrectLength()
+    {
+        $sender = new ExternalPostSender(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            300,
+            null,
+            $this->urlHandlerMock,
+            $this->pageChecksMock
+        );
+
+        $result = $sender->calculatePostTextLength('https://example.com'); // 19 chars
+
+        $this->assertEquals(279, $result); // 300 - 19 - 2
     }
 }

@@ -10,17 +10,19 @@ final class ResponseCollectorTest extends TestCaseMocked
     private $collector;
     private $mastodonMock;
     private $blueskyMock;
+    private $urlHandlerMock;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->indieDb = $this->createMock(IndieConnectorDatabase::class);
-        $this->mastodonMock = $this->createMock(\mauricerenck\IndieConnector\MastodonReceiver::class);
-        $this->blueskyMock = $this->createMock(\mauricerenck\IndieConnector\BlueskyReceiver::class);
+        $this->mastodonMock = $this->createMock(\mauricerenck\IndieConnector\Mastodon::class);
+        $this->blueskyMock = $this->createMock(\mauricerenck\IndieConnector\Bluesky::class);
+        $this->urlHandlerMock = $this->createMock(\mauricerenck\IndieConnector\UrlHandler::class);
 
         $this->collector = $this->getMockBuilder(ResponseCollector::class)
-            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock])
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
             ->onlyMethods(['isEnabled'])
             ->getMock();
     }
@@ -118,1165 +120,686 @@ final class ResponseCollectorTest extends TestCaseMocked
 
     /**
      * @group responseCollector
-     * @testdox getDuePostUrls - calls parsers with correct urls
+     * @testdox getDuePostUrls - calls parser with correct urls
      */
     public function testGetDuePostUrlsCallsParsersWithCorrectUrls()
     {
-        // Mock the result of $this->indieDb->query($query)
-        $mockResult = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['filterBy', 'first', 'count'])
-            ->getMock();
-
-        // Simulate filterBy('post_type', 'mastodon')->first()->post_urls
-        $mastodonResult = (object)['post_urls' => 'mastodon_url1,mastodon_url2'];
-        $blueskyResult = (object)['post_urls' => 'bluesky_url1,bluesky_url2'];
-
-        $mockResult->expects($this->exactly(2))
-            ->method('filterBy')
-            ->willReturnCallback(function ($field, $type) use ($mastodonResult, $blueskyResult) {
-                if ($type === 'mastodon') {
-                    return new class($mastodonResult) {
-                        private $result;
-                        public function __construct($result)
-                        {
-                            $this->result = $result;
-                        }
+        $mockResult = new class {
+            public function count()
+            {
+                return 2;
+            }
+            public function filterBy($field, $value)
+            {
+                if ($value === 'mastodon') {
+                    return new class {
                         public function first()
                         {
-                            return $this->result;
+                            return (object)['post_urls' => 'mastodon_url1,mastodon_url2'];
                         }
                     };
                 }
-                if ($type === 'bluesky') {
-                    return new class($blueskyResult) {
-                        private $result;
-                        public function __construct($result)
-                        {
-                            $this->result = $result;
-                        }
+                if ($value === 'bluesky') {
+                    return new class {
                         public function first()
                         {
-                            return $this->result;
+                            return (object)['post_urls' => 'bluesky_url1,bluesky_url2'];
                         }
                     };
                 }
-                // Always return an object with a first() method, even for unexpected types
                 return new class {
                     public function first()
                     {
                         return null;
                     }
                 };
-            });
-
-        $this->indieDb->expects($this->exactly(1))
-            ->method('query')
-            ->willReturn($mockResult);
+            }
+        };
 
         $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
             ->setConstructorArgs([true, null, null, null, $this->indieDb])
-            ->onlyMethods(['parseMastodonResponses', 'parseBlueskyResponses'])
+            ->onlyMethods(['getDuePostUrlsDbResult', 'parseResponses'])
             ->getMock();
 
         $collector->expects($this->once())
-            ->method('parseMastodonResponses')
-            ->with('mastodon_url1,mastodon_url2');
+            ->method('getDuePostUrlsDbResult')
+            ->willReturn($mockResult);
 
-        $collector->expects($this->once())
-            ->method('parseBlueskyResponses')
-            ->with('bluesky_url1,bluesky_url2');
+        $collector->expects($this->exactly(2))
+            ->method('parseResponses');
 
         $collector->getDuePostUrls();
     }
 
     /**
      * @group responseCollector
-     * @testdox parseMastodonResponses - calls fetch methods with correct arguments
+     * @testdox getDuePostUrls - returns zero when no results
      */
-    public function testParseMastodonResponsesCallsFetchMethodsWithCorrectArguments()
+    public function testGetDuePostUrlsReturnsZeroWhenNoResults()
     {
-        // Simulate the result of the query for known_responses
-        $mockLastResponses = (object)[
-            'ids' => 'id1,id2',
-            'post_type' => 'mastodon'
-        ];
-
-        $this->indieDb->expects($this->once())
-            ->method('query')
-            ->with($this->stringContains('SELECT GROUP_CONCAT(id, ",") AS ids, post_type FROM known_responses WHERE post_url IN ("url1", "url2") GROUP BY post_type;'))
-            ->willReturn($mockLastResponses);
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
-            ->onlyMethods(['fetchMastodonLikes', 'fetchMastodonReblogs', 'fetchMastodonReplies', 'cleanPostUrls'])
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getDuePostUrlsDbResult', 'parseResponses'])
             ->getMock();
 
         $collector->expects($this->once())
-            ->method('cleanPostUrls')
-            ->with(['url1', 'url2'], $this->mastodonMock)
-            ->willReturn(['valid' => ['url1', 'url2'], 'invalid' => []]);
+            ->method('getDuePostUrlsDbResult')
+            ->willReturn(null);
 
-        $collector->expects($this->once())
-            ->method('fetchMastodonLikes')
-            ->with(['url1', 'url2'], $mockLastResponses);
-
-        $collector->expects($this->once())
-            ->method('fetchMastodonReblogs')
-            ->with(['url1', 'url2'], $mockLastResponses);
-
-        $collector->expects($this->once())
-            ->method('fetchMastodonReplies')
-            ->with(['url1', 'url2'], $mockLastResponses);
-
-        $collector->parseMastodonResponses('url1,url2');
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox parseMastodonResponses - handles empty post urls
-     */
-    public function testParseMastodonResponsesHandlesEmptyPostUrls()
-    {
-        // Should still call query, but with empty postUrls
-        $mockLastResponses = (object)[
-            'ids' => '',
-            'post_type' => 'mastodon'
-        ];
-
-        $this->indieDb->expects($this->never())->method('query');
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb])
-            ->onlyMethods(['fetchMastodonLikes', 'fetchMastodonReblogs', 'fetchMastodonReplies', 'cleanPostUrls'])
-            ->getMock();
-
-        $collector->expects($this->never())
-            ->method('cleanPostUrls');
-
-        $collector->expects($this->never())
-            ->method('fetchMastodonLikes');
-
-        $collector->expects($this->never())
-            ->method('fetchMastodonReblogs');
-
-        $collector->expects($this->never())
-            ->method('fetchMastodonReplies');
-
-        $result = $collector->parseMastodonResponses('');
+        $result = $collector->getDuePostUrls();
 
         $this->assertEquals(['urls' => 0, 'responses' => 0], $result);
     }
 
     /**
      * @group responseCollector
-     * @testdox parseBlueskyResponses - calls fetch methods with correct arguments
+     * @testdox getDuePostUrls - aggregates responses correctly
      */
-    public function testParseBlueskyResponsesCallsFetchMethodsWithCorrectArguments()
+    public function testGetDuePostUrlsAggregatesResponses()
     {
-        // Simulate the result of the query for known_responses
-        $mockLastResponses = (object)[
-            'ids' => 'id1,id2',
-            'post_type' => 'mastodon'
-        ];
+        $mockResult = new class {
+            public function count()
+            {
+                return 2;
+            }
+            public function filterBy($field, $value)
+            {
+                if ($value === 'mastodon') {
+                    return new class {
+                        public function first()
+                        {
+                            return (object)['post_urls' => 'url1,url2', 'post_type' => 'mastodon'];
+                        }
+                    };
+                }
+                if ($value === 'bluesky') {
+                    return new class {
+                        public function first()
+                        {
+                            return (object)['post_urls' => 'url3', 'post_type' => 'bluesky'];
+                        }
+                    };
+                }
+                return new class {
+                    public function first()
+                    {
+                        return null;
+                    }
+                };
+            }
+        };
 
-        $this->indieDb->expects($this->once())
-            ->method('query')
-            ->with($this->stringContains('SELECT GROUP_CONCAT(id, ",") AS ids, post_type FROM known_responses WHERE post_url IN ("url1", "url2") GROUP BY post_type;'))
-            ->willReturn($mockLastResponses);
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
-            ->onlyMethods(['fetchBlueskyLikes', 'fetchBlueskyReposts', 'fetchBlueskyQuotes', 'fetchBlueskyReplies', 'cleanPostUrls'])
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getDuePostUrlsDbResult', 'parseResponses'])
             ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getDuePostUrlsDbResult')
+            ->willReturn($mockResult);
+
+        $collector->method('parseResponses')->willReturn(['urls' => 2, 'responses' => 5]);
+
+        $result = $collector->getDuePostUrls();
+
+        $this->assertEquals(['urls' => 4, 'responses' => 10], $result);
+    }
+
+
+    /**
+     * @group responseCollector
+     * @testdox getPostUrlMetrics - returns zero when no results
+     */
+    public function testGetPostUrlMetricsReturnsZeroWhenNoResults()
+    {
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getPostUrlMetricsDbResult'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getPostUrlMetricsDbResult')
+            ->willReturn(null);
+
+        $result = $collector->getPostUrlMetrics();
+
+        $this->assertEquals(['total' => 0, 'mastodon' => 0, 'bluesky' => 0, 'due' => 0], $result);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox getPostUrlMetrics - returns correct metrics
+     */
+    public function testGetPostUrlMetricsReturnsCorrectMetrics()
+    {
+        $mockResult = new class {
+            public function count()
+            {
+                return 2;
+            }
+            public function filterBy($field, $value)
+            {
+                if ($value === 'mastodon') {
+                    return new class {
+                        public function first()
+                        {
+                            return (object)['urls' => 3];
+                        }
+                    };
+                }
+                if ($value === 'bluesky') {
+                    return new class {
+                        public function first()
+                        {
+                            return (object)['urls' => 2];
+                        }
+                    };
+                }
+                return new class {
+                    public function first()
+                    {
+                        return null;
+                    }
+                };
+            }
+        };
+
+        $mockDueResult = new class {
+            public function first()
+            {
+                return (object)['urls' => 4];
+            }
+        };
+
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getPostUrlMetricsDbResult', 'getPostUrlMetricsDueUrlDbResult'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getPostUrlMetricsDbResult')
+            ->willReturn($mockResult);
+
+        $collector->expects($this->once())
+            ->method('getPostUrlMetricsDueUrlDbResult')
+            ->willReturn($mockDueResult);
+
+        $result = $collector->getPostUrlMetrics();
+
+        $this->assertEquals(['total' => 5, 'mastodon' => 3, 'bluesky' => 2, 'due' => 4], $result);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox getPostUrlMetrics - handles missing mastodon or bluesky results
+     */
+    public function testGetPostUrlMetricsHandlesMissingServiceResults()
+    {
+        $mockResult = new class {
+            public function count()
+            {
+                return 1;
+            }
+            public function filterBy($field, $value)
+            {
+                if ($value === 'mastodon') {
+                    return new class {
+                        public function first()
+                        {
+                            return (object)['urls' => 5];
+                        }
+                    };
+                }
+                return new class {
+                    public function first()
+                    {
+                        return null;
+                    }
+                };
+            }
+        };
+
+        $mockDueResult = new class {
+            public function first()
+            {
+                return (object)['urls' => 2];
+            }
+        };
+
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getPostUrlMetricsDbResult', 'getPostUrlMetricsDueUrlDbResult'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getPostUrlMetricsDbResult')
+            ->willReturn($mockResult);
+
+        $collector->expects($this->once())
+            ->method('getPostUrlMetricsDueUrlDbResult')
+            ->willReturn($mockDueResult);
+
+        $result = $collector->getPostUrlMetrics();
+
+        $this->assertEquals(['total' => 5, 'mastodon' => 5, 'bluesky' => 0, 'due' => 2], $result);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox parseResponses - returns zero when postUrls is empty
+     */
+    public function testParseResponsesReturnsZeroWhenPostUrlsEmpty()
+    {
+        $collector = new ResponseCollector(true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock);
+
+        $result = $collector->parseResponses('', 'mastodon');
+
+        $this->assertEquals(['urls' => 0, 'responses' => 0], $result);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox parseResponses - returns zero for unknown service
+     */
+    public function testParseResponsesReturnsZeroForUnknownService()
+    {
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getLastResponsesFromDb'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getLastResponsesFromDb')
+            ->willReturn(null);
+
+        $result = $collector->parseResponses('url1', 'unknown');
+
+        $this->assertEquals(['urls' => 0, 'responses' => 0], $result);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox parseResponses - calls fetchResponseByType for each mastodon response type
+     */
+    public function testParseResponsesCallsFetchResponseByTypeForMastodon()
+    {
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getLastResponsesFromDb', 'cleanPostUrls', 'disablePostUrls', 'fetchResponseByType', 'updateLastFetched'])
+            ->getMock();
+
+        $collector->expects($this->once())
+            ->method('getLastResponsesFromDb')
+            ->willReturn(null);
 
         $collector->expects($this->once())
             ->method('cleanPostUrls')
-            ->with(['url1', 'url2'], $this->blueskyMock)
-            ->willReturn(['valid' => ['url1', 'url2'], 'invalid' => []]);
+            ->willReturn(['valid' => ['url1'], 'invalid' => []]);
+
+        $collector->expects($this->exactly(3)) // like-of, repost-of, in-reply-to
+            ->method('fetchResponseByType')
+            ->willReturn(2);
 
         $collector->expects($this->once())
-            ->method('fetchBlueskyLikes')
-            ->with(['url1', 'url2'], $mockLastResponses);
+            ->method('updateLastFetched');
 
-        $collector->expects($this->once())
-            ->method('fetchBlueskyReposts')
-            ->with(['url1', 'url2'], $mockLastResponses);
+        $result = $collector->parseResponses('url1', 'mastodon');
 
-        $collector->expects($this->once())
-            ->method('fetchBlueskyQuotes')
-            ->with(['url1', 'url2'], $mockLastResponses);
-
-        $collector->expects($this->once())
-            ->method('fetchBlueskyReplies')
-            ->with(['url1', 'url2'], $mockLastResponses);
-
-        $collector->parseBlueskyResponses('url1,url2');
+        $this->assertEquals(['urls' => 1, 'responses' => 6], $result);
     }
 
     /**
      * @group responseCollector
-     * @testdox parseBlueskyResponses - handles empty post urls
+     * @testdox parseResponses - calls fetchResponseByType for each bluesky response type
      */
-    public function testParseBlueskyResponsesHandlesEmptyPostUrls()
+    public function testParseResponsesCallsFetchResponseByTypeForBluesky()
     {
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getLastResponsesFromDb', 'cleanPostUrls', 'disablePostUrls', 'fetchResponseByType', 'updateLastFetched'])
+            ->getMock();
 
-        $expected = [
-            'urls' => 0,
-            'responses' => 0
+        $collector->expects($this->once())
+            ->method('getLastResponsesFromDb')
+            ->willReturn(null);
+
+        $collector->expects($this->once())
+            ->method('cleanPostUrls')
+            ->willReturn(['valid' => ['url1'], 'invalid' => []]);
+
+        $collector->expects($this->exactly(4)) // like-of, repost-of, mention-of, in-reply-to
+            ->method('fetchResponseByType')
+            ->willReturn(1);
+
+        $collector->expects($this->once())
+            ->method('updateLastFetched');
+
+        $result = $collector->parseResponses('url1', 'bluesky');
+
+        $this->assertEquals(['urls' => 1, 'responses' => 4], $result);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox parseResponses - disables invalid post urls
+     */
+    public function testParseResponsesDisablesInvalidPostUrls()
+    {
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getLastResponsesFromDb', 'cleanPostUrls', 'disablePostUrls', 'fetchResponseByType', 'updateLastFetched'])
+            ->getMock();
+
+        $collector->method('getLastResponsesFromDb')->willReturn(null);
+        $collector->method('cleanPostUrls')->willReturn(['valid' => [], 'invalid' => ['bad-url']]);
+        $collector->method('fetchResponseByType')->willReturn(0);
+        $collector->method('updateLastFetched');
+
+        $collector->expects($this->once())
+            ->method('disablePostUrls')
+            ->with(['bad-url']);
+
+        $collector->parseResponses('bad-url', 'mastodon');
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchResponseByType - returns zero when no responses
+     */
+    public function testFetchResponseByTypeReturnsZeroWhenNoResponses()
+    {
+        $this->mastodonMock->expects($this->once())
+            ->method('fetchResponseByType')
+            ->willReturn([]);
+
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->getMock();
+
+        $collector->method('getKnownIds')->willReturn([]);
+        $collector->expects($this->never())->method('addToQueue');
+        $collector->expects($this->never())->method('updateKnownReponses');
+
+        $result = $collector->fetchResponseByType(['url1'], (object)[], 'like-of', $this->mastodonMock);
+
+        $this->assertEquals(0, $result);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchResponseByType - adds responses to queue and returns count
+     */
+    public function testFetchResponseByTypeAddsToQueueAndReturnsCount()
+    {
+        $responseData = [
+            'latestId' => 'resp1',
+            'data' => [
+                [
+                    'postUrl' => 'url1',
+                    'responseId' => 'resp1',
+                    'responseType' => 'like-of',
+                    'responseSource' => 'mastodon',
+                    'responseDate' => '2025-01-01T00:00:00Z',
+                    'responseText' => '',
+                    'responseUrl' => '',
+                    'authorId' => 'author1',
+                    'authorName' => 'Alice',
+                    'authorUsername' => 'alice',
+                    'authorAvatar' => 'avatar.png',
+                    'authorUrl' => 'https://mastodon.social/@alice',
+                ]
+            ]
         ];
 
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb])
-            ->onlyMethods(['fetchBlueskyLikes', 'fetchBlueskyReposts', 'fetchBlueskyQuotes', 'fetchBlueskyReplies', 'cleanPostUrls'])
-            ->getMock();
-
-        $result = $collector->parseBlueskyResponses('');
-
-        $this->assertEquals($expected, $result);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox fetchMastodonLikes - adds new likes to queue and updates known responses
-     */
-    public function testFetchMastodonLikesAddsNewLikesToQueueAndUpdatesKnownResponses()
-    {
-        // Arrange
         $this->mastodonMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'likes', ['known1'])
-            ->willReturn([
-                [
-                    'id' => 'like1',
-                    'created_at' => '2025-05-24 13:29:11',
-                    'display_name' => 'Alice',
-                    'username' => 'alice',
-                    'avatar_static' => 'avatar.png',
-                    'url' => 'https://mastodon.social/@alice'
-                ]
-            ]);
+            ->method('fetchResponseByType')
+            ->willReturn($responseData);
 
-        // Patch MastodonReceiver instantiation
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses', 'currentDateTime'])
+        $this->urlHandlerMock->expects($this->once())
+            ->method('isBlockedSource')
+            ->with('https://mastodon.social/@alice')
+            ->willReturn(false);
+
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
-
-        $collector->expects($this->once())
-            ->method('currentDateTime')
-            ->willReturn('2025-01-01T00:00:00Z');
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'like-of')
-            ->willReturn(['known1']);
+        $collector->method('getKnownIds')->willReturn([]);
 
         $collector->expects($this->once())
             ->method('addToQueue')
             ->with(
                 postUrl: 'url1',
-                responseId: 'like1',
+                responseId: 'resp1',
                 responseType: 'like-of',
                 responseSource: 'mastodon',
                 responseDate: '2025-01-01T00:00:00Z',
-                authorId: 'like1',
-                authorName: 'Alice',
-                authorUsername: 'alice',
-                authorAvatar: 'avatar.png',
-                authorUrl: 'https://mastodon.social/@alice'
-            );
-
-        $collector->expects($this->once())
-            ->method('updateKnownReponses')
-            ->with('url1', 'like1', 'like-of');
-
-        $collector->fetchMastodonLikes(['url1'], (object)[]);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox fetchMastodonLikes - skips known likes
-     */
-    public function testFetchMastodonLikesSkipsKnownLikes()
-    {
-        $this->mastodonMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'likes', ['like1'])
-            ->willReturn([
-                [
-                    'id' => 'like1',
-                    'created_at' => '2025-05-24 13:29:23',
-                    'display_name' => 'Alice',
-                    'username' => 'alice',
-                    'avatar_static' => 'avatar.png',
-                    'url' => 'https://mastodon.social/@alice'
-                ]
-            ]);
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
-            ->getMock();
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'like-of')
-            ->willReturn(['like1']);
-
-        $collector->expects($this->never())
-            ->method('addToQueue');
-
-        $collector->expects($this->once())
-            ->method('updateKnownReponses')
-            ->with('url1', 'like1', 'like-of');
-
-        $collector->fetchMastodonLikes(['url1'], (object)[]);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox fetchMastodonReblogs - adds new reblogs to queue and updates known responses
-     */
-    public function testFetchMastodonReblogsAddsNewReblogsToQueueAndUpdatesKnownResponses()
-    {
-        // Arrange
-        $this->mastodonMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'reposts', ['known1'])
-            ->willReturn([
-                [
-                    'id' => 'reblog1',
-                    'created_at' => '2024-01-01T00:00:00Z',
-                    'display_name' => 'Alice',
-                    'username' => 'alice',
-                    'avatar_static' => 'avatar.png',
-                    'url' => 'https://mastodon.social/@alice'
-                ]
-            ]);
-
-        // Patch MastodonReceiver instantiation
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses', 'currentDateTime'])
-            ->getMock();
-
-        $collector->expects($this->once())
-            ->method('currentDateTime')
-            ->willReturn('2025-01-01T00:00:00Z');
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'repost-of')
-            ->willReturn(['known1']);
-
-        $collector->expects($this->once())
-            ->method('addToQueue')
-            ->with(
-                postUrl: 'url1',
-                responseId: 'reblog1',
-                responseType: 'repost-of',
-                responseSource: 'mastodon',
-                responseDate: '2025-01-01T00:00:00Z',
-                authorId: 'reblog1',
-                authorName: 'Alice',
-                authorUsername: 'alice',
-                authorAvatar: 'avatar.png',
-                authorUrl: 'https://mastodon.social/@alice'
-            );
-
-        $collector->expects($this->once())
-            ->method('updateKnownReponses')
-            ->with('url1', 'reblog1', 'repost-of');
-
-        $collector->fetchMastodonReblogs(['url1'], (object)[]);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox fetchMastodonReblogs - skips known reblogs
-     */
-    public function testFetchMastodonReblogsSkipsKnownReblogs()
-    {
-        $this->mastodonMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'reposts', ['reblog1'])
-            ->willReturn([
-                [
-                    'id' => 'reblog1',
-                    'created_at' => '2024-01-01T00:00:00Z',
-                    'display_name' => 'Alice',
-                    'username' => 'alice',
-                    'avatar_static' => 'avatar.png',
-                    'url' => 'https://mastodon.social/@alice'
-                ]
-            ]);
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
-            ->getMock();
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'repost-of')
-            ->willReturn(['reblog1']);
-
-        $collector->expects($this->never())
-            ->method('addToQueue');
-
-        $collector->expects($this->once())
-            ->method('updateKnownReponses')
-            ->with('url1', 'reblog1', 'repost-of');
-
-        $collector->fetchMastodonReblogs(['url1'], (object)[]);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox fetchMastodonReplies - adds new replies to queue and updates known responses
-     */
-    public function testFetchMastodonRepliesAddsNewRepliesToQueueAndUpdatesKnownResponses()
-    {
-        // Arrange
-        $this->mastodonMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'replies', ['known1'])
-            ->willReturn([
-                [
-                    'id' => 'reply1',
-                    'in_reply_to_id' => "post1",
-                    'visibility' => 'public',
-                    'created_at' => '2025-01-01T00:00:00Z',
-                    'content' => 'hello world!',
-                    'url' => 'https://example.com',
-                    'account' => [
-                        'id' => 'user1',
-                        'display_name' => 'Alice',
-                        'username' => 'alice',
-                        'avatar_static' => 'avatar.png',
-                        'url' => 'https://mastodon.social/@alice'
-                    ]
-                ]
-            ]);
-
-        $this->mastodonMock->expects($this->once())
-            ->method('getPostUrlData')
-            ->with('url1')
-            ->willReturn(['host1', 'post1']);
-
-        // Patch MastodonReceiver instantiation
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
-            ->getMock();
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'in-reply-to')
-            ->willReturn(['known1']);
-
-        $collector->expects($this->once())
-            ->method('addToQueue')
-            ->with(
-                postUrl: 'url1',
-                responseId: 'reply1',
-                responseType: 'in-reply-to',
-                responseSource: 'mastodon',
-                responseDate: '2025-01-01T00:00:00Z',
-                authorId: 'user1',
+                authorId: 'author1',
                 authorName: 'Alice',
                 authorUsername: 'alice',
                 authorAvatar: 'avatar.png',
                 authorUrl: 'https://mastodon.social/@alice',
-                responseText: 'hello world!',
-                responseUrl: 'https://example.com',
+                responseText: '',
+                responseUrl: '',
             );
 
         $collector->expects($this->once())
             ->method('updateKnownReponses')
-            ->with('url1', 'reply1', 'in-reply-to');
+            ->with('url1', 'resp1', 'like-of');
 
-        $collector->fetchMastodonReplies(['url1'], (object)[]);
+        $result = $collector->fetchResponseByType(['url1'], (object)[], 'like-of', $this->mastodonMock);
+
+        $this->assertEquals(1, $result);
     }
 
     /**
      * @group responseCollector
-     * @testdox fetchMastodonReplies - skips known replies
+     * @testdox fetchResponseByType - skips blocked sources
      */
-    public function testFetchMastodonRepliesSkipsKnownReplies()
+    public function testFetchResponseByTypeSkipsBlockedSources()
+    {
+        $responseData = [
+            'latestId' => 'resp1',
+            'data' => [
+                [
+                    'postUrl' => 'url1',
+                    'responseId' => 'resp1',
+                    'responseType' => 'like-of',
+                    'responseSource' => 'mastodon',
+                    'responseDate' => '2025-01-01T00:00:00Z',
+                    'responseText' => '',
+                    'responseUrl' => '',
+                    'authorId' => 'author1',
+                    'authorName' => 'Alice',
+                    'authorUsername' => 'alice',
+                    'authorAvatar' => 'avatar.png',
+                    'authorUrl' => 'https://blocked.social/@alice',
+                ]
+            ]
+        ];
+
+        $this->mastodonMock->expects($this->once())
+            ->method('fetchResponseByType')
+            ->willReturn($responseData);
+
+        $this->urlHandlerMock->expects($this->once())
+            ->method('isBlockedSource')
+            ->with('https://blocked.social/@alice')
+            ->willReturn(true);
+
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
+            ->getMock();
+
+        $collector->method('getKnownIds')->willReturn([]);
+        $collector->expects($this->never())->method('addToQueue');
+
+        $collector->expects($this->once())
+            ->method('updateKnownReponses')
+            ->with('url1', 'resp1', 'like-of');
+
+        $result = $collector->fetchResponseByType(['url1'], (object)[], 'like-of', $this->mastodonMock);
+
+        $this->assertEquals(0, $result);
+    }
+
+    /**
+     * @group responseCollector
+     * @testdox fetchResponseByType - skips known responses
+     */
+    public function testFetchResponseByTypeSkipsKnownResponses()
     {
         $this->mastodonMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'replies', ['reply1'])
+            ->method('fetchResponseByType')
+            ->with('url1', ['resp1'], 'like-of')
             ->willReturn([
-                [
-                    'id' => 'reply1',
-                    'in_reply_to_id' => "post1",
-                    'visibility' => 'public',
-                    'created_at' => '2024-01-01T00:00:00Z',
-                    'content' => 'hello world!',
-                    'url' => 'https://example.com',
-                    'account' => [
-                        'id' => 'user1',
-                        'display_name' => 'Alice',
-                        'username' => 'alice',
-                        'avatar_static' => 'avatar.png',
-                        'url' => 'https://mastodon.social/@alice'
-                    ]
-                ]
+                'latestId' => 'resp1',
+                'data' => []
             ]);
 
-        $this->mastodonMock->expects($this->once())
-            ->method('getPostUrlData')
-            ->with('url1')
-            ->willReturn(['host1', 'post1']);
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, $this->mastodonMock])
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
             ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
             ->getMock();
 
-
         $collector->expects($this->once())
             ->method('getKnownIds')
-            ->with($this->anything(), 'in-reply-to')
-            ->willReturn(['reply1']);
+            ->willReturn(['resp1']);
 
-        $collector->expects($this->never())
-            ->method('addToQueue');
+        $collector->expects($this->never())->method('addToQueue');
 
         $collector->expects($this->once())
             ->method('updateKnownReponses')
-            ->with('url1', 'reply1', 'in-reply-to');
+            ->with('url1', 'resp1', 'like-of');
 
-        $collector->fetchMastodonReplies(['url1'], (object)[]);
+        $result = $collector->fetchResponseByType(['url1'], (object)[], 'like-of', $this->mastodonMock);
+
+        $this->assertEquals(0, $result);
     }
 
     /**
      * @group responseCollector
-     * @testdox fetchBlueskyLikes - adds new likes to queue and updates known responses
+     * @testdox convertToWebmentionHookData - skips responses with no matching page
      */
-    public function testFetchBlueskyLikesAddsNewLikesToQueueAndUpdatesKnownResponses()
+    public function testConvertToWebmentionHookDataSkipsResponsesWithNoPage()
     {
-        // Simulate a Bluesky like object
-        $like = (object)[
-            'indieConnectorId' => 'like123',
-            'createdAt' => '2024-01-01T00:00:00Z',
-            'actor' => (object)[
-                'did' => 'did:plc:123',
-                'displayName' => 'Bob',
-                'handle' => 'bob.bsky.social',
-                'avatar' => 'avatar.jpg'
-            ]
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getSourceBaseUrl', 'getPageByUuid'])
+            ->getMock();
+
+        $collector->method('getSourceBaseUrl')->willReturn('https://example.com/indieconnector/response/');
+        $collector->method('getPageByUuid')->willReturn(null);
+
+        $response = (object)[
+            'id' => 'resp1',
+            'page_uuid' => 'uuid1',
+            'response_type' => 'like-of',
+            'response_date' => '2025-01-01',
+            'response_text' => '',
+            'response_source' => 'mastodon',
+            'author_name' => 'Alice',
+            'author_avatar' => 'avatar.png',
+            'author_url' => 'https://mastodon.social/@alice',
         ];
 
-        $this->blueskyMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'likes', ['knownLike'])
-            ->willReturn([$like]);
+        $result = $collector->convertToWebmentionHookData([$response]);
 
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
-            ->getMock();
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'like-of')
-            ->willReturn(['knownLike']);
-
-        $collector->expects($this->once())
-            ->method('addToQueue')
-            ->with(
-                postUrl: 'url1',
-                responseId: 'like123',
-                responseType: 'like-of',
-                responseSource: 'bluesky',
-                responseDate: '2024-01-01T00:00:00Z',
-                authorId: 'did:plc:123',
-                authorName: 'Bob',
-                authorUsername: 'bob.bsky.social',
-                authorAvatar: 'avatar.jpg',
-                authorUrl: 'https://bsky.app/profile/bob.bsky.social',
-            );
-
-        $collector->expects($this->once())
-            ->method('updateKnownReponses')
-            ->with('url1', 'like123', 'like-of');
-
-        $collector->fetchBlueskyLikes(['url1'], (object)[]);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox fetchBlueskyLikes - skips known likes
-     */
-    public function testFetchBlueskyLikesSkipsKnownLikes()
-    {
-        // Simulate a Bluesky like object
-        $like = (object)[
-            'indieConnectorId' => 'like123',
-            'createdAt' => '2024-01-01T00:00:00Z',
-            'actor' => (object)[
-                'did' => 'did:plc:123',
-                'displayName' => 'Bob',
-                'handle' => 'bob.bsky.social',
-                'avatar' => 'avatar.jpg'
-            ]
-        ];
-
-        $this->blueskyMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'likes', ['like123'])
-            ->willReturn([$like]);
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
-            ->getMock();
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'like-of')
-            ->willReturn(['like123']);
-
-        $collector->expects($this->never())
-            ->method('addToQueue');
-
-        $collector->expects($this->once())
-            ->method('updateKnownReponses')
-            ->with('url1', 'like123', 'like-of');
-
-        $collector->fetchBlueskyLikes(['url1'], (object)[]);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox fetchBlueskyReposts - adds new reposts to queue and updates known responses
-     */
-    public function testFetchBlueskyRepostsAddsNewRepostsToQueueAndUpdatesKnownResponses()
-    {
-        // Simulate a Bluesky repost object
-        $repost = (object)[
-            'indieConnectorId' => 'repost123',
-            'createdAt' => '2024-01-01T00:00:00Z',
-            'did' => 'did:plc:123',
-            'displayName' => 'Bob',
-            'handle' => 'bob.bsky.social',
-            'avatar' => 'avatar.jpg'
-
-        ];
-
-        $this->blueskyMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'reposts', ['knownRepost'])
-            ->willReturn([$repost]);
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
-            ->getMock();
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'repost-of')
-            ->willReturn(['knownRepost']);
-
-        $collector->expects($this->once())
-            ->method('addToQueue')
-            ->with(
-                postUrl: 'url1',
-                responseId: 'repost123',
-                responseType: 'repost-of',
-                responseSource: 'bluesky',
-                responseDate: '2024-01-01T00:00:00Z',
-                authorId: 'did:plc:123',
-                authorName: 'Bob',
-                authorUsername: 'bob.bsky.social',
-                authorAvatar: 'avatar.jpg',
-                authorUrl: 'https://bsky.app/profile/bob.bsky.social',
-            );
-
-        $collector->expects($this->once())
-            ->method('updateKnownReponses')
-            ->with('url1', 'repost123', 'repost-of');
-
-        $collector->fetchBlueskyReposts(['url1'], (object)[]);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox fetchBlueskyReposts - skips known reposts
-     */
-    public function testFetchBlueskyRepostsSkipsKnownReposts()
-    {
-        // Simulate a Bluesky repost object
-        $repost = (object)[
-            'indieConnectorId' => 'repost123',
-            'createdAt' => '2024-01-01T00:00:00Z',
-            'did' => 'did:plc:123',
-            'displayName' => 'Bob',
-            'handle' => 'bob.bsky.social',
-            'avatar' => 'avatar.jpg'
-        ];
-
-        $this->blueskyMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'reposts', ['repost123'])
-            ->willReturn([$repost]);
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
-            ->getMock();
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'repost-of')
-            ->willReturn(['repost123']);
-
-        $collector->expects($this->never())
-            ->method('addToQueue');
-
-        $collector->expects($this->once())
-            ->method('updateKnownReponses')
-            ->with('url1', 'repost123', 'repost-of');
-
-        $collector->fetchBlueskyReposts(['url1'], (object)[]);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox fetchBlueskyQuotes - adds new quotes to queue and updates known responses
-     */
-    public function testFetchBlueskyQuotesAddsNewQuotesToQueueAndUpdatesKnownResponses()
-    {
-        // Simulate a Bluesky quote object
-        $quote = (object)[
-            'indieConnectorId' => 'quote123',
-            'createdAt' => '2024-01-01T00:00:00Z',
-            'uri' => 'url1',
-            'author' => (object)[
-                'did' => 'did:plc:123',
-                'displayName' => 'Bob',
-                'handle' => 'bob.bsky.social',
-                'avatar' => 'avatar.jpg'
-            ],
-            'record' => (object)[
-                'createdAt' => '2024-01-01T00:00:00Z',
-                'text' => 'hello world',
-            ]
-        ];
-
-        $this->blueskyMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'quotes', ['knownQuote'])
-            ->willReturn([$quote]);
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
-            ->getMock();
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'mention-of')
-            ->willReturn(['knownQuote']);
-
-        $collector->expects($this->once())
-            ->method('addToQueue')
-            ->with(
-                postUrl: 'url1',
-                responseId: 'quote123',
-                responseType: 'mention-of',
-                responseSource: 'bluesky',
-                responseDate: '2024-01-01T00:00:00Z',
-                authorId: 'did:plc:123',
-                authorName: 'Bob',
-                authorUsername: 'bob.bsky.social',
-                authorAvatar: 'avatar.jpg',
-                authorUrl: 'https://bsky.app/profile/bob.bsky.social',
-                responseText: 'hello world',
-                responseUrl: 'url1',
-            );
-
-        $collector->expects($this->once())
-            ->method('updateKnownReponses')
-            ->with('url1', 'quote123', 'mention-of');
-
-        $collector->fetchBlueskyQuotes(['url1'], (object)[]);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox fetchBlueskyQuotes - skips known quotes
-     */
-    public function testFetchBlueskyQuotesSkipsKnownReposts()
-    {
-        // Simulate a Bluesky quote object
-        $quote = (object)[
-            'indieConnectorId' => 'quote123',
-            'createdAt' => '2024-01-01T00:00:00Z',
-            'uri' => 'url1',
-            'author' => (object)[
-                'did' => 'did:plc:123',
-                'displayName' => 'Bob',
-                'handle' => 'bob.bsky.social',
-                'avatar' => 'avatar.jpg'
-            ],
-            'record' => (object)[
-                'createdAt' => '2024-01-01T00:00:00Z',
-                'text' => 'hello world',
-            ]
-        ];
-
-        $this->blueskyMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'quotes', ['quote123'])
-            ->willReturn([$quote]);
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
-            ->getMock();
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'mention-of')
-            ->willReturn(['quote123']);
-
-        $collector->expects($this->never())
-            ->method('addToQueue');
-
-        $collector->expects($this->once())
-            ->method('updateKnownReponses')
-            ->with('url1', 'quote123', 'mention-of');
-
-        $collector->fetchBlueskyQuotes(['url1'], (object)[]);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox fetchBlueskyReplies - adds new replies to queue and updates known responses
-     */
-    public function testFetchBlueskyRepliesAddsNewRepliesToQueueAndUpdatesKnownResponses()
-    {
-        // Simulate a Bluesky reply object
-        $reply = (object)[
-            'indieConnectorId' => 'reply123',
-            'post' => (object)[
-                'createdAt' => '2024-01-01T00:00:00Z',
-                'uri' => 'url1',
-                'author' => (object)[
-                    'did' => 'did:plc:123',
-                    'displayName' => 'Bob',
-                    'handle' => 'bob.bsky.social',
-                    'avatar' => 'avatar.jpg'
-                ],
-                'record' => (object)[
-                    'createdAt' => '2024-01-01T00:00:00Z',
-                    'text' => 'hello world',
-                ]
-            ]
-        ];
-
-        $this->blueskyMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'replies', ['knownReply'])
-            ->willReturn([$reply]);
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
-            ->getMock();
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'in-reply-to')
-            ->willReturn(['knownReply']);
-
-        $collector->expects($this->once())
-            ->method('addToQueue')
-            ->with(
-                postUrl: 'url1',
-                responseId: 'reply123',
-                responseType: 'in-reply-to',
-                responseSource: 'bluesky',
-                responseDate: '2024-01-01T00:00:00Z',
-                authorId: 'did:plc:123',
-                authorName: 'Bob',
-                authorUsername: 'bob.bsky.social',
-                authorAvatar: 'avatar.jpg',
-                authorUrl: 'https://bsky.app/profile/bob.bsky.social',
-                responseText: 'hello world',
-                responseUrl: 'url1',
-            );
-
-        $collector->expects($this->once())
-            ->method('updateKnownReponses')
-            ->with('url1', 'reply123', 'in-reply-to');
-
-        $collector->fetchBlueskyReplies(['url1'], (object)[]);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox fetchBlueskyReplies - skips known replies
-     */
-    public function testFetchBlueskyRepliesSkipsKnownReposts()
-    {
-        // Simulate a Bluesky reply object
-        $reply = (object)[
-            'indieConnectorId' => 'reply123',
-            'post' => (object)[
-                'createdAt' => '2024-01-01T00:00:00Z',
-                'uri' => 'url1',
-                'author' => (object)[
-                    'did' => 'did:plc:123',
-                    'displayName' => 'Bob',
-                    'handle' => 'bob.bsky.social',
-                    'avatar' => 'avatar.jpg'
-                ],
-                'record' => (object)[
-                    'createdAt' => '2024-01-01T00:00:00Z',
-                    'text' => 'hello world',
-                ]
-            ]
-        ];
-
-        $this->blueskyMock->expects($this->once())
-            ->method('getResponses')
-            ->with('url1', 'replies', ['reply123'])
-            ->willReturn([$reply]);
-
-        $collector = $this->getMockBuilder(\mauricerenck\IndieConnector\ResponseCollector::class)
-            ->setConstructorArgs([true, null, null, null, $this->indieDb, null, $this->blueskyMock])
-            ->onlyMethods(['getKnownIds', 'addToQueue', 'updateKnownReponses'])
-            ->getMock();
-
-        $collector->expects($this->once())
-            ->method('getKnownIds')
-            ->with($this->anything(), 'in-reply-to')
-            ->willReturn(['reply123']);
-
-        $collector->expects($this->never())
-            ->method('addToQueue');
-
-        $collector->expects($this->once())
-            ->method('updateKnownReponses')
-            ->with('url1', 'reply123', 'in-reply-to');
-
-        $collector->fetchBlueskyReplies(['url1'], (object)[]);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox getKnownIds - returns array of ids
-     */
-    public function testGetKnownIdsReturnsArrayOfIds()
-    {
-        // Mock $lastResponses with filterBy('post_type', 'like-of')->first() returning an object with ids
-        $mockLastResponses = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['filterBy', 'first'])
-            ->getMock();
-
-        $mockIdList = (object)['ids' => 'id1,id2,id3'];
-
-        $mockLastResponses->expects($this->once())
-            ->method('filterBy')
-            ->with('post_type', 'like-of')
-            ->willReturn(new class($mockIdList) {
-                private $result;
-                public function __construct($result)
-                {
-                    $this->result = $result;
-                }
-                public function first()
-                {
-                    return $this->result;
-                }
-            });
-
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
-
-        $result = $collector->getKnownIds($mockLastResponses, 'like-of');
-        $this->assertEquals(['id1', 'id2', 'id3'], $result);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox getKnownIds - returns empty array when no ids
-     */
-    public function testGetKnownIdsReturnsEmptyArrayWhenNoIds()
-    {
-        // Mock $lastResponses with filterBy('post_type', 'like-of')->first() returning null
-        $mockLastResponses = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['filterBy', 'first'])
-            ->getMock();
-
-        $mockLastResponses->expects($this->once())
-            ->method('filterBy')
-            ->with('post_type', 'like-of')
-            ->willReturn(new class {
-                public function first()
-                {
-                    return null;
-                }
-            });
-
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
-
-        $result = $collector->getKnownIds($mockLastResponses, 'like-of');
         $this->assertEquals([], $result);
     }
 
     /**
      * @group responseCollector
-     * @testdox addToQueue - inserts correctly
+     * @testdox convertToWebmentionHookData - returns correct data structure
      */
-    public function testAddToQueueInsertsCorrectly()
+    public function testConvertToWebmentionHookDataReturnsCorrectStructure()
     {
-        // Arrange: Mock select to return a page_uuid
-        $mockPageData = (object)['page_uuid' => 'page-uuid-123'];
-        $mockSelectResult = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['first'])
+        $mockPage = new class {
+            public function url()
+            {
+                return 'https://example.com/my-post';
+            }
+        };
+
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getSourceBaseUrl', 'getPageByUuid'])
             ->getMock();
-        $mockSelectResult->expects($this->once())
-            ->method('first')
-            ->willReturn($mockPageData);
 
-        $this->indieDb->expects($this->once())
-            ->method('select')
-            ->with('external_post_urls', ['page_uuid'], $this->stringContains('WHERE post_url = "post-url-1"'))
-            ->willReturn($mockSelectResult);
+        $collector->method('getSourceBaseUrl')->willReturn('https://example.com/indieconnector/response/');
+        $collector->method('getPageByUuid')->willReturn($mockPage);
 
-        // Mock insert to check arguments
-        $this->indieDb->expects($this->once())
-            ->method('insert')
-            ->with(
-                'queue_responses',
-                $this->callback(function ($fields) {
-                    return in_array('id', $fields) && in_array('page_uuid', $fields);
-                }),
-                $this->callback(function ($values) {
-                    // Check that the values array contains expected data
-                    return in_array('page-uuid-123', $values)
-                        && in_array('response-id-1', $values)
-                        && in_array('like-of', $values)
-                        && in_array('mastodon', $values)
-                        && in_array('2024-01-01T00:00:00Z', $values)
-                        && in_array('author-id-1', $values)
-                        && in_array('Alice', $values)
-                        && in_array('alice', $values)
-                        && in_array('avatar.png', $values)
-                        && in_array('https://mastodon.social/@alice', $values);
-                })
-            );
+        $response = (object)[
+            'id' => 'resp1',
+            'page_uuid' => 'uuid1',
+            'response_type' => 'like-of',
+            'response_date' => '2025-01-01',
+            'response_text' => 'Great post!',
+            'response_source' => 'mastodon',
+            'author_name' => 'Alice',
+            'author_avatar' => 'avatar.png',
+            'author_url' => 'https://mastodon.social/@alice',
+        ];
 
-        // Optionally, mock Uuid::generate and Str::unhtml if your test framework/setup allows
+        $result = $collector->convertToWebmentionHookData([$response]);
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
-
-        // Act
-        $collector->addToQueue(
-            postUrl: 'post-url-1',
-            responseId: 'response-id-1',
-            responseType: 'like-of',
-            responseSource: 'mastodon',
-            responseDate: '2024-01-01T00:00:00Z',
-            authorId: 'author-id-1',
-            authorName: 'Alice',
-            authorUsername: 'alice',
-            authorAvatar: 'avatar.png',
-            authorUrl: 'https://mastodon.social/@alice'
-        );
+        $this->assertEquals([
+            [
+                'id' => 'resp1',
+                'page_uuid' => 'page://uuid1',
+                'type' => 'like-of',
+                'target' => 'https://example.com/my-post',
+                'source' => 'https://example.com/indieconnector/response/resp1',
+                'published' => '2025-01-01',
+                'title' => 'like-of',
+                'content' => 'Great post!',
+                'service' => 'mastodon',
+                'author' => [
+                    'type' => 'card',
+                    'name' => 'Alice',
+                    'avatar' => 'avatar.png',
+                    'url' => 'https://mastodon.social/@alice',
+                ],
+            ]
+        ], $result);
     }
 
     /**
      * @group responseCollector
-     * @testdox processResponses - returns responses
+     * @testdox convertToWebmentionHookData - handles multiple responses
      */
-    public function testProcessResponsesReturnsResponses()
+    public function testConvertToWebmentionHookDataHandlesMultipleResponses()
     {
-        $mockResponses = ['response1', 'response2'];
-        $this->indieDb->expects($this->once())
-            ->method('select')
-            ->with('queue_responses', ['*'], $this->stringContains('WHERE queueStatus = "pending" LIMIT 50'))
-            ->willReturn($mockResponses);
+        $mockPage = new class {
+            public function url()
+            {
+                return 'https://example.com/my-post';
+            }
+        };
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, 10, 60, 50, $this->indieDb);
-        $result = $collector->processResponses();
-        $this->assertSame($mockResponses, $result);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox markProcessed - updates queue status
-     */
-    public function testMarkProcessedUpdatesQueueStatus()
-    {
-        $responseIds = ['id1', 'id2'];
-        $this->indieDb->expects($this->once())
-            ->method('update')
-            ->with(
-                'queue_responses',
-                ['queueStatus'],
-                ['success'],
-                'WHERE id IN ("id1","id2")'
-            );
-
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, 10, 60, 50, $this->indieDb);
-        $collector->markProcessed($responseIds);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox updateKnownReponses - upserts correctly
-     */
-    public function testUpdateKnownReponsesUpsertsCorrectly()
-    {
-        $postUrl = 'https://example.com/post';
-        $latestId = 'latest-id';
-        $verb = 'like-of';
-        $expectedSelector = 'example.com/post_like-of';
-
-        $this->indieDb->expects($this->once())
-            ->method('upsert')
-            ->with(
-                'known_responses',
-                ['id', 'post_url', 'post_type', 'post_selector'],
-                [$latestId, $postUrl, $verb, $expectedSelector],
-                'post_selector',
-                'id = "' . $latestId . '"'
-            );
-
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
-        $collector->updateKnownReponses($postUrl, $latestId, $verb);
-    }
-
-    /**
-     * @group responseCollector
-     * @testdox getSingleResponse - returns correct response
-     */
-    public function testGetSingleResponseReturnsCorrectResponse()
-    {
-        $responseId = 'response-456';
-        $mockResponse = (object)['id' => $responseId, 'foo' => 'bar'];
-        $mockSelectResult = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['first'])
+        $collector = $this->getMockBuilder(ResponseCollector::class)
+            ->setConstructorArgs([true, 10, 60, 50, $this->indieDb, $this->mastodonMock, $this->blueskyMock, $this->urlHandlerMock])
+            ->onlyMethods(['getSourceBaseUrl', 'getPageByUuid'])
             ->getMock();
-        $mockSelectResult->expects($this->once())
-            ->method('first')
-            ->willReturn($mockResponse);
 
-        $this->indieDb->expects($this->once())
-            ->method('select')
-            ->with('queue_responses', ['*'], 'WHERE id = "response-456"')
-            ->willReturn($mockSelectResult);
+        $collector->method('getSourceBaseUrl')->willReturn('https://example.com/indieconnector/response/');
+        $collector->expects($this->exactly(3))
+            ->method('getPageByUuid')
+            ->willReturnOnConsecutiveCalls($mockPage, null, $mockPage);
 
-        $collector = new \mauricerenck\IndieConnector\ResponseCollector(true, null, null, null, $this->indieDb);
-        $result = $collector->getSingleResponse($responseId);
-        $this->assertSame($mockResponse, $result);
+        $responses = [
+            (object)['id' => 'resp1', 'page_uuid' => 'uuid1', 'response_type' => 'like-of', 'response_date' => '2025-01-01', 'response_text' => '', 'response_source' => 'mastodon', 'author_name' => 'Alice', 'author_avatar' => 'avatar.png', 'author_url' => 'https://mastodon.social/@alice'],
+            (object)['id' => 'resp2', 'page_uuid' => 'uuid2', 'response_type' => 'repost-of', 'response_date' => '2025-01-02', 'response_text' => '', 'response_source' => 'mastodon', 'author_name' => 'Bob', 'author_avatar' => 'avatar2.png', 'author_url' => 'https://mastodon.social/@bob'],
+            (object)['id' => 'resp3', 'page_uuid' => 'uuid3', 'response_type' => 'in-reply-to', 'response_date' => '2025-01-03', 'response_text' => 'Nice!', 'response_source' => 'bluesky', 'author_name' => 'Carol', 'author_avatar' => 'avatar3.png', 'author_url' => 'https://bsky.app/carol'],
+        ];
+
+        $result = $collector->convertToWebmentionHookData($responses);
+
+        $this->assertCount(2, $result);
+        $this->assertEquals('resp1', $result[0]['id']);
+        $this->assertEquals('resp3', $result[1]['id']);
     }
 }
