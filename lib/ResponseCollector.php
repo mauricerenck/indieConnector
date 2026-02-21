@@ -21,7 +21,6 @@ class ResponseCollector
         private ?UrlHandler $urlHandler = null,
     ) {
         $this->mastodon = $mastodon ?? new Mastodon();
-
         $this->bluesky = $bluesky ?? new Bluesky();
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
         $this->urlHandler = $urlHandler ?? new UrlHandler();
@@ -69,12 +68,7 @@ class ResponseCollector
 
     public function getDuePostUrls()
     {
-        $currentTimestamp = time();
-        $timeToFetchAfter = $currentTimestamp - $this->ttl * 60;
-        $limitQuery = $this->limit > 0 ? ' LIMIT ' . $this->limit : '';
-        $query = 'SELECT GROUP_CONCAT(post_url, ",") AS post_urls, post_type FROM external_post_urls WHERE active = TRUE AND last_fetched < ' . $timeToFetchAfter . ' GROUP BY post_type ' . $limitQuery . ';';
-
-        $postUrls = $this->indieDb->query($query);
+        $postUrls = $this->getDuePostUrlsDbResult();
 
         if (!$postUrls || $postUrls->count() === 0) {
             return [
@@ -106,8 +100,7 @@ class ResponseCollector
 
     public function getPostUrlMetrics()
     {
-        $query = 'SELECT COUNT(post_url) as urls, post_type FROM external_post_urls WHERE active = TRUE GROUP BY post_type;';
-        $postUrls = $this->indieDb->query($query);
+        $postUrls = $this->getPostUrlMetricsDbResult();
 
         if (!$postUrls || $postUrls->count() === 0) {
             return [
@@ -124,11 +117,7 @@ class ResponseCollector
         $mastodonUrlCount = $mastodonUrls ? $mastodonUrls->urls : 0;
         $blueskyUrlCount = $blueskyUrls ? $blueskyUrls->urls : 0;
 
-
-        $currentTimestamp = time();
-        $timeToFetchAfter = $currentTimestamp - $this->ttl * 60;
-        $query = 'SELECT COUNT(post_url) as urls FROM external_post_urls WHERE active = TRUE AND last_fetched < ' . $timeToFetchAfter . ';';
-        $dueUrls = $this->indieDb->query($query);
+        $dueUrls = $this->getPostUrlMetricsDueUrlDbResult();
 
         $dueUrls = $dueUrls->first();
         $dueUrlsCount = $dueUrls ? $dueUrls->urls : 0;
@@ -152,9 +141,7 @@ class ResponseCollector
 
         // get known responses
         $postUrls = explode(',', $postUrls);
-        $lastResponses = $this->indieDb->query(
-            'SELECT GROUP_CONCAT(id, ",") AS ids, post_type FROM known_responses WHERE post_url IN ("' . implode('", "', $postUrls) . '") GROUP BY post_type;'
-        );
+        $lastResponses = $this->getLastResponsesFromDb($postUrls);
 
         switch ($service) {
             case 'bluesky':
@@ -292,11 +279,11 @@ class ResponseCollector
 
     public function convertToWebmentionHookData($responses)
     {
-        $sourceBaseUrl = kirby()->url() . '/indieconnector/response/';
+        $sourceBaseUrl = $this->getSourceBaseUrl();
 
         $data = [];
         foreach ($responses as $response) {
-            $targetPage = page('page://' . $response->page_uuid);
+            $targetPage = $this->getPageByUuid($response->page_uuid);
 
             if (is_null($targetPage)) {
                 continue;
@@ -390,5 +377,45 @@ class ResponseCollector
         }
 
         return $results;
+    }
+
+    protected function getDuePostUrlsDbResult()
+    {
+        $currentTimestamp = time();
+        $timeToFetchAfter = $currentTimestamp - $this->ttl * 60;
+        $limitQuery = $this->limit > 0 ? ' LIMIT ' . $this->limit : '';
+        $query = 'SELECT GROUP_CONCAT(post_url, ",") AS post_urls, post_type FROM external_post_urls WHERE active = TRUE AND last_fetched < ' . $timeToFetchAfter . ' GROUP BY post_type ' . $limitQuery . ';';
+        return $this->indieDb->query($query);
+    }
+
+    protected function getPostUrlMetricsDbResult()
+    {
+        $query = 'SELECT COUNT(post_url) as urls, post_type FROM external_post_urls WHERE active = TRUE GROUP BY post_type;';
+        return $this->indieDb->query($query);
+    }
+
+    protected function getPostUrlMetricsDueUrlDbResult()
+    {
+        $currentTimestamp = time();
+        $timeToFetchAfter = $currentTimestamp - $this->ttl * 60;
+        $query = 'SELECT COUNT(post_url) as urls FROM external_post_urls WHERE active = TRUE AND last_fetched < ' . $timeToFetchAfter . ';';
+        return $this->indieDb->query($query);
+    }
+
+    protected function getLastResponsesFromDb(array $postUrls)
+    {
+        return $this->indieDb->query(
+            'SELECT GROUP_CONCAT(id, ",") AS ids, post_type FROM known_responses WHERE post_url IN ("' . implode('", "', $postUrls) . '") GROUP BY post_type;'
+        );
+    }
+
+    protected function getSourceBaseUrl(): string
+    {
+        return kirby()->url() . '/indieconnector/response/';
+    }
+
+    protected function getPageByUuid(string $uuid): ?object
+    {
+        return page('page://' . $uuid);
     }
 }
