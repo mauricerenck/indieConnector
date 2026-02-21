@@ -69,7 +69,7 @@ return [
                     $sender = new Sender();
 
                     if (in_array('mastodon', $services)) {
-                        $mastodonSender = new MastodonSender();
+                        $mastodonSender = new Mastodon();
                         $mastodonPost = $mastodonSender->sendPost($page, $text);
 
                         if ($mastodonPost !== false) {
