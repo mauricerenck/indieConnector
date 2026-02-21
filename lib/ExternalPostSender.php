@@ -102,6 +102,10 @@ class ExternalPostSender extends Sender
             return '';
         }
 
+        if (empty($this->tagsField)) {
+            return '';
+        }
+
         $lowercaseTagField = strtolower($this->tagsField);
 
         if ($page->{$lowercaseTagField}()->isEmpty()) {
