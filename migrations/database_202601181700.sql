@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS blocked_urls (
+    url TEXT NOT NULL,
+    direction TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

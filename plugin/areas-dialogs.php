@@ -78,8 +78,8 @@ return [
                     }
 
                     if (in_array('bluesky', $services)) {
-                        $blueskySender = new BlueskySender();
-                        $blueskyPost = $blueskySender->sendPost($page, $text);
+                        $bluesky = new Bluesky();
+                        $blueskyPost = $bluesky->sendPost(page: $page, manualTextMessage: $text);
 
                         if ($blueskyPost !== false) {
                             $postResults[] = $blueskyPost;

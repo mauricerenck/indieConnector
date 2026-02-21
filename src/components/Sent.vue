@@ -33,6 +33,9 @@
                     <span v-else>{{ label }}</span>
                 </span>
             </template>
+            <template #options="{ row }">
+                <k-options-dropdown :options="dropdownOptions(row)" />
+            </template>
         </k-table>
     </div>
 </template>
@@ -69,21 +72,37 @@ export default {
                     url: null,
                     status: null,
                     updates: null,
+                    isSource: true,
                 }
                 data.push(newEntry)
                 this.pagination.total++
 
                 source.entries.forEach(entry => {
+                    let entryStatus = ''
+                    switch (entry.status) {
+                        case 'success':
+                            entryStatus =
+                                '<svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="#icon-check"></use></svg>'
+                            break
+                        case 'blocked':
+                            entryStatus =
+                                '<svg xmlns="http://www.w3.org/2000/svg" style="color: light-dark(var(--color-red-700),var(--color-red-300));" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="k-icon lucide lucide-ban-icon lucide-ban"><path d="M4.929 4.929 19.07 19.071"/><circle cx="12" cy="12" r="10"/></svg>'
+                            break
+                        default:
+                            entryStatus =
+                                '<svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="#icon-cancel"></use></svg>'
+                            break
+                    }
+
                     const newEntry = {
+                        id: entry.id,
                         title: `<a href="${entry.url}" class="target" target="_blank">${entry.url}</a>`,
                         panelUrl: null,
                         webmentions: null,
                         url: entry.url,
-                        status:
-                            entry.status === 'success'
-                                ? '<svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="#icon-check"></use></svg>'
-                                : '<svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="#icon-cancel"></use></svg>',
+                        status: entryStatus,
                         updates: entry.updates,
+                        isSource: false,
                     }
                     data.push(newEntry)
                     entryCount++
@@ -91,6 +110,40 @@ export default {
                 })
             })
             return data.slice(this.index - 1, this.pagination.limit * this.pagination.page)
+        },
+    },
+    methods: {
+        blockEntry(row, hostOnly = false) {
+            panel.api
+                .post(`indieconnector/block/url`, {
+                    id: row.id,
+                    url: row.url,
+                    direction: 'outgoing',
+                    hostOnly,
+                })
+                .then(response => {
+                    row.status =
+                        '<svg xmlns="http://www.w3.org/2000/svg" style="color: light-dark(var(--color-red-700),var(--color-red-300));" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="k-icon lucide lucide-ban-icon lucide-ban"><path d="M4.929 4.929 19.07 19.071"/><circle cx="12" cy="12" r="10"/></svg>'
+                })
+        },
+
+        dropdownOptions(row) {
+            if (row.isSource) {
+                return
+            }
+
+            return [
+                {
+                    label: 'Block host',
+                    icon: 'protected',
+                    click: () => this.blockEntry(row, true),
+                },
+                {
+                    label: 'Open URL',
+                    icon: 'url',
+                    click: () => window.open(row.url, '_blank'),
+                },
+            ]
         },
     },
 }

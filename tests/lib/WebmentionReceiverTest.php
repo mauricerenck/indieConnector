@@ -12,49 +12,6 @@ final class WebmentionReceiverTest extends TestCaseMocked
 
     /**
      * @group receiveWebmentions
-     * @testdox processWebmention - should process webmention
-     */
-    /*public function testShouldProcessWebmention()
-    {
-        $webmentionReceiver = new WebmentionReceiver(
-            'https://indieconnector.dev/tests/reply.php?replyto=http://indieconnector.ddev.site/',
-            $this->localUrl . '/en/phpunit'
-        );
-
-        $sourceUrl = 'https://indieconnector.dev/tests/reply.php?replyto=http://indieconnector.ddev.site/';
-        $targetUrl = $this->localUrl . '/en/phpunit';
-
-        $expected = [
-            'status' => 'success',
-            'message' => 'webmention processed',
-        ];
-
-        $result = $webmentionReceiver->processWebmention($sourceUrl, $targetUrl);
-        $this->assertEquals($expected, $result);
-    }
-    */
-
-    // /**
-    //  * @group receiveWebmentions
-    //  * @testdox getDataFromSource - should get and parse mf2 data from source
-    //  */
-    // public function testShouldSendWebmention()
-    // {
-    //     $webmentionReceiver = new WebmentionReceiver();
-    //     $sourceUrl =
-    //         'https://brid.gy/like/mastodon/@mauricerenck@mastodon.online/112474546285378499/111626473261717260';
-
-    //     $result = $webmentionReceiver->getDataFromSource($sourceUrl);
-    //     // NOTE this is for getting mf2 json from a real source
-    //     $mf2Result = $webmentionReceiver->getDataFromSource(
-    //         'https://brid.gy/like/mastodon/@mauricerenck@mastodon.online/112474546285378499/111626473261717260'
-    //     );
-    //     file_put_contents('bridgy-mf2.json', json_encode($mf2Result));
-    //     $this->assertTrue(false);
-    // }
-
-    /**
-     * @group receiveWebmentions
      * @testdox convertToHookData - should create an array with the correct keys
      */
     public function testShouldConvertToHookData()
@@ -227,5 +184,122 @@ final class WebmentionReceiverTest extends TestCaseMocked
         $this->assertEquals($expectedAuthor, $webmentionData['author']);
         $this->assertEquals('This is my blog post', $webmentionData['title']);
         $this->assertEquals('mastodon', $webmentionData['service']);
+    }
+
+    /**
+     * @group receiveWebmentions
+     * @testdox getWebmentionData - returns false when items are empty
+     */
+    public function testGetWebmentionDataReturnsFalseWhenEmpty()
+    {
+        $webmentionReceiver = new WebmentionReceiver('https://sender.tld', 'https://target.tld');
+        $result = $webmentionReceiver->getWebmentionData(['items' => []]);
+
+        $this->assertFalse($result);
+    }
+
+    /**
+     * @group receiveWebmentions
+     * @testdox getWebmentionData - returns false when no items key
+     */
+    public function testGetWebmentionDataReturnsFalseWhenNoItems()
+    {
+        $webmentionReceiver = new WebmentionReceiver('https://sender.tld', 'https://target.tld');
+        $result = $webmentionReceiver->getWebmentionData([]);
+
+        $this->assertFalse($result);
+    }
+
+    /**
+     * @group receiveWebmentions
+     * @testdox splitWebmentionDataIntoHooks - returns one hook per type
+     */
+    public function testSplitWebmentionDataIntoHooksReturnsOneHookPerType()
+    {
+        $webmentionReceiver = new WebmentionReceiver('https://sender.tld', 'https://target.tld');
+
+        $webmentionData = [
+            'types' => ['like-of', 'repost-of'],
+            'content' => 'test',
+            'published' => '2025-01-01',
+            'author' => ['name' => 'Alice'],
+            'title' => 'Test',
+            'service' => 'web',
+        ];
+
+        $result = $webmentionReceiver->splitWebmentionDataIntoHooks($webmentionData);
+
+        $this->assertCount(2, $result);
+        $this->assertEquals('like-of', $result[0]['type']);
+        $this->assertEquals('repost-of', $result[1]['type']);
+    }
+
+    /**
+     * @group receiveWebmentions
+     * @testdox splitWebmentionDataIntoHooks - returns empty array when no types
+     */
+    public function testSplitWebmentionDataIntoHooksReturnsEmptyWhenNoTypes()
+    {
+        $webmentionReceiver = new WebmentionReceiver('https://sender.tld', 'https://target.tld');
+
+        $webmentionData = [
+            'types' => [],
+            'content' => '',
+            'published' => '',
+            'author' => [],
+            'title' => '',
+            'service' => '',
+        ];
+
+        $result = $webmentionReceiver->splitWebmentionDataIntoHooks($webmentionData);
+
+        $this->assertCount(0, $result);
+    }
+
+    /**
+     * @group receiveWebmentions
+     * @testdox processWebmention - returns error when no webmention data
+     */
+    public function testProcessWebmentionReturnsErrorWhenNoData()
+    {
+        $webmentionReceiver = $this->getMockBuilder(WebmentionReceiver::class)
+            ->setConstructorArgs(['https://sender.tld', 'https://target.tld'])
+            ->onlyMethods(['getDataFromSource', 'getWebmentionData'])
+            ->getMock();
+
+        $webmentionReceiver->method('getDataFromSource')->willReturn([]);
+        $webmentionReceiver->method('getWebmentionData')->willReturn(false);
+
+        $result = $webmentionReceiver->processWebmention('https://sender.tld', 'https://target.tld');
+
+        $this->assertEquals(['status' => 'error', 'message' => 'no webmention data'], $result);
+    }
+
+    /**
+     * @group receiveWebmentions
+     * @testdox processWebmention - returns error when no target page found
+     */
+    public function testProcessWebmentionReturnsErrorWhenNoTargetPage()
+    {
+        $webmentionReceiver = $this->getMockBuilder(WebmentionReceiver::class)
+            ->setConstructorArgs(['https://sender.tld', 'https://target.tld'])
+            ->onlyMethods(['getDataFromSource', 'getWebmentionData', 'getPageFromUrl'])
+            ->getMock();
+
+        $webmentionReceiver->method('getDataFromSource')->willReturn([]);
+        $webmentionReceiver->method('getWebmentionData')->willReturn([
+            'types' => ['like-of'],
+            'content' => '',
+            'published' => '',
+            'author' => [],
+            'title' => '',
+            'service' => 'web',
+        ]);
+        $webmentionReceiver->method('getPageFromUrl')->willReturn(false);
+
+        $result = $webmentionReceiver->processWebmention('https://sender.tld', 'https://target.tld');
+
+        $this->assertEquals('error', $result['status']);
+        $this->assertStringContainsString('no target page found', $result['message']);
     }
 }

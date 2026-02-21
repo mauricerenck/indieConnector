@@ -3,6 +3,7 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Toolkit\Str;
+use Exception;
 
 class ExternalPostSender extends Sender
 {
@@ -17,7 +18,7 @@ class ExternalPostSender extends Sender
         public ?array $skipUrlTemplates = null,
         private ?int $maxPostLength = null,
         public ?bool $neverTrimTags = null,
-        public ?UrlChecks $urlChecks = null,
+        public ?UrlHandler $urlHandler = null,
         public ?PageChecks $pageChecks = null
     ) {
         parent::__construct();
@@ -33,7 +34,7 @@ class ExternalPostSender extends Sender
         $this->maxPostLength = $maxPostLength ?? option('mauricerenck.indieConnector.mastodon.text-length', 300);
         $this->neverTrimTags = $neverTrimTags ?? option('mauricerenck.indieConnector.post.neverTrimTags', true);
 
-        $this->urlChecks = $urlChecks ?? new UrlChecks();
+        $this->urlHandler = $urlHandler ?? new UrlHandler();
         $this->pageChecks = $pageChecks ?? new PageChecks();
 
         // backwards compatibility
@@ -49,6 +50,28 @@ class ExternalPostSender extends Sender
         if (!$maxPostLength && option('mauricerenck.indieConnector.mastodon-text-length', false)) {
             $this->maxPostLength = option('mauricerenck.indieConnector.mastodon-text-length');
         }
+    }
+
+    public function preconditionsMet($page): bool
+    {
+        if (!$this->pageChecks->pageFullfillsCriteria($page, 'post')) {
+            return false;
+        }
+
+        if ($this->urlHandler->isLocalUrl($page->url())) {
+            throw new Exception('Local url');
+            return false;
+        }
+
+        if (!$this->pageChecks->pageHasEnabledExternalPosting($page)) {
+            return false;
+        }
+
+        if ($this->alreadySentToTarget('bluesky', $page)) {
+            return false;
+        }
+
+        return true;
     }
 
     public function getTextFieldContent($page): string
@@ -76,6 +99,10 @@ class ExternalPostSender extends Sender
     public function getPostTags($page): string
     {
         if (is_null($this->tagsField)) {
+            return '';
+        }
+
+        if (empty($this->tagsField)) {
             return '';
         }
 
@@ -118,14 +145,13 @@ class ExternalPostSender extends Sender
         return $url;
     }
 
-
     public function calculatePostTextLength(string $url)
     {
         $urlLength = Str::length($url);
         return $this->maxPostLength - $urlLength - 2;
     }
 
-    public function getTrimmedFullMessage(string $message, string $url, string $tags, string $service): string
+    public function getTrimmedFullMessage($page, string $service,  string | null $manualTextMessage = null): string
     {
         $maxLength = $service == 'mastodon' ? $this->maxPostLength : 300;
         $appendix = '...';
@@ -133,6 +159,10 @@ class ExternalPostSender extends Sender
         $appendixLength = Str::length($appendix);
         $linebreakLength = 1;
         $metaTextLength = $appendixLength; // FIXME until kirby bug is not fixed @see https://github.com/getkirby/kirby/issues/7722
+
+        $url = $this->getPostUrl($page);
+        $tags = $this->getPostTags($page);
+        $message = is_null($manualTextMessage) ? $this->getTextFieldContent($page) : $manualTextMessage;
 
         $urlLength = Str::length($url);
         $tagsLength = Str::length($tags);
@@ -157,6 +187,21 @@ class ExternalPostSender extends Sender
         }
 
         return $fullMessage;
+    }
+
+    public function getPreferedLanguage(): string
+    {
+        $language = 'en';
+
+        if ($defaultLanguage = kirby()->defaultLanguage()) {
+            $language = $defaultLanguage->code();
+        }
+
+        if ($this->prefereLanguage !== false && !empty($this->prefereLanguage)) {
+            $language = $this->prefereLanguage;
+        }
+
+        return $language;
     }
 
     public function updatePosts($id, $url, $statusCode, $page, $target)

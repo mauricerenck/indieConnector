@@ -14,13 +14,13 @@ class Sender
         private ?bool $activityPubBridge = null,
         private ?string $outboxFilename = null,
 
-        private ?UrlChecks $urlChecks = null
+        private ?UrlHandler $urlHandler = null
     ) {
         $this->fieldsToParseUrls =
             $fieldsToParseUrls ??
             option('mauricerenck.indieConnector.send.url-fields', ['text:text', 'description:text', 'intro:text']);
         $this->activityPubBridge = $activityPubBridge ?? option('mauricerenck.indieConnector.activityPubBridge', false);
-        $this->urlChecks = $urlChecks ?? new UrlChecks();
+        $this->urlHandler = $urlHandler ?? new UrlHandler();
         $this->outboxFilename =
             $outboxFilename ?? option('mauricerenck.indieConnector.send.outboxFilename', 'indieConnector.json');
 
@@ -36,20 +36,20 @@ class Sender
 
     public function isValidTarget(string $url)
     {
-        if (!$this->urlChecks->urlIsValid($url)) {
+        if (!$this->urlHandler->urlIsValid($url)) {
             return false;
         }
 
-        if ($this->urlChecks->isLocalUrl($url)) {
+        if ($this->urlHandler->isLocalUrl($url)) {
             return false;
         }
 
-        if (!$this->urlChecks->urlExists($url)) {
+        if (!$this->urlHandler->urlExists($url)) {
             // TODO Log this in new json format for error reporting in panel and retries
             return false;
         }
 
-        if ($this->urlChecks->isBlockedTarget($url)) {
+        if ($this->urlHandler->isBlockedTarget($url)) {
             return false;
         }
 
@@ -116,10 +116,12 @@ class Sender
     public function getPostTargetUrl($target, $page)
     {
 
+        // TODO das hier sollte die Mastodon::class übernehmen
         if ($target === 'mastodon' && $page->mastodonStatusUrl()->isNotEmpty()) {
             return $page->mastodonStatusUrl()->value();
         }
 
+        // FIXME das hier übernimmt die Bluesky::class
         if ($target === 'bluesky' && $page->blueskyStatusUrl()->isNotEmpty()) {
             $bluesky = new Bluesky();
             $bskUrl = $page->blueskyStatusUrl()->value();
@@ -219,7 +221,7 @@ class Sender
         return;
     }
 
-    public function convertProcessedUrlsToV2($processedUrls)
+    public function convertProcessedUrlsToV2($processedUrls) // FIXME outbox::class->convertProcessedUrlsToV2
     {
         $processedUrlsV2 = [];
         foreach ($processedUrls as $url) {
@@ -236,7 +238,7 @@ class Sender
         return $processedUrlsV2;
     }
 
-    public function getOutboxVersion($outbox)
+    public function getOutboxVersion($outbox) // FIXME outbox::class->getVersion
     {
         if (!isset($outbox['version'])) {
             return 1;
@@ -245,7 +247,7 @@ class Sender
         return $outbox['version'];
     }
 
-    public function createOutbox($page): array
+    public function createOutbox($page): array // FIXME outbox::class->create
     {
         $data = [
             'version' => $this->outboxVersion,
@@ -257,7 +259,7 @@ class Sender
         return $data;
     }
 
-    public function convertOutboxToV2($outbox)
+    public function convertOutboxToV2($outbox) // FIXME outbox::class->convertToV2
     {
         $convertedOutbox = [
             'version' => $this->outboxVersion,
@@ -267,7 +269,7 @@ class Sender
         return $convertedOutbox;
     }
 
-    public function readOutbox($page): array
+    public function readOutbox($page): array // FIXME outbox::class->read
     {
         $outboxFile = $page->file($this->outboxFilename);
 
@@ -293,7 +295,7 @@ class Sender
         return $outbox;
     }
 
-    public function writeOutbox($outboxData, $page)
+    public function writeOutbox($outboxData, $page) // FIXME outbox::class->write
     {
         $outboxFile = $page->file($this->outboxFilename);
         $filePath = is_null($outboxFile) ? $page->root() . '/' . $this->outboxFilename : $outboxFile->root();

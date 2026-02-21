@@ -34,25 +34,24 @@ return [
         $webmentions = new WebmentionSender();
         $webmentions->sendWebmentions($newPage);
 
-
         if (option('mauricerenck.indieConnector.post.automatically', true) && !$newPage->isDraft() && $oldPage->isDraft()) {
+            $sender = new Sender();
             $postResults = [];
 
-            $mastodonSender = new MastodonSender();
-            $mastodonPost = $mastodonSender->sendPost($newPage);
+            $mastodon = new Mastodon();
+            $mastodonPost = $mastodon->sendPost($newPage);
             if ($mastodonPost !== false) {
                 $postResults[] = $mastodonPost;
             }
 
-            $blueskySender = new BlueskySender();
-            $blueskyPost = $blueskySender->sendPost($newPage);
-
+            $bluesky = new Bluesky();
+            $blueskyPost = $bluesky->sendPost(page: $newPage);
             if ($blueskyPost !== false) {
                 $postResults[] = $blueskyPost;
             }
 
-            $mastodonSender->updateExternalPosts($postResults, $newPage);
-            $mastodonSender->updateResponseCollectionUrls($postResults, $newPage);
+            $sender->updateExternalPosts($postResults, $newPage);
+            $sender->updateResponseCollectionUrls($postResults, $newPage);
         }
     },
 
@@ -71,20 +70,6 @@ return [
     'page.changeSlug:after' => function ($newPage) {
         $webmentions = new WebmentionSender();
         $webmentions->removePageFromDeleted($newPage);
-    },
-
-    'page.render:after' => function (string $contentType, array $data, string $html, Page $page) {
-        $reponseId = $page->responseId();
-
-        if (is_null($reponseId) || $reponseId->isEmpty()) {
-            return;
-        }
-
-        $isPanelPreview = $page->panelPreview();
-        if (is_null($isPanelPreview) || $isPanelPreview->isEmpty() || $isPanelPreview->isFalse()) {
-            $responseCollector = new ResponseCollector();
-            $responseCollector->removeFromQueue($reponseId->value());
-        }
     },
 
     'system.loadPlugins:after' => function () {
