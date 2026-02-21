@@ -114,7 +114,6 @@ export default {
     },
     methods: {
         blockEntry(row, hostOnly = false) {
-            console.log('id', row.id)
             panel.api
                 .post(`indieconnector/block/url`, {
                     id: row.id,

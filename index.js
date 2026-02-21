@@ -372,7 +372,6 @@
     },
     methods: {
       blockEntry(row, hostOnly = false) {
-        console.log("id", row.id);
         panel.api.post(`indieconnector/block/url`, {
           id: row.id,
           url: row.url,
@@ -549,11 +548,12 @@
         const itemList = [];
         this.pagination.total = 0;
         this.queuedItems.forEach((queueEntry) => {
-          const sourceLabel = queueEntry.source_service ? queueEntry.source_service.charAt(0).toUpperCase() : queueEntry.source_url;
+          const sourceLabel = new URL(queueEntry.source_url).origin + "/…";
+          const targetLabel = new URL(queueEntry.target_url).pathname;
           const newQueueItem = {
             id: queueEntry.id,
             source: `<a href="${queueEntry.source_url}?panelPreview=true" target="_blank">${sourceLabel}</a>`,
-            target: `<a href="${queueEntry.target_url}" target="_blank">${queueEntry.target_url}</a>`,
+            target: `<a href="${queueEntry.target_url}" target="_blank">${targetLabel}</a>`,
             queueStatus: `<span class="status ${queueEntry.queue_status}">${queueEntry.queue_status}</span>`,
             message: queueEntry.process_log,
             retries: queueEntry.retries ?? 0
