@@ -1,3 +1,10 @@
+## [2.15.2](https://github.com/mauricerenck/indieConnector/compare/v2.15.1...v2.15.2) (2026-02-21)
+
+
+### Bug Fixes
+
+* old mastodon sender class call ([333d867](https://github.com/mauricerenck/indieConnector/commit/333d867d6095d51d1f819fc6d2bf6b159c36903d))
+
 ## [2.15.1](https://github.com/mauricerenck/indieConnector/compare/v2.15.0...v2.15.1) (2026-02-21)
 
 
