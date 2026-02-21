@@ -1,3 +1,10 @@
+# [2.15.0](https://github.com/mauricerenck/indieConnector/compare/v2.14.2...v2.15.0) (2026-02-21)
+
+
+### Features
+
+* response collector optimization ([#37](https://github.com/mauricerenck/indieConnector/issues/37)) ([ee20c23](https://github.com/mauricerenck/indieConnector/commit/ee20c23c2633ced9b3b47d56574d51ed7bb10740))
+
 ## [2.14.2](https://github.com/mauricerenck/indieConnector/compare/v2.14.1...v2.14.2) (2026-01-09)
 
 
