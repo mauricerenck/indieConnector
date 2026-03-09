@@ -127,7 +127,7 @@ class ExternalPostSender extends Sender
             return '';
         }
 
-        $normalizedIntendedTemplate = strtolower($page->intendedTemplate());
+        $normalizedIntendedTemplate = strtolower($page->intendedTemplate()->name());
         if (in_array($normalizedIntendedTemplate, $this->skipUrlTemplates)) {
             return '';
         }

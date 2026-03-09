@@ -47,7 +47,7 @@ class WebmentionSender extends Sender
             return false;
         }
 
-        if (!$this->pageChecks->pageFullfillsCriteria($page)) {
+        if (!$this->pageChecks->pageFullfillsCriteria($page, 'webmention')) {
             return false;
         }
 

@@ -34,11 +34,11 @@ class PageChecks
             return false;
         }
 
-        if ($this->templateIsBlocked($page->intendedTemplate(), $type)) {
+        if ($this->templateIsBlocked($page->intendedTemplate()->name(), $type)) {
             return false;
         }
 
-        if (!$this->templateIsAllowed($page->intendedTemplate(), $type)) {
+        if (!$this->templateIsAllowed($page->intendedTemplate()->name(), $type)) {
             return false;
         }
 
