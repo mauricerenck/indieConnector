@@ -1,3 +1,10 @@
+## [2.15.3](https://github.com/mauricerenck/indieConnector/compare/v2.15.2...v2.15.3) (2026-03-09)
+
+
+### Bug Fixes
+
+* **sender:** check for intended template name explizitly ([9c6a01b](https://github.com/mauricerenck/indieConnector/commit/9c6a01b73d52a535f8c6e1a578339e95c9cf8700))
+
 ## [2.15.2](https://github.com/mauricerenck/indieConnector/compare/v2.15.1...v2.15.2) (2026-02-21)
 
 
