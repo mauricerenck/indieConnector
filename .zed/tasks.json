@@ -1,0 +1,26 @@
+[
+    {
+      "label": "PHPUnit All (ddev)",
+      "command": "ddev",
+      "args": ["exec", "vendor/bin/phpunit", "--testdox", "--colors=always", "tests"],
+      "tags": ["php-test-all"],
+      "use_new_terminal": false,
+      "reveal": "always"
+    },
+    {
+      "label": "PHPUnit File (ddev)",
+      "command": "ddev",
+      "args": ["exec", "vendor/bin/phpunit", "--testdox", "--colors=always", "$ZED_RELATIVE_FILE"],
+      "tags": ["php-test-file"],
+      "use_new_terminal": false,
+      "reveal": "always"
+    },
+    {
+      "label": "PHPUnit Method (ddev)",
+      "command": "ddev",
+      "args": ["exec", "vendor/bin/phpunit", "--testdox", "--colors=always", "--filter", "$ZED_SYMBOL", "$ZED_RELATIVE_FILE"],
+      "tags": ["php-test-method"],
+      "use_new_terminal": false,
+      "reveal": "always"
+    }
+]
