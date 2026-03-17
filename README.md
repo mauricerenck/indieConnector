@@ -31,17 +31,7 @@ Use one of these three methods to install the plugin:
 
 ## Docs
 
--   [Receiving Webmentions](docs/receiving.md)
--   [Sending Webmentions](docs/sending.md)
--   [Activate the Panel view](docs/panel-view.md)
--   [Post to Mastodon or Bluesky](docs/mastodon.md)
--   [Collect replies from Mastodon and Bluesky](docs/collecting-responses.md)
--   [Get replies using brid.gy](docs/mastodon-replies.md)
--   [Be a Mastodon Instance](docs/activitypub.md) (ActivityPub)
--   [Subscribe to the hook](docs/hook.md)
--   [Using webmention.io](docs/webmentionio.md)
--   [Using microformats](docs/microformats.md)
--   [All options](docs/options.md)
+The documentation is now available at https://maurice-renck.de/kirby/indieconnector
 
 ---
 
@@ -52,10 +42,10 @@ Use one of these three methods to install the plugin:
 -   [x] Get replies from Mastodon and Bluesky without brid.gy
 -   [x] Option for using Kirby UUID permalinks in Mastodon/Bluesky posts
 -   [x] Manual post to Mastodon and Bluesky
+-   [x] Blocklist for users on Mastodon and Bluesky
+-   [x] Block hosts from within the panel
 -   [ ] Queue for sending webmentions
 -   [ ] Queue for sending mastodon posts
 -   [ ] Queue for sending bluesky posts
 -   [ ] Nested indieweb replies
--   [ ] Blocklist for users on Mastodon and Bluesky
--   [ ] Block hosts from within the panel
 -   [ ] Post complete texts to Mastodon and Bluesky splitted in threads
