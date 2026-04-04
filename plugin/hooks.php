@@ -2,8 +2,6 @@
 
 namespace mauricerenck\IndieConnector;
 
-use Kirby\Cms\Page;
-
 return [
     'page.update:after' => function ($newPage, $oldPage) {
         $responseCollector = new ResponseCollector();

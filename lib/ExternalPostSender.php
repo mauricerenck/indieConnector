@@ -162,7 +162,8 @@ class ExternalPostSender extends Sender
 
         $url = $this->getPostUrl($page);
         $tags = $this->getPostTags($page);
-        $message = is_null($manualTextMessage) ? $this->getTextFieldContent($page) : $manualTextMessage;
+        $text = is_null($manualTextMessage) ? $this->getTextFieldContent($page) : $manualTextMessage;
+        $message = strip_tags(kirby()->kirbytext($text));
 
         $urlLength = Str::length($url);
         $tagsLength = Str::length($tags);
