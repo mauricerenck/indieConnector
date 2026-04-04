@@ -1,3 +1,11 @@
+## [2.15.4](https://github.com/mauricerenck/indieConnector/compare/v2.15.3...v2.15.4) (2026-04-04)
+
+
+### Bug Fixes
+
+* do not send kirbytext or html to mastodon and bluesky [#31](https://github.com/mauricerenck/indieConnector/issues/31) ([48434a2](https://github.com/mauricerenck/indieConnector/commit/48434a2beaf998630f4947989bba9fdeae5363de))
+* fixes sending webmention to pages without body [#38](https://github.com/mauricerenck/indieConnector/issues/38) ([49d2f01](https://github.com/mauricerenck/indieConnector/commit/49d2f01fba789fd720bd85e4be476ca27df18954))
+
 ## [2.15.3](https://github.com/mauricerenck/indieConnector/compare/v2.15.2...v2.15.3) (2026-03-09)
 
 
