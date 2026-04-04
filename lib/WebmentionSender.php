@@ -4,6 +4,7 @@ namespace mauricerenck\IndieConnector;
 
 use IndieWeb\MentionClient;
 use Exception;
+use Throwable;
 
 class WebmentionSender extends Sender
 {
@@ -121,30 +122,34 @@ class WebmentionSender extends Sender
 
     public function send(string $targetUrl, string $sourceUrl)
     {
-        $endpoint = $this->mentionClient->discoverWebmentionEndpoint($targetUrl);
+        try {
+            $endpoint = $this->mentionClient->discoverWebmentionEndpoint($targetUrl);
 
-        if (is_null($endpoint)) {
+            if (is_null($endpoint)) {
+                return false;
+            }
+
+            if ($endpoint) {
+                $webmentionResult = $this->mentionClient->sendWebmention($sourceUrl, $targetUrl);
+
+                if ($webmentionResult !== false) {
+                    return true;
+                }
+            }
+
+            $supportsPingback = $this->mentionClient->discoverPingbackEndpoint($targetUrl);
+            if ($supportsPingback) {
+                $pingbackResult = $this->mentionClient->sendPingback($sourceUrl, $targetUrl);
+
+                if ($pingbackResult !== false) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (Throwable $e) {
             return false;
         }
-
-        if ($endpoint) {
-            $webmentionResult = $this->mentionClient->sendWebmention($sourceUrl, $targetUrl);
-
-            if ($webmentionResult !== false) {
-                return true;
-            }
-        }
-
-        $supportsPingback = $this->mentionClient->discoverPingbackEndpoint($targetUrl);
-        if ($supportsPingback) {
-            $pingbackResult = $this->mentionClient->sendPingback($sourceUrl, $targetUrl);
-
-            if ($pingbackResult !== false) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public function filterDuplicateUrls($urls)
