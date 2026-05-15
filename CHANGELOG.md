@@ -1,3 +1,10 @@
+## [2.15.5](https://github.com/mauricerenck/indieConnector/compare/v2.15.4...v2.15.5) (2026-05-15)
+
+
+### Bug Fixes
+
+* use mastodon media api v2 ([5a1e931](https://github.com/mauricerenck/indieConnector/commit/5a1e931dc52e48701353bd452041ffd5a12f5336))
+
 ## [2.15.4](https://github.com/mauricerenck/indieConnector/compare/v2.15.3...v2.15.4) (2026-04-04)
 
 
