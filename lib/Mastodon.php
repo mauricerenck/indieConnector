@@ -137,7 +137,7 @@ class Mastodon
             );
 
             // 3) cURL-Request mit verbesserter Kompatibilität
-            $url = rtrim($this->instanceUrl, '/') . '/api/v1/media';
+            $url = rtrim($this->instanceUrl, '/') . '/api/v2/media';
             $ch = curl_init($url);
 
             curl_setopt_array($ch, [
@@ -150,7 +150,7 @@ class Mastodon
                 CURLOPT_HTTPHEADER     => [
                     'Authorization: Bearer ' . $this->token,
                     'Accept: application/json',
-                    'User-Agent: IndieConnector/1.0 (+' . site()->url() . ')',
+                    'User-Agent: IndieConnector/2 (+' . site()->url() . ')',
                     'Expect:',  // verhindert "100-continue"-Handshake
                 ],
             ]);
@@ -160,7 +160,7 @@ class Mastodon
             curl_close($ch);
 
             // 4) Erfolg prüfen und ID zurückgeben
-            if ($httpCode !== 200 || empty($responseBody)) {
+            if (!in_array($httpCode, [200, 202]) || empty($responseBody)) {
                 return false;
             }
 
@@ -168,7 +168,6 @@ class Mastodon
             return $responseData['id'] ?? false;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
-            return false;
         }
     }
 
