@@ -23,3 +23,7 @@ sections:
             blockeditor:
                 type: blocks
                 label: Blocks
+    mediathek:
+        type: files
+    subpages:
+        type: pages
