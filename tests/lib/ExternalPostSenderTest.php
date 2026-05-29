@@ -32,6 +32,7 @@ final class ExternalPostSenderTest extends TestCaseMocked
                 $options['skipUrlTemplates'] ?? [],
                 $options['maxPostLength'] ?? 300,
                 $options['neverTrimTags'] ?? true,
+                $options['keepMarkdown'] ?? false,
                 $this->urlHandlerMock,
                 $this->pageChecksMock,
             ])
@@ -144,6 +145,41 @@ final class ExternalPostSenderTest extends TestCaseMocked
         $this->assertStringContainsString('My manual message', $result);
     }
 
+
+    /**
+     * @group ExternalPostSenderTest
+     * @testdox getTrimmedFullMessage - should remove markdown (default)
+     */
+    public function testShouldRemoveMarkdown()
+    {
+        $sender = $this->createSender(['maxPostLength' => 300]);
+        $sender->method('getPostUrl')->willReturn('');
+        $sender->method('getPostTags')->willReturn('');
+        $sender->method('getTextFieldContent')->willReturn('This is **markdown** it should not be visible');
+
+        $pageMock = $this->createMock(\Kirby\Cms\Page::class);
+        $result = $sender->getTrimmedFullMessage($pageMock, 'mastodon');
+
+        $this->assertEquals('This is markdown it should not be visible', $result);
+    }
+
+    /**
+     * @group ExternalPostSenderTest
+     * @testdox getTrimmedFullMessage - should remove markdown (default)
+     */
+    public function testShouldKeepMarkdown()
+    {
+        $sender = $this->createSender(['maxPostLength' => 300, 'keepMarkdown' => true]);
+        $sender->method('getPostUrl')->willReturn('');
+        $sender->method('getPostTags')->willReturn('');
+        $sender->method('getTextFieldContent')->willReturn('This is **markdown** it should not be visible');
+
+        $pageMock = $this->createMock(\Kirby\Cms\Page::class);
+        $result = $sender->getTrimmedFullMessage($pageMock, 'mastodon');
+
+        $this->assertEquals('This is **markdown** it should not be visible', $result);
+    }
+
     /**
      * @group ExternalPostSenderTest
      * @testdox getPostTags - returns empty string when no tags field configured
@@ -161,6 +197,7 @@ final class ExternalPostSenderTest extends TestCaseMocked
             [],
             300,
             true,
+            null,
             $this->urlHandlerMock,
             $this->pageChecksMock
         );
@@ -195,6 +232,7 @@ final class ExternalPostSenderTest extends TestCaseMocked
             [],
             null,
             null,
+            null,
             $this->urlHandlerMock,
             $this->pageChecksMock
         );
@@ -221,6 +259,7 @@ final class ExternalPostSenderTest extends TestCaseMocked
             null,
             null,
             300,
+            null,
             null,
             $this->urlHandlerMock,
             $this->pageChecksMock

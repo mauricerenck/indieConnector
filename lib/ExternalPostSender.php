@@ -18,6 +18,7 @@ class ExternalPostSender extends Sender
         public ?array $skipUrlTemplates = null,
         private ?int $maxPostLength = null,
         public ?bool $neverTrimTags = null,
+        public ?bool $keepMarkdown = null,
         public ?UrlHandler $urlHandler = null,
         public ?PageChecks $pageChecks = null
     ) {
@@ -33,6 +34,7 @@ class ExternalPostSender extends Sender
         $this->skipUrlTemplates = $skipUrlTemplates ?? option('mauricerenck.indieConnector.post.skipUrlTemplates', []);
         $this->maxPostLength = $maxPostLength ?? option('mauricerenck.indieConnector.mastodon.text-length', 300);
         $this->neverTrimTags = $neverTrimTags ?? option('mauricerenck.indieConnector.post.neverTrimTags', true);
+        $this->keepMarkdown = $keepMarkdown ?? option('mauricerenck.indieConnector.post.keepMarkdown', false);
 
         $this->urlHandler = $urlHandler ?? new UrlHandler();
         $this->pageChecks = $pageChecks ?? new PageChecks();
@@ -163,7 +165,7 @@ class ExternalPostSender extends Sender
         $url = $this->getPostUrl($page);
         $tags = $this->getPostTags($page);
         $text = is_null($manualTextMessage) ? $this->getTextFieldContent($page) : $manualTextMessage;
-        $message = strip_tags(kirby()->kirbytext($text));
+        $message = $this->keepMarkdown ? $text : strip_tags(kirby()->kirbytext($text));
 
         $urlLength = Str::length($url);
         $tagsLength = Str::length($tags);
