@@ -1,3 +1,10 @@
+## [2.15.6](https://github.com/mauricerenck/indieConnector/compare/v2.15.5...v2.15.6) (2026-05-29)
+
+
+### Bug Fixes
+
+* **posse:** make sending markdown optional [#31](https://github.com/mauricerenck/indieConnector/issues/31) ([3912eba](https://github.com/mauricerenck/indieConnector/commit/3912ebaf67c35673ee054740be5e285affcb4963))
+
 ## [2.15.5](https://github.com/mauricerenck/indieConnector/compare/v2.15.4...v2.15.5) (2026-05-15)
 
 
