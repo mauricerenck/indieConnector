@@ -279,7 +279,7 @@ class ExternalPostSender extends Sender
             'type' => 'textarea',
             'buttons' => false,
             'size' => 'small',
-            'maxlength' => 500,
+            'maxlength' => (int) option('mauricerenck.indieConnector.mastodon.text-length', option('mauricerenck.indieConnector.mastodon-text-length', 500)),
             'required' => true,
         ];
 
