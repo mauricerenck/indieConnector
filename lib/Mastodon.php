@@ -48,7 +48,7 @@ class Mastodon
         }
 
         try {
-            $fullMessage = $this->externalPostSender->getTrimmedFullMessage(page: $page, manualTextMessage: $manualTextMessage, service: 'bluesky');
+            $fullMessage = $this->externalPostSender->getTrimmedFullMessage(page: $page, manualTextMessage: $manualTextMessage, service: 'mastodon');
             $language = $this->externalPostSender->getPreferedLanguage();
             $altField = $this->externalPostSender->imageAltField;
 
