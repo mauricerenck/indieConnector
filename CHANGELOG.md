@@ -1,3 +1,10 @@
+## [2.15.7](https://github.com/mauricerenck/indieConnector/compare/v2.15.6...v2.15.7) (2026-06-02)
+
+
+### Bug Fixes
+
+* **mastodon:** use service mastodon for getting post text ([ffede6a](https://github.com/mauricerenck/indieConnector/commit/ffede6a350d0fe0ed8b2a866219195806876702a))
+
 ## [2.15.6](https://github.com/mauricerenck/indieConnector/compare/v2.15.5...v2.15.6) (2026-05-29)
 
 
