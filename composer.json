@@ -34,7 +34,7 @@
     "require-dev": {
         "getkirby/cms": "^5",
         "phpunit/phpunit": "^12",
-        "mockery/mockery": "^1.5"
+        "mockery/mockery": "^1.6"
     },
     "replace": {
         "mauricerenck/tratschtante": "*"

@@ -9,38 +9,45 @@ use Kirby\Toolkit\V;
 
 class Mastodon
 {
+    protected OptionHandler $options;
+
     public function __construct(
         private ?string $instanceUrl = null,
         private ?string $token = null,
         private ?bool $enabled = null,
         private ?int $resizeImages = null,
 
+        ?OptionHandler $options = null,
         private ?Outbox $outbox = null,
         private ?ExternalPostSender $externalPostSender = null
     ) {
-        $this->enabled = $enabled ?? option('mauricerenck.indieConnector.mastodon.enabled', false);
-        $this->instanceUrl = $instanceUrl ?? option('mauricerenck.indieConnector.mastodon.instance-url', false);
-        $this->token = $token ?? option('mauricerenck.indieConnector.mastodon.bearer', false);
-        $this->resizeImages = $resizeImages ?? option('mauricerenck.indieConnector.mastodon.resizeImages', 0);
+        // $this->enabled = $enabled ?? option('mauricerenck.indieConnector.mastodon.enabled', false);
+        // $this->instanceUrl = $instanceUrl ?? option('mauricerenck.indieConnector.mastodon.instance-url', false);
+        // $this->token = $token ?? option('mauricerenck.indieConnector.mastodon.bearer', false);
+        // $this->resizeImages = $resizeImages ?? option('mauricerenck.indieConnector.mastodon.resizeImages', 0);
 
+        $this->options = $options ?? new OptionHandler();
         $this->outbox = $outbox ?? new Outbox();
         $this->externalPostSender = $externalPostSender ?? new ExternalPostSender();
     }
 
     public function sendPost($page, string | null $manualTextMessage = null): mixed
     {
-        if (!$this->enabled) {
+        $opt_enabled = $this->options->get('mastodon.enabled', false);
+        $opt_token = $this->options->get('mastodon.bearer', false);
+        $opt_instanceUrl = $this->options->get('mastodon.instance-url', false);
+        $opt_resizeImages = $this->options->get('mastodon.resizeImages', 0);
+
+        if (!$opt_enabled) {
             return false;
         }
 
-        if (!$this->token) {
-            throw new Exception('No bluesky app password set');
-            return false;
+        if (!$opt_token) {
+            throw new Exception('No Mastodon app password set');
         }
 
-        if (!$this->instanceUrl) {
+        if (!$opt_instanceUrl) {
             throw new Exception('No Mastodon Instance set');
-            return false;
         }
 
         if (!$this->externalPostSender->preconditionsMet($page)) {
@@ -59,8 +66,8 @@ class Mastodon
                         continue;
                     }
 
-                    if ($this->resizeImages !== 0) {
-                        $resizedImage = $image->resize($this->resizeImages);
+                    if ($opt_resizeImages !== 0) {
+                        $resizedImage = $image->resize($opt_resizeImages);
                         $resizedImage->base64(); // this forces kirby to generate the image
 
                         if (F::exists($resizedImage->root())) {
@@ -91,10 +98,10 @@ class Mastodon
             }
 
 
-            $response = Remote::request($this->instanceUrl . '/api/v1/statuses', [
+            $response = Remote::request($opt_instanceUrl . '/api/v1/statuses', [
                 'method' => 'POST',
                 'headers' => [
-                    'Authorization: Bearer ' . $this->token,
+                    'Authorization: Bearer ' . $opt_token,
                     'Content-Type: application/json',
                     'User-Agent: IndieConnector/1.0 (+' . site()->url() . ')'
                 ],
@@ -114,12 +121,14 @@ class Mastodon
             ];
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
-            return false;
         }
     }
 
     public function uploadImage($imagePath, $imageAlt)
     {
+        $opt_instanceUrl = $this->options->get('mastodon.instance-url', false);
+        $opt_token = $this->options->get('mastodon.bearer', false);
+
         try {
             if (!F::exists($imagePath)) {
                 return false;
@@ -137,7 +146,7 @@ class Mastodon
             );
 
             // 3) cURL-Request mit verbesserter Kompatibilität
-            $url = rtrim($this->instanceUrl, '/') . '/api/v2/media';
+            $url = rtrim($opt_instanceUrl, '/') . '/api/v2/media';
             $ch = curl_init($url);
 
             curl_setopt_array($ch, [
@@ -148,7 +157,7 @@ class Mastodon
                     'description' => $imageAlt
                 ],
                 CURLOPT_HTTPHEADER     => [
-                    'Authorization: Bearer ' . $this->token,
+                    'Authorization: Bearer ' . $opt_token,
                     'Accept: application/json',
                     'User-Agent: IndieConnector/2 (+' . site()->url() . ')',
                     'Expect:',  // verhindert "100-continue"-Handshake
@@ -173,7 +182,9 @@ class Mastodon
 
     public function getResponses(string $postUrl, string $type, array $knownIds): array
     {
-        if (!$this->enabled) {
+        $opt_enabled = $this->options->get('mastodon.enabled', false);
+
+        if (!$opt_enabled) {
             return [];
         }
 
@@ -204,7 +215,6 @@ class Mastodon
             return $entries;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
-            return [];
         }
     }
 

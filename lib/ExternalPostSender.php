@@ -26,7 +26,6 @@ class ExternalPostSender extends Sender
 
         $this->textfields = $textfields ?? option('mauricerenck.indieConnector.post.textfields', ['description']);
         $this->imagefield = $imagefield ?? option('mauricerenck.indieConnector.post.imagefield', false);
-        $this->imageAltField = $imageAltField ?? option('mauricerenck.indieConnector.post.imagealtfield', 'alt');
         $this->tagsField = $tagsField ?? option('mauricerenck.indieConnector.post.tagsfield', null);
         $this->prefereLanguage = $prefereLanguage ?? option('mauricerenck.indieConnector.post.prefereLanguage', null);
         $this->usePermalinkUrl = $usePermalinkUrl ?? option('mauricerenck.indieConnector.post.usePermalinkUrl', false);
@@ -35,6 +34,9 @@ class ExternalPostSender extends Sender
         $this->maxPostLength = $maxPostLength ?? option('mauricerenck.indieConnector.mastodon.text-length', 300);
         $this->neverTrimTags = $neverTrimTags ?? option('mauricerenck.indieConnector.post.neverTrimTags', true);
         $this->keepMarkdown = $keepMarkdown ?? option('mauricerenck.indieConnector.post.keepMarkdown', false);
+
+        // used in mastodon and bsk classes
+        $this->imageAltField = $imageAltField ?? option('mauricerenck.indieConnector.post.imagealtfield', 'alt');
 
         $this->urlHandler = $urlHandler ?? new UrlHandler();
         $this->pageChecks = $pageChecks ?? new PageChecks();

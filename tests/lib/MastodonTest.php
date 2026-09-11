@@ -1,31 +1,43 @@
 <?php
 
-namespace mauricerenck\IndieConnector;
+namespace Tests;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\TestDox;
+
+use mauricerenck\IndieConnector\ExternalPostSender;
+use mauricerenck\IndieConnector\OptionHandlerMock;
+use mauricerenck\IndieConnector\Mastodon;
+use mauricerenck\IndieConnector\Outbox;
 
 class MastodonTest extends TestCase
 {
     private $outboxMock;
     private $externalPostSenderMock;
+    private $defaultOptions;
 
     public function setUp(): void
     {
         $this->outboxMock = $this->createMock(Outbox::class);
         $this->externalPostSenderMock = $this->createMock(ExternalPostSender::class);
+
+        $this->defaultOptions = new OptionHandlerMock([
+            'mastodon.enabled' => true,
+            'mastodon.instance-url' => 'https://mastodon.social',
+            'mastodon.bearer' => 'token',
+        ]);
     }
 
-    // -------------------------
-    // extractMastodonNextPageUrl
-    // -------------------------
+    /* ********************************
+    ** extractMastodonNextPageUrl
+    ********************************** */
 
-    /**
-     * @group mastodon
-     * @testdox extractMastodonNextPageUrl - returns next page url
-     */
+    #[Group('mastodon')]
+    #[TestDox('extractMastodonNextPageUrl - returns next page url')]
     public function testExtractMastodonNextPageUrlReturnsNextPageUrl()
     {
-        $mastodon = new Mastodon('https://mastodon.social', 'token', true, 0, $this->outboxMock, $this->externalPostSenderMock);
+        $mastodon = new Mastodon(options: $this->defaultOptions, outbox: $this->outboxMock, externalPostSender: $this->externalPostSenderMock);
         $link = '<https://mastodon.social/api/v1/statuses/123/favourited_by?max_id=456>; rel="next", <https://mastodon.social/api/v1/statuses/123/favourited_by?min_id=789>; rel="prev"';
 
         $result = $mastodon->extractMastodonNextPageUrl($link);
@@ -33,13 +45,12 @@ class MastodonTest extends TestCase
         $this->assertEquals('https://mastodon.social/api/v1/statuses/123/favourited_by?max_id=456', $result);
     }
 
-    /**
-     * @group mastodon
-     * @testdox extractMastodonNextPageUrl - returns null when no next page
-     */
+
+    #[Group('mastodon')]
+    #[TestDox('extractMastodonNextPageUrl - returns null when no next page')]
     public function testExtractMastodonNextPageUrlReturnsNullWhenNoNextPage()
     {
-        $mastodon = new Mastodon('https://mastodon.social', 'token', true, 0, $this->outboxMock, $this->externalPostSenderMock);
+        $mastodon = new Mastodon(options: $this->defaultOptions, outbox: $this->outboxMock, externalPostSender: $this->externalPostSenderMock);
         $link = '<https://mastodon.social/api/v1/statuses/123/favourited_by?min_id=789>; rel="prev"';
 
         $result = $mastodon->extractMastodonNextPageUrl($link);
@@ -57,7 +68,7 @@ class MastodonTest extends TestCase
      */
     public function testResponsesIncludeKnownIdReturnsTrueWhenKnownIdFound()
     {
-        $mastodon = new Mastodon('https://mastodon.social', 'token', true, 0, $this->outboxMock, $this->externalPostSenderMock);
+        $mastodon = new Mastodon(options: $this->defaultOptions, outbox: $this->outboxMock, externalPostSender: $this->externalPostSenderMock);
         $responses = [['id' => 'abc'], ['id' => 'def']];
         $knownIds = ['def', 'ghi'];
 
@@ -72,7 +83,7 @@ class MastodonTest extends TestCase
      */
     public function testResponsesIncludeKnownIdReturnsFalseWhenNoKnownIdFound()
     {
-        $mastodon = new Mastodon('https://mastodon.social', 'token', true, 0, $this->outboxMock, $this->externalPostSenderMock);
+        $mastodon = new Mastodon(options: $this->defaultOptions, outbox: $this->outboxMock, externalPostSender: $this->externalPostSenderMock);
         $responses = [['id' => 'abc'], ['id' => 'def']];
         $knownIds = ['xyz'];
 
@@ -87,8 +98,8 @@ class MastodonTest extends TestCase
      */
     public function testResponsesIncludeKnownIdReturnsFalseWhenResponsesEmpty()
     {
-        $mastodon = new Mastodon('https://mastodon.social', 'token', true, 0, $this->outboxMock, $this->externalPostSenderMock);
 
+        $mastodon = new Mastodon(options: $this->defaultOptions, outbox: $this->outboxMock, externalPostSender: $this->externalPostSenderMock);
         $result = $mastodon->responsesIncludeKnownId([], ['abc']);
 
         $this->assertFalse($result);
@@ -104,7 +115,7 @@ class MastodonTest extends TestCase
      */
     public function testGetPostUrlDataReturnsHostAndPostId()
     {
-        $mastodon = new Mastodon('https://mastodon.social', 'token', true, 0, $this->outboxMock, $this->externalPostSenderMock);
+        $mastodon = new Mastodon(options: $this->defaultOptions, outbox: $this->outboxMock, externalPostSender: $this->externalPostSenderMock);
 
         [$host, $postId] = $mastodon->getPostUrlData('https://mastodon.social/@alice/123456789');
 
@@ -118,8 +129,7 @@ class MastodonTest extends TestCase
      */
     public function testGetPostUrlDataReturnsNullForInvalidUrl()
     {
-        $mastodon = new Mastodon('https://mastodon.social', 'token', true, 0, $this->outboxMock, $this->externalPostSenderMock);
-
+        $mastodon = new Mastodon(options: $this->defaultOptions, outbox: $this->outboxMock, externalPostSender: $this->externalPostSenderMock);
         [$host, $postId] = $mastodon->getPostUrlData('not-a-url');
 
         $this->assertNull($host);
