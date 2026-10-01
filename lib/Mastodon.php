@@ -12,20 +12,10 @@ class Mastodon
     protected OptionHandler $options;
 
     public function __construct(
-        private ?string $instanceUrl = null,
-        private ?string $token = null,
-        private ?bool $enabled = null,
-        private ?int $resizeImages = null,
-
         ?OptionHandler $options = null,
         private ?Outbox $outbox = null,
         private ?ExternalPostSender $externalPostSender = null
     ) {
-        // $this->enabled = $enabled ?? option('mauricerenck.indieConnector.mastodon.enabled', false);
-        // $this->instanceUrl = $instanceUrl ?? option('mauricerenck.indieConnector.mastodon.instance-url', false);
-        // $this->token = $token ?? option('mauricerenck.indieConnector.mastodon.bearer', false);
-        // $this->resizeImages = $resizeImages ?? option('mauricerenck.indieConnector.mastodon.resizeImages', 0);
-
         $this->options = $options ?? new OptionHandler();
         $this->outbox = $outbox ?? new Outbox();
         $this->externalPostSender = $externalPostSender ?? new ExternalPostSender();
