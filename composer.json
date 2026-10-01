@@ -1,6 +1,6 @@
 {
     "name": "mauricerenck/indieconnector",
-    "version": "2.15.7",
+    "version": "2.15.8",
     "description": "A Kirby IndieWeb plugin",
     "type": "kirby-plugin",
     "license": "MIT",
@@ -8,7 +8,7 @@
     "authors": [
         {
             "name": "Maurice Renck",
-            "email": "hello@maurice-renck.de"
+            "email": "kirby@maurice-renck.de"
         }
     ],
     "support": {
@@ -56,8 +56,14 @@
         "test": "vendor/bin/phpunit --testdox --colors=always tests \"$@\"",
         "build-test-package": "git archive HEAD -o indieConnector.zip --worktree-attributes",
         "build-composer": "composer install --no-dev --optimize-autoloader",
+        "prepare": [
+            "composer test tests",
+            "composer install --no-dev --optimize-autoloader",
+            "npm run build"
+        ],
         "build-release": [
             "composer test tests",
+            "@php scripts/version-bump.php",
             "composer install --no-dev --optimize-autoloader",
             "npm run build"
         ]
