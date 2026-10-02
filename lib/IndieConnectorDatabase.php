@@ -247,6 +247,7 @@ class IndieConnectorDatabase
         string $table,
         array $fields,
         string $where = '',
+        ?int $limit = null,
         array $bindings = []
     ): mixed {
 
@@ -260,13 +261,30 @@ class IndieConnectorDatabase
        )
        */
         try {
+            $this->assertIdentifier($table);
+
+            foreach ($fields as $field) {
+                $this->assertIdentifier($field);
+            }
+
+            if ($limit !== null && $limit < 0) {
+                throw new InvalidArgumentException(
+                    'LIMIT must be a non-negative integer'
+                );
+            }
+
+            $limitSql = $limit !== null
+                ? ' LIMIT ' . $limit
+                : '';
+
             $columns = implode(', ', $fields);
 
             $query = sprintf(
-                'SELECT %s FROM %s %s',
+                'SELECT %s FROM %s %s%s',
                 $columns,
                 $table,
-                $where
+                $where !== '' ? $where . ' ' : '',
+                $limitSql
             );
 
             return $this->db->query($query, $bindings);

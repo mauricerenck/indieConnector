@@ -229,4 +229,42 @@ class IndieConnectorDatabaseTest extends TestCase
     {
         $this->assertFalse($this->db->upsert('items', ["'; DROP TABLE items; --" => 'foo'], 'name'));
     }
+
+    #[Group('database')]
+    #[TestDox('select - should return single row')]
+    public function testSelectReturnsSingleRow(): void
+    {
+        $this->db->insert('items', ['name' => 'foo']);
+        $result = $this->db->select('items', ['name']);
+        $this->assertEquals(1, $result->count());
+        $this->assertEquals('foo', $result->first()->name());
+    }
+
+    #[Group('database')]
+    #[TestDox('select - should return multiple rows')]
+    public function testSelectReturnsMultipleRows(): void
+    {
+        $this->db->insert('items', ['name' => 'foo']);
+        $this->db->insert('items', ['name' => 'bar']);
+        $result = $this->db->select('items', ['name']);
+        $this->assertEquals(2, $result->count());
+    }
+
+    #[Group('database')]
+    #[TestDox('select - should return empty result')]
+    public function testSelectReturnsEmptyResult(): void
+    {
+        $result = $this->db->select('items', ['name']);
+        $this->assertEquals(0, $result->count());
+    }
+
+    #[Group('database')]
+    #[TestDox('select - should return one result using limit')]
+    public function testSelectReturnsOneResultUsingLimit(): void
+    {
+        $this->db->insert('items', ['name' => 'foo']);
+        $result = $this->db->select('items', ['name'], limit: 1);
+        $this->assertEquals(1, $result->count());
+        $this->assertEquals('foo', $result->first()->name());
+    }
 }
