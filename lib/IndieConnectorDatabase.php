@@ -38,7 +38,7 @@ class IndieConnectorDatabase
         }
     }
 
-    public function insert(string $table, array $payload): bool
+    public function insert(string $table, array $values): bool
     {
 
         /*
@@ -49,20 +49,20 @@ class IndieConnectorDatabase
         ])
         */
         try {
-            if ($payload === []) {
+            if ($values === []) {
                 throw new InvalidArgumentException(
                     'The payload must not be empty.'
                 );
             }
 
             // check for malformed identifiers
-            $this->assertIdentifier($table);
-            foreach (array_keys($payload) as $field) {
+            $this->assertIdentifier($table, 'table');
+            foreach (array_keys($values) as $field) {
                 $this->assertIdentifier($field);
             }
 
 
-            $fields = array_keys($payload);
+            $fields = array_keys($values);
             $columns = implode(', ', $fields);
             $placeholders = implode(
                 ', ',
@@ -79,7 +79,7 @@ class IndieConnectorDatabase
                 $placeholders
             );
 
-            $result = $this->db->query($query, $payload);
+            $result = $this->db->query($query, $values);
 
             if (!$result) {
                 return false;
@@ -94,7 +94,7 @@ class IndieConnectorDatabase
 
     public function upsert(
         string $table,
-        array $payload,
+        array $values,
         string $uniqueField
     ): bool {
 
@@ -110,26 +110,26 @@ class IndieConnectorDatabase
        );
        */
         try {
-            if ($payload === []) {
+            if ($values === []) {
                 throw new InvalidArgumentException(
                     'The payload must not be empty.'
                 );
             }
 
-            $this->assertIdentifier($table);
+            $this->assertIdentifier($table, 'table');
             $this->assertIdentifier($uniqueField);
 
-            foreach (array_keys($payload) as $field) {
+            foreach (array_keys($values) as $field) {
                 $this->assertIdentifier($field);
             }
 
-            if (!array_key_exists($uniqueField, $payload)) {
+            if (!array_key_exists($uniqueField, $values)) {
                 throw new InvalidArgumentException(
                     "The unique field {$uniqueField} must be present in the payload."
                 );
             }
 
-            $fields = array_keys($payload);
+            $fields = array_keys($values);
 
             $columns = implode(', ', $fields);
 
@@ -169,7 +169,7 @@ class IndieConnectorDatabase
                 $updateQuery
             );
 
-            $this->db->query($query, $payload);
+            $this->db->query($query, $values);
 
             return true;
         } catch (Exception $e) {
@@ -196,7 +196,7 @@ class IndieConnectorDatabase
                 );
             }
 
-            $this->assertIdentifier($table);
+            $this->assertIdentifier($table, 'table');
 
             $setParts = [];
             $whereParts = [];
@@ -250,7 +250,6 @@ class IndieConnectorDatabase
         ?int $limit = null,
         array $bindings = []
     ): mixed {
-
         /*
        EXAMPLE
        $this->indieDb->select(
@@ -261,7 +260,7 @@ class IndieConnectorDatabase
        )
        */
         try {
-            $this->assertIdentifier($table);
+            $this->assertIdentifier($table, 'table');
 
             foreach ($fields as $field) {
                 $this->assertIdentifier($field);
@@ -283,7 +282,7 @@ class IndieConnectorDatabase
                 'SELECT %s FROM %s %s%s',
                 $columns,
                 $table,
-                $where !== '' ? $where . ' ' : '',
+                $where !== '' ? 'WHERE ' . $where : '',
                 $limitSql
             );
 
@@ -296,7 +295,6 @@ class IndieConnectorDatabase
 
     public function delete(string $table, array $where): bool
     {
-
         /*
         EXAMPLE:
         $this->db->delete('items', [
@@ -311,7 +309,7 @@ class IndieConnectorDatabase
                 );
             }
 
-            $this->assertIdentifier($table);
+            $this->assertIdentifier($table, 'table');
 
             $conditions = [];
             $bindings = [];
@@ -395,9 +393,27 @@ class IndieConnectorDatabase
         return date('Y-m-d', $timestamp);
     }
 
-    public function assertIdentifier(string $identifier): void
+    public function assertIdentifier(string $identifier, string $type = 'field'): void
     {
-        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
+        if ($type !== 'field' && $identifier === '*') {
+            throw new InvalidArgumentException(
+                "Invalid identifier: {$identifier}"
+            );
+        }
+
+        if (str_contains($identifier, 'GROUP_CONCAT')) {
+            $identifier = preg_replace(
+                '/GROUP_CONCAT\(\s*([^,]+)(?:,[^)]*)?\)\s*(?:AS\s+\w+)?/i',
+                '$1',
+                $identifier
+            );
+        }
+
+        if (str_contains($identifier, 'COUNT')) {
+            $identifier = trim(preg_replace('/COUNT\(\s*([^)]*)\)\s*(?:AS\s+\w+)?/i', '$1', $identifier));
+        }
+
+        if ($identifier !== '*' && !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
             throw new InvalidArgumentException(
                 "Invalid identifier: {$identifier}"
             );

@@ -14,13 +14,12 @@ class IndieConnectorDatabaseTest extends TestCase
 {
     private IndieConnectorDatabase $db;
     private $defaultOptions;
-    private $dir;
+    private string $dir;
 
     public function setUp(): void
     {
         // setup temp dir for sqlite test database
-        // $dir = sys_get_temp_dir() . '/indieconnector-test-' . uniqid() . '/';
-        $this->dir = '.sqlite/indieconnector-test-' . uniqid() . '/';
+        $this->dir = sys_get_temp_dir() . '/indieconnector-test-' . uniqid() . '/';
         mkdir($this->dir, 0777, true);
 
         $this->defaultOptions = new OptionHandlerMock([
@@ -264,6 +263,16 @@ class IndieConnectorDatabaseTest extends TestCase
     {
         $this->db->insert('items', ['name' => 'foo']);
         $result = $this->db->select('items', ['name'], limit: 1);
+        $this->assertEquals(1, $result->count());
+        $this->assertEquals('foo', $result->first()->name());
+    }
+
+    #[Group('database')]
+    #[TestDox('select - should return one result using where')]
+    public function testSelectReturnsOneResultUsingWhere(): void
+    {
+        $this->db->insert('items', ['name' => 'foo']);
+        $result = $this->db->select('items', ['name'], where: 'name = "foo"');
         $this->assertEquals(1, $result->count());
         $this->assertEquals('foo', $result->first()->name());
     }
