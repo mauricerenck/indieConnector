@@ -1,447 +1,359 @@
 <?php
 
-use Kirby\Toolkit\Collection;
-use mauricerenck\IndieConnector\TestCaseMocked;
 use mauricerenck\IndieConnector\UrlHandler;
 use mauricerenck\IndieConnector\IndieConnectorDatabase;
+use mauricerenck\IndieConnector\OptionHandlerMock;
 
-final class UrlHandlerTest extends TestCaseMocked
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\TestDox;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+
+use Kirby\Toolkit\Collection;
+
+final class UrlHandlerTest extends TestCase
 {
+    private static IndieConnectorDatabase $db;
+
+    private $urlHandler;
+    private $indieDb;
+    private static $defaultOptions;
+    private static string $dir;
+
+    public static function setUpBeforeClass(): void
+    {
+        // setup temp dir for sqlite test database
+        self::$dir = sys_get_temp_dir() . '/indieconnector-test-' . uniqid() . '/';
+        mkdir(self::$dir, 0777, true);
+
+        self::$defaultOptions = new OptionHandlerMock([
+            'sqlitePath' => self::$dir,
+        ]);
+
+        // setup database
+        self::$db = new IndieConnectorDatabase(options: self::$defaultOptions);
+
+        self::$db->query(
+            'CREATE TABLE blocked_urls (
+                url TEXT NOT NULL,
+                direction TEXT NOT NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )'
+        );
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        foreach (glob(self::$dir . '*') ?: [] as $file) {
+            @unlink($file);
+        }
+        @rmdir(self::$dir);
+    }
+
     public function setUp(): void
     {
         parent::setUp();
+        $this->indieDb = self::$db;
+        $this->indieDb->truncate(table: 'blocked_urls');
+
+        $this->urlHandler = new UrlHandler(['localhost', '127.0.0.1'], ['https://blocked-source-1.tld/my-spam-page', 'https://blocked-source-2.tld'], ['https://blocked-target-1.tld/my-spam-page', 'https://blocked-target-2.tld'], $this->indieDb);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isLocalUrl - detect local host
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isLocalUrl - detect local host')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testShouldDetectLocalHost()
     {
-        $urlHandler = new UrlHandler(['localhost', '127.0.0.1']);
-        $result = $urlHandler->isLocalUrl('https://localhost/de/my-page');
+        $result = $this->urlHandler->isLocalUrl('https://localhost/de/my-page');
         $this->assertTrue($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isLocalUrl - detect url is not on local host
-     */
+
+    #[Group('urlHandler')]
+    #[TestDox('isLocalUrl - detect url is not on local host')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testShouldDetectUrlNotOnLocalHost()
     {
-        $urlHandler = new UrlHandler(['localhost', '127.0.0.1']);
-        $result = $urlHandler->isLocalUrl('https://external-host-tld/de/my-page');
+        $result = $this->urlHandler->isLocalUrl('https://external-host-tld/de/my-page');
         $this->assertFalse($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedSource - should deny source with path blocked in config
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedSource - should deny source with path blocked in config')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsBlockedSourceConfig()
     {
-        $urlHandler = new UrlHandler(null, ['https://blocked-source.tld/my-spam-page']);
-        $result = $urlHandler->isBlockedSource('https://blocked-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedSource('https://blocked-source-1.tld/my-spam-page');
         $this->assertTrue($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedSource - should deny source with blocked host in config
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedSource - should deny source with blocked host in config')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsBlockedSourceHostConfig()
     {
-        $urlHandler = new UrlHandler(null, ['https://blocked-source.tld']);
-        $result = $urlHandler->isBlockedSource('https://blocked-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedSource('https://blocked-source-2.tld/my-spam-page');
         $this->assertTrue($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedSource - should deny source with blocked host from database
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedSource - should deny source with blocked host from database')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsBlockedSourceHostDatabase()
     {
-        $dbResult = new Collection([
-            [
-                'url' => 'https://blocked-source.tld',
+        $this->indieDb->insert(
+            table: 'blocked_urls',
+            values: [
+                'url' => 'https://blocked-source-3.tld',
                 'direction' => 'incoming',
                 'created_at' => '2024-01-01 00:00:00'
             ]
-        ]);
-
-        // Mock the IndieConnectorDatabase
-        $dbMock = $this->getMockBuilder(IndieConnectorDatabase::class)
-            ->onlyMethods(['select'])
-            ->getMock();
-
-        $dbMock->method('select')->willReturn($dbResult);
-
-        // Pass the mock to UrlHandler
-        $urlHandler = new UrlHandler(
-            null,
-            [],
-            [],
-            $dbMock
         );
 
-        $result = $urlHandler->isBlockedSource('https://blocked-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedSource('https://blocked-source-3.tld/my-spam-page');
         $this->assertTrue($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedSource - should deny source with blocked full url from database
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedSource - should deny source with blocked full url from database')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsBlockedSourceUrlDatabase()
     {
-        $dbResult = new Collection([
-            [
-                'url' => 'https://blocked-source.tld/my-spam-page',
+        $this->indieDb->insert(
+            table: 'blocked_urls',
+            values: [
+                'url' => 'https://blocked-source-3.tld/my-spam-page',
                 'direction' => 'incoming',
                 'created_at' => '2024-01-01 00:00:00'
             ]
-        ]);
-
-        // Mock the IndieConnectorDatabase
-        $dbMock = $this->getMockBuilder(IndieConnectorDatabase::class)
-            ->onlyMethods(['select'])
-            ->getMock();
-
-        $dbMock->method('select')->willReturn($dbResult);
-
-        // Pass the mock to UrlHandler
-        $urlHandler = new UrlHandler(
-            null,
-            [],
-            [],
-            $dbMock
         );
 
-        $result = $urlHandler->isBlockedSource('https://blocked-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedSource('https://blocked-source-3.tld/my-spam-page');
         $this->assertTrue($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedSource - should allow source with full url from database not matching
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedSource - should allow source with full url from database not matching')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsNotBlockedSourceUrlDatabase()
     {
-        $dbResult = new Collection([
-            [
+        $this->indieDb->insert(
+            table: 'blocked_urls',
+            values: [
                 'url' => 'https://blocked-source.tld/my-other-page',
                 'direction' => 'incoming',
                 'created_at' => '2024-01-01 00:00:00'
             ]
-        ]);
-
-        // Mock the IndieConnectorDatabase
-        $dbMock = $this->getMockBuilder(IndieConnectorDatabase::class)
-            ->onlyMethods(['select'])
-            ->getMock();
-
-        $dbMock->method('select')->willReturn($dbResult);
-
-        // Pass the mock to UrlHandler
-        $urlHandler = new UrlHandler(
-            null,
-            [],
-            [],
-            $dbMock
         );
 
-        $result = $urlHandler->isBlockedSource('https://blocked-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedSource('https://blocked-source.tld/my-spam-page');
         $this->assertFalse($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedSource - should allow source with host from database not matching
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedSource - should allow source with host from database not matching')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsNotBlockedSourceHostDatabase()
     {
-        $dbResult = new Collection([
-            [
+        $this->indieDb->insert(
+            table: 'blocked_urls',
+            values: [
                 'url' => 'https://blocked-source.tld',
                 'direction' => 'incoming',
                 'created_at' => '2024-01-01 00:00:00'
             ]
-        ]);
-
-        // Mock the IndieConnectorDatabase
-        $dbMock = $this->getMockBuilder(IndieConnectorDatabase::class)
-            ->onlyMethods(['select'])
-            ->getMock();
-
-        $dbMock->method('select')->willReturn($dbResult);
-
-        // Pass the mock to UrlHandler
-        $urlHandler = new UrlHandler(
-            null,
-            [],
-            [],
-            $dbMock
         );
 
-        $result = $urlHandler->isBlockedSource('https://allowed-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedSource('https://allowed-source.tld/my-spam-page');
         $this->assertFalse($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedSource - should handle empty database result
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedSource - should handle empty database result')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsNotBlockedSourceEmptyDatabase()
     {
-        $dbResult = new Collection([]);
-
-        // Mock the IndieConnectorDatabase
-        $dbMock = $this->getMockBuilder(IndieConnectorDatabase::class)
-            ->onlyMethods(['select'])
-            ->getMock();
-
-        $dbMock->method('select')->willReturn($dbResult);
-
-        // Pass the mock to UrlHandler
-        $urlHandler = new UrlHandler(
-            null,
-            [],
-            [],
-            $dbMock
-        );
-
-        $result = $urlHandler->isBlockedSource('https://allowed-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedSource('https://allowed-source.tld/my-spam-page');
         $this->assertFalse($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedSource - should allow source with path not blocked in config
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedSource - should allow source with path not blocked in config')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsUnBlockedSourceHostConfig()
     {
-        $urlHandler = new UrlHandler(null, ['https://blocked-source.tld']);
-        $result = $urlHandler->isBlockedSource('https://allowed-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedSource('https://allowed-source.tld/my-spam-page');
         $this->assertFalse($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedTarget - should deny target with path blocked in config
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedTarget - should deny target with path blocked in config')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsBlockedTargetConfig()
     {
-        $urlHandler = new UrlHandler(null, [], ['https://blocked-source.tld/my-spam-page']);
-        $result = $urlHandler->isBlockedTarget('https://blocked-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedTarget('https://blocked-target-1.tld/my-spam-page');
         $this->assertTrue($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedTarget - should deny target with blocked host in config
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedTarget - should deny target blocked host in config')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsBlockedTargetHostConfig()
     {
-        $urlHandler = new UrlHandler(null, [], ['https://blocked-source.tld']);
-        $result = $urlHandler->isBlockedTarget('https://blocked-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedTarget('https://blocked-target-2.tld/my-spam-page');
         $this->assertTrue($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedTarget - should deny target with blocked host from database
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedTarget - should deny target with blocked host from database')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsBlockedTargetHostDatabase()
     {
-        $dbResult = new Collection([
-            [
-                'url' => 'https://blocked-source.tld',
+        $this->indieDb->insert(
+            table: 'blocked_urls',
+            values: [
+                'url' => 'https://blocked-target.tld',
                 'direction' => 'outgoing',
                 'created_at' => '2024-01-01 00:00:00'
             ]
-        ]);
-
-        // Mock the IndieConnectorDatabase
-        $dbMock = $this->getMockBuilder(IndieConnectorDatabase::class)
-            ->onlyMethods(['select'])
-            ->getMock();
-
-        $dbMock->method('select')->willReturn($dbResult);
-
-        // Pass the mock to UrlHandler
-        $urlHandler = new UrlHandler(
-            null,
-            [],
-            [],
-            $dbMock
         );
 
-        $result = $urlHandler->isBlockedTarget('https://blocked-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedTarget('https://blocked-target.tld/my-spam-page');
         $this->assertTrue($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedTarget - should deny target with blocked full url from database
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedTarget - should deny target with blocked full url from database')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsBlockedTargetUrlDatabase()
     {
-        $dbResult = new Collection([
-            [
-                'url' => 'https://blocked-source.tld/my-spam-page',
+        $this->indieDb->insert(
+            table: 'blocked_urls',
+            values: [
+                'url' => 'https://blocked-target.tld/my-spam-page',
                 'direction' => 'outgoing',
                 'created_at' => '2024-01-01 00:00:00'
             ]
-        ]);
-
-        // Mock the IndieConnectorDatabase
-        $dbMock = $this->getMockBuilder(IndieConnectorDatabase::class)
-            ->onlyMethods(['select'])
-            ->getMock();
-
-        $dbMock->method('select')->willReturn($dbResult);
-
-        // Pass the mock to UrlHandler
-        $urlHandler = new UrlHandler(
-            null,
-            [],
-            [],
-            $dbMock
         );
 
-        $result = $urlHandler->isBlockedTarget('https://blocked-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedTarget('https://blocked-target.tld/my-spam-page');
         $this->assertTrue($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedTarget - should allow target with full url from database not matching
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedTarget - should allow target with full url from database not matching')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsNotBlockedTargetUrlDatabase()
     {
-        $dbResult = new Collection([
-            [
-                'url' => 'https://blocked-source.tld/my-other-page',
+        $this->indieDb->insert(
+            table: 'blocked_urls',
+            values: [
+                'url' => 'https://blocked-target.tld/my-other-page',
                 'direction' => 'outgoing',
                 'created_at' => '2024-01-01 00:00:00'
             ]
-        ]);
-
-        // Mock the IndieConnectorDatabase
-        $dbMock = $this->getMockBuilder(IndieConnectorDatabase::class)
-            ->onlyMethods(['select'])
-            ->getMock();
-
-        $dbMock->method('select')->willReturn($dbResult);
-
-        // Pass the mock to UrlHandler
-        $urlHandler = new UrlHandler(
-            null,
-            [],
-            [],
-            $dbMock
         );
 
-        $result = $urlHandler->isBlockedTarget('https://blocked-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedTarget('https://blocked-target.tld/my-spam-page');
         $this->assertFalse($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedTarget - should allow target with host from database not matching
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedTarget - should allow target with host from database not matching')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsNotBlockedTargetHostDatabase()
     {
-        $dbResult = new Collection([
-            [
-                'url' => 'https://blocked-source.tld',
+        $this->indieDb->insert(
+            table: 'blocked_urls',
+            values: [
+                'url' => 'https://blocked-target.tld',
                 'direction' => 'outgoing',
                 'created_at' => '2024-01-01 00:00:00'
             ]
-        ]);
-
-        // Mock the IndieConnectorDatabase
-        $dbMock = $this->getMockBuilder(IndieConnectorDatabase::class)
-            ->onlyMethods(['select'])
-            ->getMock();
-
-        $dbMock->method('select')->willReturn($dbResult);
-
-        // Pass the mock to UrlHandler
-        $urlHandler = new UrlHandler(
-            null,
-            [],
-            [],
-            $dbMock
         );
 
-        $result = $urlHandler->isBlockedTarget('https://allowed-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedTarget('https://allowed-target.tld/my-spam-page');
         $this->assertFalse($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedTarget - should handle empty database result
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedTarget - should handle empty database result')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsNotBlockedTargetEmptyDatabase()
     {
-        $dbResult = new Collection([]);
-
-        // Mock the IndieConnectorDatabase
-        $dbMock = $this->getMockBuilder(IndieConnectorDatabase::class)
-            ->onlyMethods(['select'])
-            ->getMock();
-
-        $dbMock->method('select')->willReturn($dbResult);
-
-        // Pass the mock to UrlHandler
-        $urlHandler = new UrlHandler(
-            null,
-            [],
-            [],
-            $dbMock
-        );
-
-        $result = $urlHandler->isBlockedTarget('https://allowed-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedTarget('https://allowed-source.tld/my-spam-page');
         $this->assertFalse($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox isBlockedTarget - should allow target with path not blocked in config
-     */
+    #[Group('urlHandler')]
+    #[TestDox('isBlockedTarget - should allow target with path not blocked in config')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testIsUnBlockedTargetHostConfig()
     {
-        $urlHandler = new UrlHandler(null, ['https://blocked-source.tld']);
-        $result = $urlHandler->isBlockedTarget('https://allowed-source.tld/my-spam-page');
+        $result = $this->urlHandler->isBlockedTarget('https://allowed-target.tld/my-spam-page');
         $this->assertFalse($result);
     }
 
-
-    /**
-     * @group urlHandling
-     * @testdox skipSameHost - should detect own host
-     */
+    #[Group('urlHandler')]
+    #[TestDox('skipSameHost - should detect own host')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testShouldDetectOwnHost()
     {
-        $urlHandler = new UrlHandler();
-
         $hostname = kirby()->environment()->host();
-        $result = $urlHandler->skipSameHost('https://' . $hostname . '/de/my-page');
+        $result = $this->urlHandler->skipSameHost('https://' . $hostname . '/de/my-page');
 
         $this->assertTrue($result);
     }
 
-    /**
-     * @group urlHandling
-     * @testdox skipSameHost - should detect external host
-     */
+    #[Group('urlHandler')]
+    #[TestDox('skipSameHost - should detect external host')]
+    #[AllowMockObjectsWithoutExpectations]
     public function testShouldDetectExternalHost()
     {
-        $urlHandler = new UrlHandler();
-        $result = $urlHandler->skipSameHost('https://external-host.tld/de/my-page');
+        $result = $this->urlHandler->skipSameHost('https://external-host.tld/de/my-page');
 
         $this->assertFalse($result);
+    }
+
+    #[Group('urlHandler')]
+    #[TestDox('blockUrl - should add url to database - incoming - host only')]
+    #[AllowMockObjectsWithoutExpectations]
+    public function testBlockUrl()
+    {
+        $result = $this->urlHandler->blockUrl('https://external-host.tld/de/my-page', 'incoming', true);
+        $this->assertTrue($result);
+
+        $results = $this->indieDb->select(table: 'blocked_urls', fields: ['*']);
+        $this->assertSame(1, $results->count());
+        $this->assertContains('https://external-host.tld', $results->first()->toArray());
+        $this->assertContains('incoming', $results->first()->toArray());
+    }
+
+    #[Group('urlHandler')]
+    #[TestDox('blockUrl - should add url to database - incoming - full url')]
+    #[AllowMockObjectsWithoutExpectations]
+    public function testBlockUrlFullUrl()
+    {
+        $result = $this->urlHandler->blockUrl('https://external-host.tld/de/my-page', 'incoming', false);
+        $this->assertTrue($result);
+
+        $results = $this->indieDb->select(table: 'blocked_urls', fields: ['*']);
+        $this->assertSame(1, $results->count());
+        $this->assertContains('https://external-host.tld/de/my-page', $results->first()->toArray());
+        $this->assertContains('incoming', $results->first()->toArray());
+    }
+
+    #[Group('urlHandler')]
+    #[TestDox('blockUrl - should add url to database - outgoing - full url')]
+    #[AllowMockObjectsWithoutExpectations]
+    public function testBlockUrlFullUrlOutgoing()
+    {
+        $result = $this->urlHandler->blockUrl('https://external-host.tld/de/my-page', 'outgoing', false);
+        $this->assertTrue($result);
+
+        $results = $this->indieDb->select(table: 'blocked_urls', fields: ['*']);
+        $this->assertSame(1, $results->count());
+        $this->assertContains('https://external-host.tld/de/my-page', $results->first()->toArray());
+        $this->assertContains('outgoing', $results->first()->toArray());
     }
 }

@@ -7,7 +7,7 @@ use Kirby\Cms\Url;
 
 class UrlHandler
 {
-    private $indieDb;
+    private IndieConnectorDatabase $indieDb;
 
     public function __construct(
         private ?array $localHosts = null,
@@ -54,12 +54,13 @@ class UrlHandler
         return in_array($urlHost, $this->localHosts);
     }
 
-    public function skipSameHost($url)
+    public function skipSameHost(string $url)
     {
         $urlHost = parse_url($url, PHP_URL_HOST);
         $host = kirby()->environment()->host();
 
-        // backwards compatibility
+        // NOTE: backwards compatibility
+        // TODO: remove in future version
         $skip =
             option('mauricerenck.indieConnector.skipSameHost', null) ??
             option('mauricerenck.indieConnector.send.skipSameHost', true);
@@ -72,9 +73,9 @@ class UrlHandler
         $host = Url::stripPath($url);
 
         $dbSources = $this->indieDb->select(
-            'blocked_urls',
-            ['url', 'direction', 'created_at'],
-            'WHERE url LIKE "' . $host . '%" AND direction = "incoming"'
+            table: 'blocked_urls',
+            fields: ['url', 'direction', 'created_at'],
+            where: 'url LIKE "' . $host . '%" AND direction = "incoming"'
         );
 
         $dbSourceUrls = array_column($dbSources->toArray(), 'url');
@@ -91,9 +92,9 @@ class UrlHandler
         $host = Url::stripPath($url);
 
         $dbTargets = $this->indieDb->select(
-            'blocked_urls',
-            ['url', 'direction', 'created_at'],
-            'WHERE url LIKE "' . $host . '%" AND direction = "outgoing"'
+            table: 'blocked_urls',
+            fields: ['url', 'direction', 'created_at'],
+            where: 'url LIKE "' . $host . '%" AND direction = "outgoing"'
         );
 
         $dbSourceUrls = array_column($dbTargets->toArray(), 'url');
@@ -110,9 +111,8 @@ class UrlHandler
         $url = $hostOnly ? Url::stripPath($url) : $url;
 
         $dbResult = $this->indieDb->insert(
-            'blocked_urls',
-            ['url', 'direction'],
-            [$url, $direction]
+            table: 'blocked_urls',
+            values: ['url' => $url, 'direction' => $direction]
         );
 
         return $dbResult;
