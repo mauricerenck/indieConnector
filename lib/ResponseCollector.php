@@ -7,7 +7,7 @@ use Kirby\Toolkit\Str;
 
 class ResponseCollector
 {
-    private $indieDb;
+    private IndieConnectorDatabase $indieDb;
 
     public function __construct(
         private ?bool $enabled = null,
@@ -41,27 +41,33 @@ class ResponseCollector
         }
 
         $existingPostUrls = $this->indieDb->select(
-            'external_post_urls',
-            ['id'],
-            'WHERE page_uuid = "' . $pageUuid . '" AND post_type = "' . $postType . '"'
+            table: 'external_post_urls',
+            fields: ['id'],
+            where: 'WHERE page_uuid = "' . $pageUuid . '" AND post_type = "' . $postType . '"'
         );
 
         if ($existingPostUrls->count() === 0) {
             $id = Uuid::generate();
-            $fields = ['id', 'page_uuid', 'post_url', 'post_type', 'last_fetched'];
-            $values = [$id, $pageUuid, $postUrl, $postType, '1'];
 
-            $this->indieDb->insert('external_post_urls', $fields, $values);
+            $this->indieDb->insert(
+                table: 'external_post_urls',
+                values: [
+                    'id' => $id,
+                    'page_uuid' => $pageUuid,
+                    'post_url' => $postUrl,
+                    'post_type' => $postType,
+                    'last_fetched' => '1',
+                ]
+            );
 
             return;
         }
 
         foreach ($existingPostUrls->toArray() as $existingPostUrl) {
             $this->indieDb->update(
-                'external_post_urls',
-                ['post_url', 'last_fetched'],
-                [$postUrl, '1'],
-                'WHERE id = "' . $existingPostUrl->id . '" AND page_uuid = "' . $pageUuid . '" AND post_type = "' . $postType . '"'
+                table: 'external_post_urls',
+                values: ['post_url' => $postUrl, 'last_fetched' => '1'],
+                where: ['id' => $existingPostUrl->id, 'page_uuid' => $pageUuid, 'post_type' => $postType]
             );
         }
     }
@@ -239,36 +245,46 @@ class ResponseCollector
         int $retries = 0
     ) {
 
-        $pageData = $this->indieDb->select('external_post_urls', ['page_uuid'], 'WHERE post_url = "' . $postUrl . '"')->first();
+        $pageData = $this->indieDb->select(
+            table: 'external_post_urls',
+            fields: ['page_uuid'],
+            where: 'post_url = "' . $postUrl . '"'
+        )->first();
 
-        $fields = ['id', 'page_uuid', 'response_id', 'response_type', 'response_source', 'response_date', 'response_text', 'response_url', 'author_id', 'author_name', 'author_username', 'author_avatar', 'author_url', 'queueStatus', 'retries'];
         $id = Uuid::generate();
         $content = Str::unhtml($responseText);
 
-        $values = [
-            $id,
-            $pageData->page_uuid,
-            $responseId,
-            $responseType,
-            $responseSource,
-            $responseDate,
-            $content,
-            $responseUrl,
-            $authorId,
-            $authorName,
-            $authorUsername,
-            $authorAvatar,
-            $authorUrl,
-            $queueStatus,
-            $retries
-        ];
-
-        $this->indieDb->insert('queue_responses', $fields, $values);
+        $this->indieDb->insert(
+            table: 'queue_responses',
+            values: [
+                'id' => $id,
+                'page_uuid' => $pageData->page_uuid,
+                'response_id' => $responseId,
+                'response_type' => $responseType,
+                'response_source' => $responseSource,
+                'response_date' => $responseDate,
+                'response_text' => $content,
+                'response_url' => $responseUrl,
+                'author_id' => $authorId,
+                'author_name' => $authorName,
+                'author_username' => $authorUsername,
+                'author_avatar' => $authorAvatar,
+                'author_url' => $authorUrl,
+                'queueStatus' => $queueStatus,
+                'retries' => $retries
+            ]
+        );
     }
 
     public function processResponses()
     {
-        $responses = $this->indieDb->select('queue_responses', ['*'], 'WHERE queueStatus = "pending" LIMIT ' . $this->queueLimit);
+
+        $responses = $this->indieDb->select(
+            table: 'queue_responses',
+            fields: ['*'],
+            where: 'queueStatus = "pending"',
+            limit: $this->queueLimit
+        );
 
         if (is_null($responses)) {
             return [];
@@ -314,28 +330,49 @@ class ResponseCollector
     public function updateLastFetched(array $postUrls)
     {
         $currentTimestamp = time();
-        $this->indieDb->update('external_post_urls', ['last_fetched'], [$currentTimestamp], 'WHERE post_url IN ("' . implode('","', $postUrls) . '")');
+        $this->indieDb->update(
+            table: 'external_post_urls',
+            values: ['last_fetched' => $currentTimestamp],
+            where: ['post_url IN ("' . implode('","', $postUrls) . '")']
+        );
     }
 
     public function disablePostUrls(array $postUrls)
     {
-        $this->indieDb->update('external_post_urls', ['active'], [false], 'WHERE post_url IN ("' . implode('","', $postUrls) . '")');
+        $this->indieDb->update(
+            table: 'external_post_urls',
+            values: ['active' => false],
+            where: ['post_url IN ("' . implode('","', $postUrls) . '")']
+        );
     }
 
     public function markProcessed($responseIds)
     {
-        $this->indieDb->update('queue_responses', ['queueStatus'], ['redirecting'], 'WHERE id IN ("' . implode('","', $responseIds) . '")');
+        $this->indieDb->update(
+            table: 'queue_responses',
+            values: ['queueStatus' => 'redirecting'],
+            where: ['id IN ("' . implode('","', $responseIds) . '")']
+        );
     }
 
     public function updateKnownReponses($postUrl, $latestId, $verb)
     {
         $selector = str_replace(['https://', 'at://'], ['', ''], $postUrl) . '_' . $verb;
-        $this->indieDb->upsert('known_responses', ['id', 'post_url', 'post_type', 'post_selector'], [$latestId, $postUrl, $verb, $selector], 'post_selector', 'id = "' . $latestId . '"');
+
+        $this->indieDb->upsert(
+            table: 'known_responses',
+            values: ['id' => $latestId, 'post_url' => $postUrl, 'post_type' => $verb, 'post_selector' => $selector],
+            uniqueField: 'post_selector'
+        );
     }
 
     public function getSingleResponse($responseId)
     {
-        $response = $this->indieDb->select('queue_responses', ['*'], 'WHERE id = "' . $responseId . '"')->first();
+        $response = $this->indieDb->select(
+            table: 'queue_responses',
+            fields: ['*'],
+            where: 'id = "' . $responseId . '"'
+        )->first();
         return $response;
     }
 
@@ -365,44 +402,48 @@ class ResponseCollector
         ];
     }
 
-    public function getMastodonPostResponseStats(string $postUrl)
-    {
-        $results = ['like-of' => 0, 'repost-of' => 0, 'in-reply-to' => 0, 'mention-of' => 0];
-        $stats = $this->indieDb->select('queue_responses', ['count(response_type) as response_count', 'response_type'], 'WHERE response_url = "' . $postUrl . '" GROUP BY response_type');
 
-        if (!is_null($stats)) {
-            foreach ($stats as $stat) {
-                $results[$stat->response_type()] = $stat->response_count();
-            }
-        }
-
-        return $results;
-    }
-
-    protected function getDuePostUrlsDbResult()
+    public function getDuePostUrlsDbResult()
     {
         $currentTimestamp = time();
         $timeToFetchAfter = $currentTimestamp - $this->ttl * 60;
-        $limitQuery = $this->limit > 0 ? ' LIMIT ' . $this->limit : '';
-        $query = 'SELECT GROUP_CONCAT(post_url, ",") AS post_urls, post_type FROM external_post_urls WHERE active = TRUE AND last_fetched < ' . $timeToFetchAfter . ' GROUP BY post_type ' . $limitQuery . ';';
-        return $this->indieDb->query($query);
+
+        $result = $this->indieDb->select(
+            table: 'external_post_urls',
+            fields: ['GROUP_CONCAT(post_url, ",") AS post_urls', 'post_type'],
+            where: 'active = TRUE AND last_fetched < :lastFetch GROUP BY post_type',
+            bindings: ['lastFetch' => $timeToFetchAfter],
+            limit: $this->limit
+        );
+        return $result;
     }
 
-    protected function getPostUrlMetricsDbResult()
+    public function getPostUrlMetricsDbResult()
     {
-        $query = 'SELECT COUNT(post_url) as urls, post_type FROM external_post_urls WHERE active = TRUE GROUP BY post_type;';
-        return $this->indieDb->query($query);
+        $result = $this->indieDb->select(
+            table: 'external_post_urls',
+            fields: ['COUNT(post_url) AS urls', 'post_type'],
+            where: 'active = TRUE GROUP BY post_type'
+        );
+        return $result;
     }
 
-    protected function getPostUrlMetricsDueUrlDbResult()
+    public function getPostUrlMetricsDueUrlDbResult()
     {
         $currentTimestamp = time();
         $timeToFetchAfter = $currentTimestamp - $this->ttl * 60;
-        $query = 'SELECT COUNT(post_url) as urls FROM external_post_urls WHERE active = TRUE AND last_fetched < ' . $timeToFetchAfter . ';';
-        return $this->indieDb->query($query);
+
+        $result = $this->indieDb->select(
+            table: 'external_post_urls',
+            fields: ['COUNT(post_url) AS urls'],
+            where: 'active = TRUE AND last_fetched < :lastFetch',
+            bindings: ['lastFetch' => $timeToFetchAfter],
+            limit: $this->limit
+        );
+        return $result;
     }
 
-    protected function getLastResponsesFromDb(array $postUrls)
+    public function getLastResponsesFromDb(array $postUrls)
     {
         return $this->indieDb->query(
             'SELECT GROUP_CONCAT(id, ",") AS ids, post_type FROM known_responses WHERE post_url IN ("' . implode('", "', $postUrls) . '") GROUP BY post_type;'
