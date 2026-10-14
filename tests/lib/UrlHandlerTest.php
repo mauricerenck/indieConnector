@@ -9,7 +9,6 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-use Kirby\Toolkit\Collection;
 
 final class UrlHandlerTest extends TestCase
 {
