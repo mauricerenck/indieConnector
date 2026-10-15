@@ -1,5 +1,7 @@
 # Kirby IndieConnector
 
+## This is an unstable version. Development in progress
+
 #### Send and receive Webmentions, send Mastodon and Bluesky posts (POSSE) and get back responses, or act like an ActivityPub instance
 
 ![GitHub release](https://img.shields.io/github/release/mauricerenck/indieConnector.svg?maxAge=1800) ![License](https://img.shields.io/github/license/mashape/apistatus.svg) ![Kirby Version](https://img.shields.io/badge/Kirby-4%2B-black.svg)
