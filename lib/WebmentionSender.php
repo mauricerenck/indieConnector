@@ -2,13 +2,16 @@
 
 namespace mauricerenck\IndieConnector;
 
+use Kirby\Cms\Page;
+
 use IndieWeb\MentionClient;
 use Exception;
 use Throwable;
 
 class WebmentionSender extends Sender
 {
-    private $indieDb;
+    private IndieConnectorDatabase $indieDb;
+    protected OptionHandler $options;
 
     public function __construct(
         private ?bool $activeWebmentions = null,
@@ -18,9 +21,14 @@ class WebmentionSender extends Sender
         private $mentionClient = null,
         private ?UrlHandler $urlHandler = null,
         private ?PageChecks $pageChecks = null,
-        private ?IndieConnectorDatabase $indieDatabase = null
+        private ?IndieConnectorDatabase $indieDatabase = null,
+        private ?WebmentionStats $webmentionStats = null,
+
+        ?OptionHandler $options = null,
     ) {
         parent::__construct();
+
+        $this->options = $options ?? new OptionHandler();
 
         $this->activeWebmentions = $activeWebmentions ?? option('mauricerenck.indieConnector.send.enabled', true);
         $this->maxRetries = $maxRetries ?? option('mauricerenck.indieConnector.send.maxRetries', 3);
@@ -30,6 +38,7 @@ class WebmentionSender extends Sender
         $this->urlHandler = $urlHandler ?? new UrlHandler();
         $this->pageChecks = $pageChecks ?? new PageChecks();
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
+        $this->webmentionStats = $webmentionStats ?? new WebmentionStats();
 
         // backwards compatibility
         if (!$activeWebmentions && option('mauricerenck.indieConnector.sendWebmention', false)) {
@@ -37,10 +46,11 @@ class WebmentionSender extends Sender
         }
     }
 
+
+
     public function sendWebmentions($page)
     {
-        // global config
-        if (!$this->activeWebmentions) {
+        if (!$this->options->get('send.enabled', true)) {
             return false;
         }
 
@@ -54,7 +64,6 @@ class WebmentionSender extends Sender
 
         $urls = $this->getUnprocessedUrls($page);
         $urls = $this->filterDuplicateUrls($urls);
-
         if (empty($urls)) {
             return;
         }
@@ -80,9 +89,9 @@ class WebmentionSender extends Sender
 
         $this->updateWebmentions($mergedUrls, $page);
 
-        if (option('mauricerenck.indieConnector.stats.enabled', false)) {
-            $stats = new WebmentionStats();
-            $stats->trackOutgoingWebmentions($mergedUrls, $page);
+        // FIXME: use optionhandler
+        if ($this->webmentionStats->enabled()) {
+            $this->webmentionStats->trackOutgoingWebmentions($mergedUrls, $page);
         }
 
         return $mergedUrls;
@@ -120,6 +129,8 @@ class WebmentionSender extends Sender
     }
 
 
+    // FIXME this is unfortunately no longer maintained (the lib)
+    // we have to replace it
     public function send(string $targetUrl, string $sourceUrl)
     {
         try {
@@ -152,6 +163,7 @@ class WebmentionSender extends Sender
         }
     }
 
+    // FIXME probably deprecated when finished
     public function filterDuplicateUrls($urls)
     {
         return array_unique($urls);
@@ -190,7 +202,7 @@ class WebmentionSender extends Sender
         return $outbox['webmentions'] ?? [];
     }
 
-    public function cleanupUrls($urls, $processedUrls)
+    public function cleanupUrls(array $urls, array $processedUrls): array
     {
         if (count($urls) === 0) {
             return [];
@@ -209,7 +221,7 @@ class WebmentionSender extends Sender
             $cleanedUrls[] = $url;
         }
 
-        return $cleanedUrls;
+        return array_unique($cleanedUrls);
     }
 
     public function mergeUrlsWithOutbox($newEntries, $page)

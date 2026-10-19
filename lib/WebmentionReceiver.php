@@ -75,6 +75,7 @@ class WebmentionReceiver extends Receiver
 
     public function getDataFromSource($sourceUrl)
     {
+        // FIXME try catch
         $request = Remote::get($sourceUrl);
         $responseCode = $request->code();
 

@@ -1,45 +1,107 @@
 <?php
 
-use mauricerenck\IndieConnector\TestCaseMocked;
+use mauricerenck\IndieConnector\OptionHandlerMock;
+use mauricerenck\IndieConnector\IndieConnectorDatabase;
+use mauricerenck\IndieConnector\WebmentionSender;
 
-final class WebmentionSenderTest extends TestCaseMocked
+use Kirby\Cms\Page;
+
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\TestDox;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+
+final class WebmentionSenderTest extends TestCase
 {
     private $senderUtilsMock;
     private $databaseMock;
+    private $urlHandlerMock;
+    private $pageChecksMock;
+    private $webmentionStatsMock;
+
+    private $indieDb;
+    private static $defaultOptions;
+    private static string $dir;
+    private static IndieConnectorDatabase $db;
+
+    public static function setUpBeforeClass(): void
+    {
+        // setup temp dir for sqlite test database
+        self::$dir = sys_get_temp_dir() . '/indieconnector-test-' . uniqid() . '/';
+        mkdir(self::$dir, 0777, true);
+
+        self::$defaultOptions = new OptionHandlerMock([
+            'sqlitePath' => self::$dir,
+        ]);
+
+        // setup database
+        self::$db = new IndieConnectorDatabase(options: self::$defaultOptions);
+
+        self::$db->query(
+            'CREATE TABLE blocked_urls (
+                    url TEXT NOT NULL,
+                    direction TEXT NOT NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )'
+        );
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        foreach (glob(self::$dir . '*') ?: [] as $file) {
+            @unlink($file);
+        }
+        @rmdir(self::$dir);
+    }
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->databaseMock = Mockery::mock(mauricerenck\IndieConnector\IndieConnectorDatabase::class);
+        $this->indieDb = self::$db;
+        $this->indieDb->truncate(table: 'blocked_urls');
 
-        $this->senderUtilsMock = Mockery::mock(
-            'mauricerenck\IndieConnector\WebmentionSender[pageFullfillsCriteria,shouldSendWebmentionToTarget,send,storeProcessedUrls,readOutbox,writeOutbox]',
-            ['indieDatabase' => $this->databaseMock]
-        );
+        // TODO mention client mock
+        $this->urlHandlerMock = $this->createMock(\mauricerenck\IndieConnector\UrlHandler::class);
+        $this->pageChecksMock = $this->createMock(\mauricerenck\IndieConnector\PageChecks::class);
+        $this->webmentionStatsMock = $this->createMock(\mauricerenck\IndieConnector\WebmentionStats::class);
+
+        $this->senderUtilsMock = $this->getMockBuilder(WebmentionSender::class)
+            ->setConstructorArgs([null, null, null, null, $this->urlHandlerMock, $this->pageChecksMock, $this->indieDb, $this->webmentionStatsMock])
+            ->onlyMethods(['getUnprocessedUrls', 'filterDuplicateUrls', 'mergeUrlsWithOutbox', 'isValidTarget', 'findUrls', 'send', 'readOutbox', 'writeOutbox'])
+            ->getMock();
     }
 
-    /**
-     * @group webmentions
-     * @testdox sendWebmentions - should send to one url
-     */
-    public function testShouldSendWebmention()
+    #[Group('webmentionSender')]
+    #[TestDox('sendWebmentions - should send to one url')]
+    #[AllowMockObjectsWithoutExpectations]
+    public function testShouldSendWebmentionXXXXXX()
     {
         $urls = ['https://text-field-url.tld'];
 
-        $pageMock = $this->getPageMock(false, [
-            'webmentionsStatus' => true,
-            'Textfield' => 'https://indieconnector.dev',
-        ]);
-        $this->senderUtilsMock->shouldReceive('pageFullfillsCriteria')->andReturn(true);
-        $this->senderUtilsMock->shouldReceive('getUnprocessedUrls')->andReturn($urls);
-        $this->senderUtilsMock->shouldReceive('filterDuplicateUrls')->andReturn($urls);
-        $this->senderUtilsMock->shouldReceive('readOutbox');
-        $this->senderUtilsMock->shouldReceive('mergeUrlsWithOutbox');
-        $this->senderUtilsMock->shouldReceive('writeOutbox');
-        $this->senderUtilsMock->shouldReceive('isValidTarget')->andReturn(true);
-        $this->senderUtilsMock->shouldReceive('send')->andReturn(true);
+        $pageMock = $this->createMock(Kirby\Cms\Page::class);
+        $uuidMock = $this->createMock(Kirby\Uuid\Uuid::class);
+        $uuidMock->method('id')->willReturn('abc');
+
+        $pageMock->expects($this->atLeastOnce())->method('uuid')
+            ->willReturn($uuidMock);
+
+        $this->webmentionStatsMock->expects($this->once())->method('enabled')->willReturn(false);
+
+        $this->pageChecksMock->expects($this->once())->method('pageHasEnabledWebmentions')->willReturn(true);
+        $this->pageChecksMock->expects($this->once())->method('pageFullfillsCriteria')->willReturn(true);
+
+        $this->senderUtilsMock->expects($this->atLeastOnce())->method('readOutbox');
+        $this->senderUtilsMock->expects($this->atLeastOnce())->method('findUrls');
+        $this->senderUtilsMock->expects($this->once())->method('isValidTarget')->willReturn(true);
+        $this->senderUtilsMock->expects($this->once())->method('send')->willReturn(true);
+        $this->senderUtilsMock->expects($this->once())->method('mergeUrlsWithOutbox')->willReturn($urls);
+
+        $this->senderUtilsMock->expects($this->once())->method('getUnprocessedUrls')->willReturn($urls);
+        $this->senderUtilsMock->expects($this->once())->method('filterDuplicateUrls')->willReturn($urls);
+        $this->senderUtilsMock->expects($this->once())->method('writeOutbox');
 
         $result = $this->senderUtilsMock->sendWebmentions($pageMock);
+
         $this->assertCount(1, $result);
     }
 

@@ -11,11 +11,18 @@ class WebmentionStats
     private $indieDb;
 
     public function __construct(
+        private ?bool $statsEnabled = null,
         private ?array $doNotTrack = null,
         private ?IndieConnectorDatabase $indieDatabase = null
     ) {
+        $this->statsEnabled = $statsEnabled ?? option('mauricerenck.indieConnector.stats.enabled', false);
         $this->doNotTrack = $doNotTrack ?? option('mauricerenck.indieConnector.stats.doNotTrack', ['fed.brid.gy']);
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
+    }
+
+    public function enabled(): bool
+    {
+        return $this->statsEnabled;
     }
 
     public function trackMention(
@@ -61,20 +68,19 @@ class WebmentionStats
         try {
             $uniqueHash = md5($target . $source . $type . $mentionDate);
             $this->indieDb->insert(
-                'webmentions',
-                [
-                    'id',
-                    'mention_type',
-                    'mention_date',
-                    'mention_source',
-                    'mention_target',
-                    'mention_image',
-                    'mention_service',
-                    'author',
-                    'author_url',
-                    'title',
-                ],
-                [$uniqueHash, $type, $mentionDate, $source, $target, $image, $service, $author, $authorUrl, $title]
+                table: 'webmentions',
+                values: [
+                    'id' => $uniqueHash,
+                    'mention_type' => $type,
+                    'mention_date' => $mentionDate,
+                    'mention_source' => $source,
+                    'mention_target' => $target,
+                    'mention_image' => $image,
+                    'mention_service' => $service,
+                    'author' => $author,
+                    'author_url' => $authorUrl,
+                    'title' => $title,
+                ]
             );
             return true;
         } catch (Exception $e) {
@@ -85,6 +91,10 @@ class WebmentionStats
 
     public function trackOutgoingWebmentions(array $urls, $page): void
     {
+        if (is_null($page)) {
+            return;
+        }
+
         foreach ($urls as $url) {
             $this->updateOutbox($page->uuid()->id(), $url);
         }
@@ -101,27 +111,26 @@ class WebmentionStats
             $uniqueHash = md5($target['url'] . $pageUuid);
 
             $existingEntry = $this->indieDb->select(
-                'outbox',
-                ['id', 'updates', 'page_uuid'],
-                'WHERE page_uuid = "' . $pageUuid . '" AND target = "' . $target['url'] . '"'
+                table: 'outbox',
+                fields: ['id', 'updates', 'page_uuid'],
+                where: 'page_uuid = :uuid AND target = :target',
+                bindings: ['uuid' => $pageUuid, 'target' => $target['url']]
             );
 
             if (count($existingEntry->data) > 0) {
                 $newCount = $existingEntry->data[0]->updates + 1;
 
                 $this->indieDb->update(
-                    'outbox',
-                    ['updated_at', 'updates', 'status'],
-                    [$mentionDate, $newCount, $target['status']],
-                    'WHERE id = "' . $existingEntry->data[0]->id . '"'
+                    table: 'outbox',
+                    values: ['updated_at' => $mentionDate, 'updates' => $newCount, 'status' => $target['status']],
+                    where: ['id = "' . $existingEntry->data[0]->id . '"']
                 );
                 return true;
             }
 
             $this->indieDb->insert(
-                'outbox',
-                ['id', 'page_uuid', 'created_at', 'target', 'updates', 'status'],
-                [$uniqueHash, $pageUuid, $mentionDate, $target['url'], 1, $target['status']]
+                table: 'outbox',
+                values: ['id' => $uniqueHash, 'page_uuid' => $pageUuid, 'created_at' => $mentionDate, 'target' => $target['url'], 'updates' => 1, 'status' => $target['status']],
             );
 
             return true;
@@ -135,10 +144,9 @@ class WebmentionStats
     {
         try {
             $this->indieDb->update(
-                'outbox',
-                ['status'],
-                [$status],
-                'WHERE id = "' . $id . '"'
+                table: 'outbox',
+                values: ['status' => $status],
+                where: ['id = "' . $id . '"']
             );
 
             return true;
@@ -155,9 +163,10 @@ class WebmentionStats
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->indieDb->select(
-                'webmentions',
-                ['COUNT(id) as summary', '*'],
-                'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_type;'
+                table: 'webmentions',
+                fields: ['COUNT(id) as summary', '*'],
+                where: 'mention_date LIKE :datestring GROUP BY mention_type',
+                bindings: ['datestring' => $year . '-' . $month . '-%']
             );
 
             $summary = [
@@ -190,9 +199,11 @@ class WebmentionStats
 
         try {
             $result = $this->indieDb->select(
-                'webmentions',
-                ['mention_date', 'mention_type', 'COUNT(mention_type) as mentions'],
-                'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_type, mention_date;'
+                table: 'webmentions',
+                fields: ['mention_date', 'mention_type', 'COUNT(mention_type) as mentions'],
+                where: 'mention_date LIKE :datestring GROUP BY mention_type, mention_date',
+                bindings: ['datestring' => $year . '-' . $month . '-%']
+
             );
 
             $detailedStats = [];
@@ -228,9 +239,10 @@ class WebmentionStats
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->indieDb->select(
-                'webmentions',
-                ['mention_target', 'mention_type', 'COUNT(mention_type) as mentions'],
-                'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_target, mention_type;'
+                table: 'webmentions',
+                fields: ['mention_target', 'mention_type', 'COUNT(mention_type) as mentions'],
+                where: 'mention_date LIKE :datestring GROUP BY mention_target, mention_type',
+                bindings: ['datestring' => $year . '-' . $month . '-%']
             );
 
             $targets = [];
@@ -281,9 +293,10 @@ class WebmentionStats
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->indieDb->select(
-                'webmentions',
-                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'author_url'],
-                'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_source, mention_type;'
+                table: 'webmentions',
+                fields: ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'author_url'],
+                where: 'mention_date LIKE :datestring GROUP BY mention_source, mention_type',
+                bindings: ['datestring' => $year . '-' . $month . '-%']
             );
 
             $sources = [];
@@ -329,9 +342,10 @@ class WebmentionStats
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->indieDb->select(
-                'webmentions',
-                ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'mention_service', 'author_url'],
-                'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY mention_source, mention_type;'
+                table: 'webmentions',
+                fields: ['mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'mention_service', 'author_url'],
+                where: 'mention_date LIKE :datestring GROUP BY mention_source, mention_type',
+                bindings: ['datestring' => $year . '-' . $month . '-%']
             );
 
             $sources = [];
@@ -381,9 +395,10 @@ class WebmentionStats
             $month = $month < 10 ? '0' . $month : $month;
 
             $result = $this->indieDb->select(
-                'webmentions',
-                ['id', 'mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'mention_service', 'author_url'],
-                'WHERE mention_date LIKE "' . $year . '-' . $month . '-%" GROUP BY author, mention_source, mention_type;'
+                table: 'webmentions',
+                fields: ['id', 'mention_source', 'mention_type', 'mention_image', 'COUNT(mention_type) as mentions', 'author', 'title', 'mention_service', 'author_url'],
+                where: 'mention_date LIKE :datestring GROUP BY author, mention_source, mention_type',
+                bindings: ['datestring' => $year . '-' . $month . '-%']
             );
 
             $authors = [];
@@ -414,7 +429,6 @@ class WebmentionStats
                         'author' => $userHandle,
                         'author_url' => $webmention->author_url,
                         'image' => $webmention->mention_image,
-                        'host' => $host,
                         'likes' => 0,
                         'replies' => 0,
                         'reposts' => 0,
@@ -529,9 +543,10 @@ class WebmentionStats
     public function webmentionIsUpdate(string $source, string $target)
     {
         $result = $this->indieDb->select(
-            'webmentions',
-            ['mention_type'],
-            'WHERE mention_source = "' . $source . '" AND mention_target = "' . $target . '";'
+            table: 'webmentions',
+            fields: ['mention_type'],
+            where: 'mention_source = :source AND mention_target = :target',
+            bindings: ['source' => $source, 'target' => $target]
         );
 
         return $result->num_rows > 0;
