@@ -56,6 +56,7 @@ class Sender
         return true;
     }
 
+    // TODO: move to PageHandler
     public function findUrls($page)
     {
         $htmlParts = [];

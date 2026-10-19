@@ -2,6 +2,7 @@
 
 namespace mauricerenck\IndieConnector;
 
+// TODO move to PageHandler-Class
 class PageChecks
 {
     public function __construct(

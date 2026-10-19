@@ -32,6 +32,12 @@ return [
         $webmentions = new WebmentionSender();
         $webmentions->sendWebmentions($newPage);
 
+        // TODO if activityPubBridge is active, send a webmention to brid.gy
+        // This was moved from Sender.php::findUrls
+        // if ($this->activityPubBridge) {
+        //     $detectedUrls[] = 'https://fed.brid.gy/';
+        // }
+
         if (option('mauricerenck.indieConnector.post.automatically', true) && !$newPage->isDraft() && $oldPage->isDraft()) {
             $sender = new Sender();
             $postResults = [];
