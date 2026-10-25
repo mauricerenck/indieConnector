@@ -1,10 +1,11 @@
 <template>
     <div>
         <k-items
-            :items="serviceItems"
+            :items="items"
             layout="list"
             :selecting="true"
             :selectable="true"
+            :selected="selectedServices"
             :link="true"
             @select="toggle"
         />
@@ -20,15 +21,20 @@ export default {
             default: () => [],
         },
     },
+    emits: ['input'],
     data() {
         return {
             selectedServices: [],
         }
     },
+    computed: {
+        items() {
+            return this.serviceItems.map(item => ({ ...item, id: item.value }))
+        },
+    },
     methods: {
-        toggle(item) {
-            const i = this.selectedServices.indexOf(item.value)
-            i === -1 ? this.selectedServices.push(item.value) : this.selectedServices.splice(i, 1)
+        toggle(selected) {
+            this.selectedServices = selected
 
             // 2. Jetzt weiß das Panel, dass sich etwas geändert hat
             this.$emit('input', this.selectedServices)

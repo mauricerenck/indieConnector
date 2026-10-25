@@ -59,7 +59,7 @@ export default {
     methods: {
         printNumberValue(value) {
             const className = value === 0 ? 'muted' : ''
-            return `<span class="${className}">${value}</span>`
+            return this.$h(`<span class="${className}">${value}</span>`)
         },
 
         processQueue() {
@@ -123,9 +123,11 @@ export default {
         queueList() {
             return [
                 {
-                    queueStatus: this.processRunning
-                        ? '<span class="status running">running</span>'
-                        : '<span class="status idle">idle</span>',
+                    queueStatus: this.$h(
+                        this.processRunning
+                            ? '<span class="status running">running</span>'
+                            : '<span class="status idle">idle</span>'
+                    ),
                     urlsTotal: this.printNumberValue(this.responses.urls.total ?? 0),
                     urlsMastodon: this.printNumberValue(this.responses.urls.mastodon ?? 0),
                     urlsBluesky: this.printNumberValue(this.responses.urls.bluesky ?? 0),

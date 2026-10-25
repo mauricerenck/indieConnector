@@ -75,7 +75,7 @@ export default {
     methods: {
         printNumberValue(value) {
             const className = value === 0 ? 'muted' : ''
-            return `<span class="${className}">${value}</span>`
+            return this.$h(`<span class="${className}">${value}</span>`)
         },
     },
     computed: {
@@ -86,7 +86,9 @@ export default {
             this.pagination.total = this.targets.length
             const targets = this.targets.map(target => {
                 return {
-                    title: `<a href="${target.panelUrl}">${target.title}</k-link>`,
+                    title: this.$h(
+                        `<a href="${target.panelUrl}">${this.$helper.string.escapeHTML(target.title)}</k-link>`
+                    ),
                     likes: this.printNumberValue(target.likes),
                     replies: this.printNumberValue(target.replies),
                     reposts: this.printNumberValue(target.reposts),

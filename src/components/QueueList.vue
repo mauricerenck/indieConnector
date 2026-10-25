@@ -64,7 +64,7 @@
             :pagination="{
                 page: pagination.page,
                 limit: pagination.limit,
-                total: pagination.total,
+                total: queuedItems.length,
                 details: true,
             }"
             @paginate="pagination.page = $event.page"
@@ -92,7 +92,6 @@ export default {
             pagination: {
                 page: 1,
                 limit: 10,
-                total: 0,
             },
             processIndex: 0,
             processRunning: false,
@@ -200,7 +199,7 @@ export default {
 
         queueList() {
             const itemList = []
-            this.pagination.total = 0
+            const { escapeHTML } = this.$helper.string
 
             this.queuedItems.forEach(queueEntry => {
                 const sourceLabel = new URL(queueEntry.source_url).origin + '/…'
@@ -208,15 +207,20 @@ export default {
 
                 const newQueueItem = {
                     id: queueEntry.id,
-                    source: `<a href="${queueEntry.source_url}?panelPreview=true" target="_blank">${sourceLabel}</a>`,
-                    target: `<a href="${queueEntry.target_url}" target="_blank">${targetLabel}</a>`,
-                    queueStatus: `<span class="status ${queueEntry.queue_status}">${queueEntry.queue_status}</span>`,
+                    source: this.$h(
+                        `<a href="${escapeHTML(queueEntry.source_url)}?panelPreview=true" target="_blank">${escapeHTML(sourceLabel)}</a>`
+                    ),
+                    target: this.$h(
+                        `<a href="${escapeHTML(queueEntry.target_url)}" target="_blank">${escapeHTML(targetLabel)}</a>`
+                    ),
+                    queueStatus: this.$h(
+                        `<span class="status ${queueEntry.queue_status}">${queueEntry.queue_status}</span>`
+                    ),
                     message: queueEntry.process_log,
                     retries: queueEntry.retries ?? 0,
                 }
 
                 itemList.push(newQueueItem)
-                this.pagination.total++
             })
 
             return itemList.slice(this.index - 1, this.pagination.limit * this.pagination.page)

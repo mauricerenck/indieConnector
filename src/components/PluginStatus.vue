@@ -106,9 +106,11 @@ export default {
             return this.features.map(feature => {
                 return {
                     feature: feature.label,
-                    enabled: feature.enabled
-                        ? '<div class="icon"><svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="#icon-check"></use></svg></div>'
-                        : '<div class="icon"><svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="#icon-cancel"></use></svg></div>',
+                    enabled: this.$h(
+                        feature.enabled
+                            ? `<div class="icon"><svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="${this.$panel.urls.icons}#icon-check"></use></svg></div>`
+                            : `<div class="icon"><svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="${this.$panel.urls.icons}#icon-cancel"></use></svg></div>`
+                    ),
                     description: feature.description,
                 }
             })
@@ -117,11 +119,15 @@ export default {
             return this.webmentionsSend.map(setting => {
                 return {
                     description: setting.description,
-                    setting: this.formatSetting(setting.setting),
-                    enabled: setting.enabled
-                        ? '<div class="icon"><svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="#icon-check"></use></svg></div>'
-                        : '<div class="icon"><svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="#icon-cancel"></use></svg></div>',
-                    docs: `<a href="${setting.docs}" class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="k-icon lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>`,
+                    setting: this.$h(this.formatSetting(setting.setting)),
+                    enabled: this.$h(
+                        setting.enabled
+                            ? `<div class="icon"><svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="${this.$panel.urls.icons}#icon-check"></use></svg></div>`
+                            : `<div class="icon"><svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="${this.$panel.urls.icons}#icon-cancel"></use></svg></div>`
+                    ),
+                    docs: this.$h(
+                        `<a href="${setting.docs}" class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="k-icon lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>`
+                    ),
                 }
             })
         },
@@ -129,11 +135,15 @@ export default {
             return this.webmentionsReceive.map(setting => {
                 return {
                     description: setting.description,
-                    setting: this.formatSetting(setting.setting),
-                    enabled: setting.enabled
-                        ? '<div class="icon"><svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="#icon-check"></use></svg></div>'
-                        : '<div class="icon"><svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="#icon-cancel"></use></svg></div>',
-                    docs: `<a href="${setting.docs}" class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="k-icon lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>`,
+                    setting: this.$h(this.formatSetting(setting.setting)),
+                    enabled: this.$h(
+                        setting.enabled
+                            ? `<div class="icon"><svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="${this.$panel.urls.icons}#icon-check"></use></svg></div>`
+                            : `<div class="icon"><svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="${this.$panel.urls.icons}#icon-cancel"></use></svg></div>`
+                    ),
+                    docs: this.$h(
+                        `<a href="${setting.docs}" class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="k-icon lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>`
+                    ),
                 }
             })
         },
@@ -141,11 +151,15 @@ export default {
             return this.posting.map(setting => {
                 return {
                     description: setting.description,
-                    setting: this.formatSetting(setting.setting),
-                    enabled: setting.enabled
-                        ? '<div class="icon"><svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="#icon-check"></use></svg></div>'
-                        : '<div class="icon"><svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="#icon-cancel"></use></svg></div>',
-                    docs: `<a href="${setting.docs}" class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="k-icon lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>`,
+                    setting: this.$h(this.formatSetting(setting.setting)),
+                    enabled: this.$h(
+                        setting.enabled
+                            ? `<div class="icon"><svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="${this.$panel.urls.icons}#icon-check"></use></svg></div>`
+                            : `<div class="icon"><svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="${this.$panel.urls.icons}#icon-cancel"></use></svg></div>`
+                    ),
+                    docs: this.$h(
+                        `<a href="${setting.docs}" class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="k-icon lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>`
+                    ),
                 }
             })
         },

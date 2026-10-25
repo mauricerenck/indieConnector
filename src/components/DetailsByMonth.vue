@@ -63,7 +63,7 @@ export default {
     methods: {
         printNumberValue(value) {
             const className = value === 0 ? 'muted' : ''
-            return `<span class="${className}">${value}</span>`
+            return this.$h(`<span class="${className}">${value}</span>`)
         },
     },
     computed: {
