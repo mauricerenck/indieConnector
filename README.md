@@ -6,6 +6,10 @@
 
 ---
 
+**IndieConnector Version 3 is in the making. The current v2 release is freezed for now. I will only fix critical bugs. All new features and idea should be part of version 3.**
+
+---
+
 IndieConnector is your interface to the IndieWeb. It'll help you to:
 
 -   Receive Webmentions
