@@ -163,7 +163,7 @@ class IndieConnectorDatabaseTest extends TestCase
     public function testUpdateUpdatesSingleEntry(): void
     {
         $this->db->insert('items', ['name' => 'foo']);
-        $this->assertTrue($this->db->update('items', ['name' => 'bar'], ['name' => 'foo']));
+        $this->assertTrue($this->db->update('items', ['name' => 'bar'], 'name = :name', ['name' => 'foo']));
     }
 
     #[Group('database')]
@@ -171,7 +171,7 @@ class IndieConnectorDatabaseTest extends TestCase
     public function testUpdateHandlesQuotesInValues(): void
     {
         $this->db->insert('items', ['name' => 'foo']);
-        $this->assertTrue($this->db->update('items', ['name' => 'O\'Reilly "x"'], ['name' => 'foo']));
+        $this->assertTrue($this->db->update('items', ['name' => 'O\'Reilly "x"'], 'name = :name', ['name' => 'foo']));
     }
 
     #[Group('database')]
@@ -180,7 +180,7 @@ class IndieConnectorDatabaseTest extends TestCase
     {
         $this->db->insert('items', ['name' => 'foo', 'foo' => 'bar']);
         $this->db->insert('items', ['name' => 'bar', 'foo' => 'bar']);
-        $this->assertTrue($this->db->update('items', ['name' => 'baz'], ['foo' => 'bar']));
+        $this->assertTrue($this->db->update('items', ['name' => 'baz'], 'foo = :name', ['name' => 'bar']));
     }
 
     #[Group('database')]
@@ -188,7 +188,7 @@ class IndieConnectorDatabaseTest extends TestCase
     public function testUpdateHandlesEmptyValues(): void
     {
         $this->db->insert('items', ['name' => 'foo']);
-        $this->assertFalse($this->db->update('items', [], ['name' => 'foo']));
+        $this->assertFalse($this->db->update('items', [], 'name = :name', ['name' => 'foo']));
     }
 
     #[Group('database')]
@@ -196,7 +196,7 @@ class IndieConnectorDatabaseTest extends TestCase
     public function testUpdateHandlesSqlInjection(): void
     {
         $this->db->insert('items', ['name' => 'foo']);
-        $this->assertFalse($this->db->update('items', [], ["name" => "'; DROP TABLE items; --"]));
+        $this->assertFalse($this->db->update('items', [], 'name = :name ', ["name" => "'; DROP TABLE items; --"]));
     }
 
     #[Group('database')]
@@ -204,7 +204,7 @@ class IndieConnectorDatabaseTest extends TestCase
     public function testUpsertCreatesSingleEntry(): void
     {
         $this->db->upsert('items', ['name' => 'foo'], 'name');
-        $this->assertTrue($this->db->update('items', ['name' => 'bar'], ['name' => 'foo']));
+        $this->assertTrue($this->db->update('items', ['name' => 'bar'], 'name = :name', ['name' => 'foo']));
     }
 
     #[Group('database')]
@@ -272,7 +272,7 @@ class IndieConnectorDatabaseTest extends TestCase
     public function testSelectReturnsOneResultUsingWhere(): void
     {
         $this->db->insert('items', ['name' => 'foo']);
-        $result = $this->db->select('items', ['name'], where: 'name = "foo"');
+        $result = $this->db->select('items', ['name'], where: 'name = :name', bindings: ['name' => 'foo']);
         $this->assertEquals(1, $result->count());
         $this->assertEquals('foo', $result->first()->name());
     }

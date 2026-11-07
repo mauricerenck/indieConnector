@@ -67,7 +67,8 @@ class ResponseCollector
             $this->indieDb->update(
                 table: 'external_post_urls',
                 values: ['post_url' => $postUrl, 'last_fetched' => '1'],
-                where: ['id' => $existingPostUrl->id, 'page_uuid' => $pageUuid, 'post_type' => $postType]
+                where: 'id = :id AND page_uuid = :page_uuid AND post_type = :post_type',
+                bindings: ['id' => $existingPostUrl->id, 'page_uuid' => $pageUuid, 'post_type' => $postType]
             );
         }
     }
@@ -333,7 +334,8 @@ class ResponseCollector
         $this->indieDb->update(
             table: 'external_post_urls',
             values: ['last_fetched' => $currentTimestamp],
-            where: ['post_url IN ("' . implode('","', $postUrls) . '")']
+            where: 'post_url IN :post_urls',
+            bindings: ['post_urls' => "' . implode('", "', $postUrls) . '"]
         );
     }
 
@@ -342,16 +344,18 @@ class ResponseCollector
         $this->indieDb->update(
             table: 'external_post_urls',
             values: ['active' => false],
-            where: ['post_url IN ("' . implode('","', $postUrls) . '")']
+            where: 'post_url IN : post_urls',
+            bindings: ['post_urls' => "' . implode('", "', $postUrls) . '"]
         );
     }
 
-    public function markProcessed($responseIds)
+    public function markProcessed(array $responseIds)
     {
         $this->indieDb->update(
             table: 'queue_responses',
             values: ['queueStatus' => 'redirecting'],
-            where: ['id IN ("' . implode('","', $responseIds) . '")']
+            where: 'id IN  :ids',
+            bindings: ['id' => "' . implode('", "', $responseIds) . '"]
         );
     }
 

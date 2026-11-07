@@ -181,7 +181,8 @@ class IndieConnectorDatabase
     public function update(
         string $table,
         array $values,
-        array $where
+        string $where = '',
+        array $bindings = []
     ): bool {
         try {
             if ($values === []) {
@@ -199,8 +200,6 @@ class IndieConnectorDatabase
             $this->assertIdentifier($table, 'table');
 
             $setParts = [];
-            $whereParts = [];
-            $bindings = [];
 
             foreach ($values as $field => $value) {
                 $this->assertIdentifier($field);
@@ -215,24 +214,11 @@ class IndieConnectorDatabase
                 }
             }
 
-            foreach ($where as $field => $value) {
-                $this->assertIdentifier($field);
-
-                $parameter = ':where_' . $field;
-
-                if ($value === null) {
-                    $whereParts[] = "{$field} IS NULL";
-                } else {
-                    $whereParts[] = "{$field} = {$parameter}";
-                    $bindings[$parameter] = $value;
-                }
-            }
-
             $query = sprintf(
                 'UPDATE %s SET %s WHERE %s',
                 $table,
                 implode(', ', $setParts),
-                implode(' AND ', $whereParts)
+                $where,
             );
 
             $this->db->query($query, $bindings);

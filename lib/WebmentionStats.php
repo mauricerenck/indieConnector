@@ -123,7 +123,8 @@ class WebmentionStats
                 $this->indieDb->update(
                     table: 'outbox',
                     values: ['updated_at' => $mentionDate, 'updates' => $newCount, 'status' => $target['status']],
-                    where: ['id = "' . $existingEntry->data[0]->id . '"']
+                    where: 'id = :id',
+                    bindings: ['id' => $existingEntry->data[0]->id]
                 );
                 return true;
             }
@@ -146,7 +147,8 @@ class WebmentionStats
             $this->indieDb->update(
                 table: 'outbox',
                 values: ['status' => $status],
-                where: ['id = "' . $id . '"']
+                where: 'id = :id',
+                bindings: ['id' => $id]
             );
 
             return true;

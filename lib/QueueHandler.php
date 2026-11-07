@@ -124,7 +124,8 @@ class QueueHandler
             $this->indieDb->update(
                 table: 'queue',
                 values: ['queue_status' => 'failed', 'process_log' => 'max retries reached'],
-                where: ['id' => $mentionId]
+                where: 'id = :id',
+                bindings: ['id' => $mentionId]
             );
 
             return ['id' => $mentionId, 'queue_status' => 'failed', 'process_log' => 'max retries reached', 'retries' => $retries];
@@ -144,7 +145,8 @@ class QueueHandler
                 $this->indieDb->update(
                     table: 'queue',
                     values: ['queue_status' => 'error', 'process_log' => $result['message'], 'retries' => $retries + 1],
-                    where: ['id' => $mentionId]
+                    where: 'id = :id',
+                    bindings: ['id' => $mentionId]
                 );
 
                 return ['id' => $mentionId, 'queue_status' => 'error', 'process_log' => $result['message'], 'retries' => $retries + 1];
