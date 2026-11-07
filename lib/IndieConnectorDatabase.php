@@ -40,7 +40,6 @@ class IndieConnectorDatabase
 
     public function insert(string $table, array $values): bool
     {
-
         /*
         EXAMPLE:
         $this->db->insert('items', [
@@ -191,7 +190,7 @@ class IndieConnectorDatabase
                 );
             }
 
-            if ($where === []) {
+            if ($where === '') {
                 throw new InvalidArgumentException(
                     'UPDATE without conditions is not allowed.'
                 );
@@ -199,8 +198,23 @@ class IndieConnectorDatabase
 
             $this->assertIdentifier($table, 'table');
 
-            $setParts = [];
 
+            $tmpBindings = [];
+            foreach ($bindings as $key => $value) {
+                $key = ':' . ltrim((string) $key, ':');
+
+                if (str_starts_with($key, ':set_')) {
+                    throw new InvalidArgumentException(
+                        "Binding names starting with 'set_' are reserved: {$key}"
+                    );
+                }
+
+                $tmpBindings[$key] = $value;
+            }
+
+            $bindings = $tmpBindings;
+
+            $setParts = [];
             foreach ($values as $field => $value) {
                 $this->assertIdentifier($field);
 
@@ -221,9 +235,7 @@ class IndieConnectorDatabase
                 $where,
             );
 
-            $this->db->query($query, $bindings);
-
-            return true;
+            return $this->db->query($query, $bindings) !== false;
         } catch (Exception $e) {
             return false;
         }

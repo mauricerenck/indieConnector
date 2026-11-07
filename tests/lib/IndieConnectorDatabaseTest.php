@@ -180,7 +180,8 @@ class IndieConnectorDatabaseTest extends TestCase
     {
         $this->db->insert('items', ['name' => 'foo', 'foo' => 'bar']);
         $this->db->insert('items', ['name' => 'bar', 'foo' => 'bar']);
-        $this->assertTrue($this->db->update('items', ['name' => 'baz'], 'foo = :name', ['name' => 'bar']));
+
+        $this->assertTrue($this->db->update('items', ['foo' => 'baz'], 'foo = :name', ['name' => 'bar']));
     }
 
     #[Group('database')]
