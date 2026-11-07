@@ -3,17 +3,118 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Data\Json;
+use Throwable;
 
 class Outbox
 {
-    private $outboxVersion = 2;
+    private $outboxVersion = 3;
+    private IndieConnectorDatabase $indieDb;
+    protected OptionHandler $options;
 
     public function __construct(
         private ?string $outboxFilename = null,
+        ?IndieConnectorDatabase $indieDatabase = null,
+        ?OptionHandler $options = null,
     ) {
+        $this->options = $options ?? new OptionHandler();
+        $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
+
+
         $this->outboxFilename =
             $outboxFilename ?? option('mauricerenck.indieConnector.send.outboxFilename', 'indieConnector.json');
     }
+
+
+    /**
+     * Adds one URL as target to the outbox
+     *
+     * The URL is written and its status will be pending
+     * @param $pageUuid the uuid->id() of the page
+     * @param $pageUrl the full URL of the page
+     * @param $targetUrl the full URL of the target
+     * @return void
+     */
+    public function addWebmentionTarget(string $pageUuid, string $pageUrl, string $targetUrl): void
+    {
+        $this->indieDb->insert(
+            table: 'webmentions_sent',
+            values: [
+                'page_uuid' => $pageUuid,
+                'target_url' => $targetUrl,
+                'source_url' => $pageUrl,
+                'updates' => 0,
+                'status' => WebmentionStatus::Pending->value,
+            ]
+        );
+    }
+
+    /**
+     * Get an array of all registered webmention target URLs for a single page
+     *
+     * @param $pageUuid the uuid->id() of the page
+     * @return array
+     */
+    public function getRegisteredWebmentionTargets(string $pageUuid, ?WebmentionStatus $statusFilter = null): array
+    {
+        try {
+            $registeredUrls = $this->indieDb->select(
+                table: 'webmentions_sent',
+                fields: ['target_url', 'status'],
+                where: 'page_uuid = :uuid',
+                bindings: ['uuid' => $pageUuid]
+            );
+
+            if (!$registeredUrls) {
+                return [];
+            }
+
+            if (isset($statusFilter)) {
+                $registeredUrls = $registeredUrls->filterBy('status', $statusFilter->value);
+            }
+
+            $registeredUrlsArray = array_column($registeredUrls->toArray(), 'target_url');
+
+            return $registeredUrlsArray;
+        } catch (Throwable $_e) {
+            return [];
+        }
+    }
+
+    /**
+     * Get an array of all registered and pending/failed webmention target URLs for a single page
+     *
+     * @param $pageUuid the uuid->id() of the page
+     * @return array
+     */
+    public function getPendingWebmentionTargets(string $pageUuid): array
+    {
+        try {
+            $registeredUrls = $this->indieDb->select(
+                table: 'webmentions_sent',
+                fields: ['target_url', 'status'],
+                where: 'page_uuid = :uuid AND status IN :status AND updates < :updates',
+                bindings: [
+                    'uuid' => $pageUuid,
+                    'status' => '(' . implode(',', [WebmentionStatus::Pending, WebmentionStatus::Failed]) . ')',
+                    'updates' => 3
+                ]
+            );
+
+            if (!$registeredUrls) {
+                return [];
+            }
+
+            $registeredUrlsArray = array_column($registeredUrls->toArray(), 'target_url');
+
+            return $registeredUrlsArray;
+        } catch (Throwable $_e) {
+            return [];
+        }
+    }
+
+    /* OLD VERSION */
+
+
 
     public function getVersion($outbox)
     {
