@@ -176,14 +176,14 @@ final class OutboxTest extends TestCase
         $this->outbox->addWebmentionTarget($pageUuid, 'http://page.com', 'https://pending1.com');
         $this->outbox->addWebmentionTarget($pageUuid, 'http://page.com', 'https://failed1.com');
         // Manually insert a second status (Failed). We use execute for low-level setup.
-        // $this->indieDb->update(
-        //     table: 'webmentions_sent',
-        //     values: [
-        //         'status' => WebmentionStatus::Failed->value
-        //     ],
-        //     where: 'page_uuid = :page_uuid AND target_url = :target_url',
-        //     bindings: ['page_uuid' => $pageUuid, 'target_url' => 'https://failed1.com']
-        // );
+        $this->indieDb->update(
+            table: 'webmentions_sent',
+            values: [
+                'status' => WebmentionStatus::Failed->value
+            ],
+            where: 'page_uuid = :page_uuid AND target_url = :target_url',
+            bindings: ['page_uuid' => $pageUuid, 'target_url' => 'https://failed1.com']
+        );
         $this->outbox->addWebmentionTarget($pageUuid, 'http://page.com', 'https://pending2.com');
 
         $results = $this->outbox->getPendingWebmentionTargets($pageUuid);

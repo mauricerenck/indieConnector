@@ -89,15 +89,16 @@ class Outbox
     public function getPendingWebmentionTargets(string $pageUuid): array
     {
         try {
+            [$in, $statusBindings] = $this->indieDb->inClause('status', [
+                WebmentionStatus::Pending,
+                WebmentionStatus::Failed,
+            ]);
+
             $registeredUrls = $this->indieDb->select(
                 table: 'webmentions_sent',
                 fields: ['target_url', 'status'],
-                where: 'page_uuid = :uuid AND status IN :status AND updates < :updates',
-                bindings: [
-                    'uuid' => $pageUuid,
-                    'status' => '(' . implode(',', [WebmentionStatus::Pending, WebmentionStatus::Failed]) . ')',
-                    'updates' => 3
-                ]
+                where: "page_uuid = :uuid AND status IN ({$in}) AND updates < :updates",
+                bindings: ['uuid' => $pageUuid, 'updates' => 3] + $statusBindings,
             );
 
             if (!$registeredUrls) {
