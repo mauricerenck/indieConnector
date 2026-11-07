@@ -355,6 +355,31 @@ class IndieConnectorDatabase
         }
     }
 
+    /**
+     * use this to build an in clause
+     *
+     * @example [$in, $bindings] = $this->indieDb->inClause('field', ['value1','value2']);
+     * @param  string $name
+     * @param  array $values
+     * @return array{0: string, 1: array<string, scalar>} [placeholders, bindings]
+     */
+    public function inClause(string $name, array $values): array
+    {
+        if ($values === []) {
+            throw new InvalidArgumentException('IN needs at least one value.');
+        }
+
+        $placeholders = [];
+        $bindings = [];
+
+        foreach (array_values($values) as $i => $value) {
+            $key = "{$name}_{$i}";
+            $placeholders[] = ':' . $key;
+            $bindings[$key] = $value instanceof \BackedEnum ? $value->value : $value;
+        }
+
+        return [implode(', ', $placeholders), $bindings];
+    }
 
 
     // FIXME: DEPRECATED?
