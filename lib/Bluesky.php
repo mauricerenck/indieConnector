@@ -22,7 +22,7 @@ class Bluesky
         private ?ExternalPostSender $externalPostSender = null
     ) {
         $this->enabled = $enabled ?? option('mauricerenck.indieConnector.bluesky.enabled', false);
-        $this->handle = $password ?? option('mauricerenck.indieConnector.bluesky.handle', false);
+        $this->handle = $handle ?? option('mauricerenck.indieConnector.bluesky.handle', false);
         $this->password = $password ?? option('mauricerenck.indieConnector.bluesky.password', false);
         $this->resizeImages = $resizeImages ?? option('mauricerenck.indieConnector.bluesky.resizeImages', 800);
 
