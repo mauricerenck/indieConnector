@@ -34,27 +34,28 @@ class Sender
         }
     }
 
-    public function isValidTarget(string $url)
-    {
-        if (!$this->urlHandler->urlIsValid($url)) {
-            return false;
-        }
-
-        if ($this->urlHandler->isLocalUrl($url)) {
-            return false;
-        }
-
-        if (!$this->urlHandler->urlExists($url)) {
-            // TODO Log this in new json format for error reporting in panel and retries
-            return false;
-        }
-
-        if ($this->urlHandler->isBlockedTarget($url)) {
-            return false;
-        }
-
-        return true;
-    }
+    // NOTE: MOved to url handler -> isValidWebmentionTarget
+    //     public function isValidTarget(string $url)
+    //     {
+    //         if (!$this->urlHandler->urlIsValid($url)) {
+    //             return false;
+    //         }
+    //
+    //         if ($this->urlHandler->isLocalUrl($url)) {
+    //             return false;
+    //         }
+    //
+    //         if (!$this->urlHandler->urlExists($url)) {
+    //             // TODO Log this in new json format for error reporting in panel and retries
+    //             return false;
+    //         }
+    //
+    //         if ($this->urlHandler->isBlockedTarget($url)) {
+    //             return false;
+    //         }
+    //
+    //         return true;
+    //     }
 
     // TODO: move to PageHandler
     public function findUrls($page)

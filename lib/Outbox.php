@@ -89,6 +89,9 @@ class Outbox
     public function getPendingWebmentionTargets(string $pageUuid): array
     {
         try {
+
+            $opt_maxRetries = $this->options->get('send.maxRetries', 3);
+
             [$in, $statusBindings] = $this->indieDb->inClause('status', [
                 WebmentionStatus::Pending,
                 WebmentionStatus::Failed,
@@ -98,7 +101,7 @@ class Outbox
                 table: 'webmentions_sent',
                 fields: ['target_url', 'status'],
                 where: "page_uuid = :uuid AND status IN ({$in}) AND updates < :updates",
-                bindings: ['uuid' => $pageUuid, 'updates' => 3] + $statusBindings,
+                bindings: ['uuid' => $pageUuid, 'updates' => $opt_maxRetries] + $statusBindings,
             );
 
             if (!$registeredUrls) {
@@ -111,6 +114,30 @@ class Outbox
         } catch (Throwable $_e) {
             return [];
         }
+    }
+
+    /**
+     * Updates a webmention target status
+     *
+     * Set a status, each change will automatically increase the update count
+     * @param $pageUuid the uuid->id() of the page
+     * @param $targetUrl the full URL of the target
+     * @param $newStatus WebmentionStatus
+     * @return void
+     */
+    public function updateWebmentionTargetStatus(string $pageUuid, string $targetUrl, WebmentionStatus $newStatus): void
+    {
+        $this->indieDb->update(
+            table: 'webmentions_sent',
+            values: [
+                'status' => $newStatus->value,
+            ],
+            where: 'pageUuid = :pageUuid AND target_url = :targetUrl',
+            bindings: [
+                'pageUuid' => $pageUuid,
+                'targetUrl' => $targetUrl
+            ]
+        );
     }
 
     /* OLD VERSION */

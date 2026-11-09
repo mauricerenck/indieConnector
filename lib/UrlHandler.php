@@ -22,11 +22,39 @@ class UrlHandler
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
     }
 
+    /**
+     * Checks if an URL fulfills all the tests to be a valid target
+     *
+     * @param $url the url to check
+     * @return bool
+     */
+    public function isValidWebmentionTarget(string $url): bool
+    {
+        if (!$this->urlIsValid($url)) {
+            return false;
+        }
+
+        if ($this->isLocalUrl($url)) {
+            return false;
+        }
+
+        if (!$this->urlExists($url)) {
+            return false;
+        }
+
+        if ($this->isBlockedTarget($url)) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function urlIsValid(string $url): bool
     {
         return V::url($url);
     }
 
+    // OLD CODE
     public function urlExists(string $url): bool
     {
         $rejectedStatusCodes = [404, 403, 401, 400, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511];

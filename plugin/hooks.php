@@ -2,6 +2,8 @@
 
 namespace mauricerenck\IndieConnector;
 
+use Kirby\Cms\Page;
+
 return [
     'page.update:after' => function ($newPage, $oldPage) {
         $responseCollector = new ResponseCollector();
@@ -123,10 +125,27 @@ return [
         }
     },
 
-    'indieConnector.webmention.send' => function ($page, $targetUrl, $sourceUrl) {
+    'indieConnector.webmention.send' => function (Page $page, $targetUrl, $sourceUrl) {
         if (option('mauricerenck.indieConnector.send.hook.enabled', false)) {
             $webmentions = new WebmentionSender();
             $webmentions->sendWebmentionFromHook($page, $targetUrl, $sourceUrl);
         }
     },
+
+
+    // NEW
+    'indieConnector.webmention.sent:success' => function (string $pageUuid, string $targetUrl, string $sourceUrl) {
+        // TODO
+        // if ($this->webmentionStats->enabled()) {
+        //     $this->webmentionStats->trackOutgoingWebmentions($mergedUrls, $page);
+        // }
+    },
+    'indieConnector.webmention.sent:error' => function (string $pageUuid, string $targetUrl, string $sourceUrl) {
+        // TODO
+        // if ($this->webmentionStats->enabled()) {
+        //     $this->webmentionStats->trackOutgoingWebmentions($mergedUrls, $page);
+        // }
+    },
+
+
 ];
