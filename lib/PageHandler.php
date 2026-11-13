@@ -123,7 +123,9 @@ class PageHandler
      */
     public function findUrls(Page $page)
     {
+        FlowDebug::step('sendWebmentions', $page->uuid()->id(), 'PageHandler:findUrls', 'info');
         $opt_fieldsToParseUrls = $this->options->get('send.urlFields', ['text:text', 'description:text', 'intro:text']);
+        FlowDebug::step('sendWebmentions', $page->uuid()->id(), 'PageHandler:findUrls', 'info', 'fields to parse', $opt_fieldsToParseUrls);
 
         $htmlParts = [];
 
@@ -134,12 +136,14 @@ class PageHandler
             // field is not correctly configured if it couldnt be splitted into two parts
             // -> skip and continue loop
             if (count($fieldInfo) !== 2) {
+                FlowDebug::step('sendWebmentions', $page->uuid()->id(), 'PageHandler:findUrls', 'info', 'invalid field config', $fieldInfo);
                 continue;
             }
 
             // field does not exists or is empty
             // -> skip and continue loop
             if (!$content->exists() || $content->isEmpty()) {
+                FlowDebug::step('sendWebmentions', $page->uuid()->id(), 'PageHandler:findUrls', 'info', 'field not existing or empty', $fieldInfo[0]);
                 continue;
             }
 
@@ -158,6 +162,8 @@ class PageHandler
         }
 
         $html = join('', $htmlParts);
+        FlowDebug::step('sendWebmentions', $page->uuid()->id(), 'PageHandler:findUrls', 'info', 'html', $html);
+
         $detectedUrls = $this->findLinks($html);
 
         return $detectedUrls;
@@ -181,7 +187,7 @@ class PageHandler
             $normalizedLinks = array_map(function ($url) {
 
                 $url = rtrim($url, '/'); // Remove trailing slash
-                $url = str_replace('http://', 'https://', $url); // always use https
+                // $url = str_replace('http://', 'https://', $url); // always use https
 
                 return $url;
             }, $links);

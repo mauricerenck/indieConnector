@@ -36,6 +36,7 @@ class Outbox
      */
     public function addWebmentionTarget(string $pageUuid, string $pageUrl, string $targetUrl): void
     {
+        FlowDebug::step('sendWebmentions', $pageUuid, 'addWebmentionTarget', 'info', '', $targetUrl);
         $this->indieDb->insert(
             table: 'webmentions_sent',
             values: [
@@ -57,6 +58,8 @@ class Outbox
     public function getRegisteredWebmentionTargets(string $pageUuid, ?WebmentionStatus $statusFilter = null): array
     {
         try {
+            FlowDebug::step('sendWebmentions', $pageUuid, 'getRegisteredWebmentionTargets', 'info', '', $statusFilter);
+
             $registeredUrls = $this->indieDb->select(
                 table: 'webmentions_sent',
                 fields: ['target_url', 'status'],
@@ -89,7 +92,7 @@ class Outbox
     public function getPendingWebmentionTargets(string $pageUuid): array
     {
         try {
-
+            FlowDebug::step('sendWebmentions', $pageUuid, 'getPendingWebmentionTargets', 'info', '');
             $opt_maxRetries = $this->options->get('send.maxRetries', 3);
 
             [$in, $statusBindings] = $this->indieDb->inClause('status', [
@@ -105,10 +108,12 @@ class Outbox
             );
 
             if (!$registeredUrls) {
+                FlowDebug::step('sendWebmentions', $pageUuid, 'getPendingWebmentionTargets', 'info', 'No registered URLs');
                 return [];
             }
 
             $registeredUrlsArray = array_column($registeredUrls->toArray(), 'target_url');
+            FlowDebug::step('sendWebmentions', $pageUuid, 'getPendingWebmentionTargets', 'info', 'Found registered URLs', $registeredUrlsArray);
 
             return $registeredUrlsArray;
         } catch (Throwable $_e) {
@@ -127,12 +132,14 @@ class Outbox
      */
     public function updateWebmentionTargetStatus(string $pageUuid, string $targetUrl, WebmentionStatus $newStatus): void
     {
+        FlowDebug::step('sendWebmentions', $pageUuid, 'updateWebmentionTargetStatus', 'info', '', [$pageUuid, $targetUrl, $newStatus]);
+
         $this->indieDb->update(
             table: 'webmentions_sent',
             values: [
                 'status' => $newStatus->value,
             ],
-            where: 'pageUuid = :pageUuid AND target_url = :targetUrl',
+            where: 'page_uuid = :pageUuid AND target_url = :targetUrl',
             bindings: [
                 'pageUuid' => $pageUuid,
                 'targetUrl' => $targetUrl

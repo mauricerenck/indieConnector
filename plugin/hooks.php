@@ -5,7 +5,18 @@ namespace mauricerenck\IndieConnector;
 use Kirby\Cms\Page;
 
 return [
+    'page.update:before' => function (Page $page) {
+        FlowDebug::step('sendWebmentions', $page->uuid()->id(), 'page.update:before', 'info');
+
+        $webmentions = new WebmentionHandler();
+        $webmentions->registerPageUrls($page);
+    },
+
     'page.update:after' => function ($newPage, $oldPage) {
+        $webmentions = new WebmentionHandler();
+        $webmentions->sendWebmentions($newPage);
+
+        return; //FIXME
         $responseCollector = new ResponseCollector();
 
         if (option('mauricerenck.indieConnector.send.automatically', true)) {
@@ -30,9 +41,11 @@ return [
         }
     },
 
-    'page.changeStatus:after' => function ($newPage, $oldPage) {
-        $webmentions = new WebmentionSender();
+    'page.changeStatus:after' => function (Page $newPage, Page $oldPage) {
+        $webmentions = new WebmentionHandler();
         $webmentions->sendWebmentions($newPage);
+
+        return; // FIXME
 
         // TODO if activityPubBridge is active, send a webmention to brid.gy
         // This was moved from Sender.php::findUrls

@@ -80,7 +80,8 @@ class IndieConnectorDatabase
 
             $result = $this->db->query($query, $values);
 
-            if (!$result) {
+            if ($result === false) {
+                FlowDebug::step('indieDB', 'indieDB', 'update', 'error', '', [$this->db->lastError()]);
                 return false;
             }
 
@@ -168,7 +169,11 @@ class IndieConnectorDatabase
                 $updateQuery
             );
 
-            $this->db->query($query, $values);
+            $result = $this->db->query($query, $values);
+
+            if ($result === false) {
+                FlowDebug::step('indieDB', 'indieDB', 'update', 'error', '', [$this->db->lastError()]);
+            }
 
             return true;
         } catch (Exception $e) {
@@ -235,7 +240,13 @@ class IndieConnectorDatabase
                 $where,
             );
 
-            return $this->db->query($query, $bindings) !== false;
+            $result = $this->db->query($query, $bindings);
+
+            if ($result === false) {
+                FlowDebug::step('indieDB', 'indieDB', 'update', 'error', '', [$this->db->lastError()]);
+            }
+
+            return $result !== false;
         } catch (Exception $e) {
             return false;
         }
@@ -284,7 +295,13 @@ class IndieConnectorDatabase
                 $limitSql
             );
 
-            return $this->db->query($query, $bindings);
+            $result =  $this->db->query($query, $bindings);
+
+            if ($result === false) {
+                FlowDebug::step('indieDB', 'indieDB', 'update', 'error', '', [$this->db->lastError()]);
+            }
+
+            return $result;
         } catch (Exception $e) {
             return false;
         }
@@ -331,7 +348,11 @@ class IndieConnectorDatabase
                 implode(' AND ', $conditions)
             );
 
-            $this->db->query($query, $bindings);
+            $result = $this->db->query($query, $bindings);
+
+            if ($result === false) {
+                FlowDebug::step('indieDB', 'indieDB', 'update', 'error', '', [$this->db->lastError()]);
+            }
 
             return true;
         } catch (Exception $e) {
@@ -347,7 +368,11 @@ class IndieConnectorDatabase
         */
         try {
             $this->assertIdentifier($table);
-            $this->db->query("DELETE FROM {$table}");
+            $result = $this->db->query("DELETE FROM {$table}");
+
+            if ($result === false) {
+                FlowDebug::step('indieDB', 'indieDB', 'update', 'error', '', [$this->db->lastError()]);
+            }
 
             return true;
         } catch (Exception $e) {

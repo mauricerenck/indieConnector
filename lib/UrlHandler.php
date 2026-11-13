@@ -30,19 +30,20 @@ class UrlHandler
      */
     public function isValidWebmentionTarget(string $url): bool
     {
+        FlowDebug::step('sendWebmentions', 'isValidWebmentionTarget', 'UrlHandler:isValidWebmentionTarget', 'info');
+
         if (!$this->urlIsValid($url)) {
+            FlowDebug::step('sendWebmentions', 'isValidWebmentionTarget', 'UrlHandler:isValidWebmentionTarget', 'info', '!urlIsValid');
             return false;
         }
 
         if ($this->isLocalUrl($url)) {
-            return false;
-        }
-
-        if (!$this->urlExists($url)) {
+            FlowDebug::step('sendWebmentions', 'isValidWebmentionTarget', 'UrlHandler:isValidWebmentionTarget', 'info', 'isLocalUrl');
             return false;
         }
 
         if ($this->isBlockedTarget($url)) {
+            FlowDebug::step('sendWebmentions', 'isValidWebmentionTarget', 'UrlHandler:isValidWebmentionTarget', 'info', 'isBlockedTarget');
             return false;
         }
 
