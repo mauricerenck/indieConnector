@@ -18,7 +18,7 @@
                 :pagination="{
                     page: pagination.page,
                     limit: pagination.limit,
-                    total: pagination.total,
+                    total: authors.length,
                     details: true,
                 }"
                 @paginate="pagination.page = $event.page"
@@ -123,14 +123,13 @@ export default {
             pagination: {
                 page: 1,
                 limit: 10,
-                total: 0,
             },
         }
     },
     methods: {
         printNumberValue(value) {
             const className = value === 0 ? 'muted' : ''
-            return `<span class="${className}">${value}</span>`
+            return this.$h(`<span class="${className}">${value}</span>`)
         },
         renderIcon(type) {
             switch (type.toLowerCase()) {
@@ -156,7 +155,7 @@ export default {
                 })
                 .then(response => {
                     this.authors.find(author => author.id === row.id).sourceType = 'blocked'
-                    row.source = this.renderIcon('blocked')
+                    row.source = this.$h(this.renderIcon('blocked'))
                 })
         },
 
@@ -185,12 +184,14 @@ export default {
         },
         authorList() {
             const authors = []
-            this.pagination.total = 0
+            const { escapeHTML } = this.$helper.string
 
             this.authors.forEach(author => {
                 const newAuthor = {
-                    source: this.renderIcon(author.sourceType),
-                    author: `<a href="${author.author_url}" class="source-entry"><img src="${author.image}" width="40px" height="40px" />${author.author}</a>`,
+                    source: this.$h(this.renderIcon(author.sourceType)),
+                    author: this.$h(
+                        `<a href="${escapeHTML(author.author_url)}" class="source-entry"><img src="${escapeHTML(author.image)}" width="40px" height="40px" />${escapeHTML(author.author)}</a>`
+                    ),
                     likes: this.printNumberValue(author.likes),
                     replies: this.printNumberValue(author.replies),
                     reposts: this.printNumberValue(author.reposts),
@@ -201,7 +202,6 @@ export default {
                 }
 
                 authors.push(newAuthor)
-                this.pagination.total++
             })
 
             return authors.slice(this.index - 1, this.pagination.limit * this.pagination.page)

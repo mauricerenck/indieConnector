@@ -13,7 +13,7 @@
             :pagination="{
                 page: pagination.page,
                 limit: pagination.limit,
-                total: pagination.total,
+                total: sentEntries.length,
                 details: true,
             }"
             @paginate="pagination.page = $event.page"
@@ -50,7 +50,6 @@ export default {
             pagination: {
                 page: 1,
                 limit: 20,
-                total: 0,
             },
         }
     },
@@ -59,14 +58,19 @@ export default {
             return (this.pagination.page - 1) * this.pagination.limit + 1
         },
         sentList() {
+            return this.sentEntries.slice(this.index - 1, this.pagination.limit * this.pagination.page)
+        },
+        sentEntries() {
             const data = []
-            this.pagination.total = 0
+            const { escapeHTML } = this.$helper.string
 
             this.outbox.forEach(source => {
                 var entryCount = 0
 
                 const newEntry = {
-                    title: `<a href="${source.page.panelUrl}" class="source group-label" >${source.page.title}</a>`,
+                    title: this.$h(
+                        `<a href="${source.page.panelUrl}" class="source group-label" >${escapeHTML(source.page.title)}</a>`
+                    ),
                     panelUrl: source.page.panelUrl,
                     webmentions: source.entries.length,
                     url: null,
@@ -75,41 +79,39 @@ export default {
                     isSource: true,
                 }
                 data.push(newEntry)
-                this.pagination.total++
 
                 source.entries.forEach(entry => {
                     let entryStatus = ''
                     switch (entry.status) {
                         case 'success':
-                            entryStatus =
-                                '<svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="#icon-check"></use></svg>'
+                            entryStatus = `<svg aria-hidden="true" data-type="check" class="k-icon" style="color: light-dark(var(--color-green-700),var(--color-green-400));"><use xlink:href="${this.$panel.urls.icons}#icon-check"></use></svg>`
                             break
                         case 'blocked':
                             entryStatus =
                                 '<svg xmlns="http://www.w3.org/2000/svg" style="color: light-dark(var(--color-red-700),var(--color-red-300));" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="k-icon lucide lucide-ban-icon lucide-ban"><path d="M4.929 4.929 19.07 19.071"/><circle cx="12" cy="12" r="10"/></svg>'
                             break
                         default:
-                            entryStatus =
-                                '<svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="#icon-cancel"></use></svg>'
+                            entryStatus = `<svg aria-hidden="true" data-type="cancel" class="k-icon" style="color: light-dark(var(--color-red-700),var(--color-red-300));"><use xlink:href="${this.$panel.urls.icons}#icon-cancel"></use></svg>`
                             break
                     }
 
                     const newEntry = {
                         id: entry.id,
-                        title: `<a href="${entry.url}" class="target" target="_blank">${entry.url}</a>`,
+                        title: this.$h(
+                            `<a href="${escapeHTML(entry.url)}" class="target" target="_blank">${escapeHTML(entry.url)}</a>`
+                        ),
                         panelUrl: null,
                         webmentions: null,
                         url: entry.url,
-                        status: entryStatus,
+                        status: this.$h(entryStatus),
                         updates: entry.updates,
                         isSource: false,
                     }
                     data.push(newEntry)
                     entryCount++
-                    this.pagination.total++
                 })
             })
-            return data.slice(this.index - 1, this.pagination.limit * this.pagination.page)
+            return data
         },
     },
     methods: {
@@ -122,8 +124,9 @@ export default {
                     hostOnly,
                 })
                 .then(response => {
-                    row.status =
+                    row.status = this.$h(
                         '<svg xmlns="http://www.w3.org/2000/svg" style="color: light-dark(var(--color-red-700),var(--color-red-300));" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="k-icon lucide lucide-ban-icon lucide-ban"><path d="M4.929 4.929 19.07 19.071"/><circle cx="12" cy="12" r="10"/></svg>'
+                    )
                 })
         },
 

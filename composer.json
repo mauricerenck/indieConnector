@@ -42,6 +42,11 @@
     "suggests": {
         "mauricerenck/komments": "2.0.5"
     },
+    "extra": {
+        "kirby": {
+            "compatible": "^6.0"
+        }
+    },
     "config": {
         "optimize-autoloader": true,
         "allow-plugins": {

@@ -62,7 +62,7 @@ class ComposerStaticInit84944e4200b9284446d234824c8e9dcc
         'cjrasmussen\\BlueskyApi\\BlueskyApiSessionHelper' => __DIR__ . '/..' . '/cjrasmussen/bluesky-api/src/BlueskyApiSessionHelper.php',
         'mauricerenck\\IndieConnector\\Bluesky' => __DIR__ . '/../..' . '/lib/Bluesky.php',
         'mauricerenck\\IndieConnector\\ExternalPostSender' => __DIR__ . '/../..' . '/lib/ExternalPostSender.php',
-        'mauricerenck\\IndieConnector\\IndieConnectorDatabase' => __DIR__ . '/../..' . '/lib/Database.php',
+        'mauricerenck\\IndieConnector\\IndieConnectorDatabase' => __DIR__ . '/../..' . '/lib/IndieConnectorDatabase.php',
         'mauricerenck\\IndieConnector\\Mastodon' => __DIR__ . '/../..' . '/lib/Mastodon.php',
         'mauricerenck\\IndieConnector\\Microformats' => __DIR__ . '/../..' . '/lib/Microformats.php',
         'mauricerenck\\IndieConnector\\Migrations' => __DIR__ . '/../..' . '/lib/Migrations.php',

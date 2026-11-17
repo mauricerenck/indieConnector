@@ -5,7 +5,7 @@ namespace mauricerenck\IndieConnector;
 use Kirby\Cms\App as Kirby;
 use Composer\Semver\Semver;
 
-$kirbyVersion = (Semver::satisfies(Kirby::version() ?? '0.0.0', '~5') === false) ? 4 : 5;
+$kirbyVersion = (Semver::satisfies(Kirby::version() ?? '0.0.0', '>=5') === false) ? 4 : 5;
 
 $panelStats = [];
 $panelButtons = [];
