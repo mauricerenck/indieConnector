@@ -327,6 +327,11 @@ class WebmentionSender extends Sender
 
         try {
             $result = $this->indieDb->select('deleted_pages', ['slug'], 'where slug = "' . $slug . '"');
+
+            if ($result === false) {
+                return false;
+            }
+
             return $result->count() === 0 ? false : true;
         } catch (Exception $e) {
             echo 'Could not connect to Database: ', $e->getMessage(), "\n";

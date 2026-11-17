@@ -73,31 +73,31 @@ class WebmentionReceiver extends Receiver
         }
     }
 
-    public function getDataFromSource($sourceUrl)
-    {
-        // FIXME try catch
-        $request = Remote::get($sourceUrl);
-        $responseCode = $request->code();
-
-        if ($responseCode === 410) {
-            return [
-                'status' => 'deleted',
-            ];
-        }
-
-        if ($responseCode === 200) {
-            $sourceBody = $request->content();
-            if (empty($sourceBody)) {
-                return false;
-            }
-
-            $mf = Mf2\parse($sourceBody, $sourceUrl);
-
-            return $mf;
-        }
-
-        return false;
-    }
+    //     public function getDataFromSource($sourceUrl)
+    //     {
+    //         // FIXME try catch
+    //         $request = Remote::get($sourceUrl);
+    //         $responseCode = $request->code();
+    //
+    //         if ($responseCode === 410) {
+    //             return [
+    //                 'status' => 'deleted',
+    //             ];
+    //         }
+    //
+    //         if ($responseCode === 200) {
+    //             $sourceBody = $request->content();
+    //             if (empty($sourceBody)) {
+    //                 return false;
+    //             }
+    //
+    //             $mf = Mf2\parse($sourceBody, $sourceUrl);
+    //
+    //             return $mf;
+    //         }
+    //
+    //         return false;
+    //     }
 
     public function getWebmentionData($microformats)
     {

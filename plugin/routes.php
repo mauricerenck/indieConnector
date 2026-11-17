@@ -10,10 +10,11 @@ return [
         'pattern' => '(:all)',
         'method' => 'GET|POST|PUT',
         'action' => function ($slug) {
-            $webmentions = new WebmentionSender();
-            if ($webmentions->returnAsDeletedPage($slug)) {
-                return new Response('Gone', 'text/plain', 410);
-            }
+            // FIXME: handle deleted pages
+            // $webmentions = new WebmentionSender();
+            // if ($webmentions->returnAsDeletedPage($slug)) {
+            //     return new Response('Gone', 'text/plain', 410);
+            // }
 
             $this->next();
         },
@@ -29,19 +30,22 @@ return [
                 return new Response('No POST data found', 'text/plain', 400); // Not Acceptable
             }
 
-            $webmentionReceiver = new WebmentionReceiver();
-            $result = $webmentionReceiver->processIncomingWebmention($data);
+            $webmentionHandler = new WebmentionHandler();
+            return $webmentionHandler->receiveWebmention($data);
 
-            if ($result instanceof Response) {
-                return $result;
-            }
-
-            kirby()->trigger('indieConnector.webmention.queue', [
-                'targetUrl' => $result['urls']['target'],
-                'sourceUrl' => $result['urls']['source'],
-            ]);
-
-            return new Response('Webmention received', 'text/plain', 202); // Accepted
+            //             $webmentionReceiver = new WebmentionReceiver();
+            //             $result = $webmentionReceiver->processIncomingWebmention($data);
+            //
+            //             if ($result instanceof Response) {
+            //                 return $result;
+            //             }
+            //
+            //             kirby()->trigger('indieConnector.webmention.queue', [
+            //                 'targetUrl' => $result['urls']['target'],
+            //                 'sourceUrl' => $result['urls']['source'],
+            //             ]);
+            //
+            //             return new Response('Webmention received', 'text/plain', 202); // Accepted
         },
     ],
     [

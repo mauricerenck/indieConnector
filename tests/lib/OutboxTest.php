@@ -83,7 +83,7 @@ final class OutboxTest extends TestCase
         );
 
         $this->assertCount(1, $results);
-        $this->assertContains(WebmentionStatus::Pending->value, $results->first()->toArray());
+        $this->assertContains(WebmentionOutgoingStatus::Pending->value, $results->first()->toArray());
         $this->assertContains('https://example.com', $results->first()->toArray());
         $this->assertContains('abc', $results->first()->toArray());
     }
@@ -129,13 +129,13 @@ final class OutboxTest extends TestCase
         $this->indieDb->update(
             table: 'webmentions_sent',
             values: [
-                'status' => WebmentionStatus::Sent->value
+                'status' => WebmentionOutgoingStatus::Sent->value
             ],
             where: 'page_uuid = :page_uuid AND target_url = :target_url',
             bindings: ['page_uuid' => 'page_filtered', 'target_url' => "https://filtered_target.com"],
         );
 
-        $results = $this->outbox->getRegisteredWebmentionTargets($pageUuid, WebmentionStatus::Sent);
+        $results = $this->outbox->getRegisteredWebmentionTargets($pageUuid, WebmentionOutgoingStatus::Sent);
 
         $this->assertCount(1, $results);
         $this->assertContains('https://filtered_target.com', $results);
@@ -151,7 +151,7 @@ final class OutboxTest extends TestCase
         $this->outbox->addWebmentionTarget($pageUuid, 'http://page-filtered-none.com', 'https://filtered_target.com');
         // Since we only insert Pending, filtering by Sent should return 0
 
-        $results = $this->outbox->getRegisteredWebmentionTargets($pageUuid, WebmentionStatus::Sent);
+        $results = $this->outbox->getRegisteredWebmentionTargets($pageUuid, WebmentionOutgoingStatus::Sent);
         $this->assertEmpty($results);
     }
 
@@ -179,7 +179,7 @@ final class OutboxTest extends TestCase
         $this->indieDb->update(
             table: 'webmentions_sent',
             values: [
-                'status' => WebmentionStatus::Failed->value
+                'status' => WebmentionOutgoingStatus::Failed->value
             ],
             where: 'page_uuid = :page_uuid AND target_url = :target_url',
             bindings: ['page_uuid' => $pageUuid, 'target_url' => 'https://failed1.com']

@@ -53,9 +53,9 @@
             ),
         ),
         'mf2/mf2' => array(
-            'pretty_version' => 'v0.5.0',
-            'version' => '0.5.0.0',
-            'reference' => 'ddc56de6be62ed4a21f569de9b80e17af678ca50',
+            'pretty_version' => 'v0.5.1',
+            'version' => '0.5.1.0',
+            'reference' => '5ebf105d9f6568576b375664171403705f22f92b',
             'type' => 'library',
             'install_path' => __DIR__ . '/../mf2/mf2',
             'aliases' => array(),

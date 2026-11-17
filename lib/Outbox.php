@@ -2,7 +2,10 @@
 
 namespace mauricerenck\IndieConnector;
 
+use Kirby\Toolkit\Collection;
 use Kirby\Data\Json;
+use Kirby\Uuid\Uuid;
+
 use Throwable;
 
 class Outbox
@@ -19,7 +22,6 @@ class Outbox
         $this->options = $options ?? new OptionHandler();
         $this->indieDb = $indieDatabase ?? new IndieConnectorDatabase();
 
-
         $this->outboxFilename =
             $outboxFilename ?? option('mauricerenck.indieConnector.send.outboxFilename', 'indieConnector.json');
     }
@@ -29,22 +31,25 @@ class Outbox
      * Adds one URL as target to the outbox
      *
      * The URL is written and its status will be pending
-     * @param $pageUuid the uuid->id() of the page
-     * @param $pageUrl the full URL of the page
-     * @param $targetUrl the full URL of the target
+     * @param string $pageUuid the uuid->id() of the page
+     * @param string $pageUrl the full URL of the page
+     * @param string $targetUrl the full URL of the target
      * @return void
      */
     public function addWebmentionTarget(string $pageUuid, string $pageUrl, string $targetUrl): void
     {
         FlowDebug::step('sendWebmentions', $pageUuid, 'addWebmentionTarget', 'info', '', $targetUrl);
+
+        $uuid = $this->createUuid();
         $this->indieDb->insert(
             table: 'webmentions_sent',
             values: [
+                'id' => $uuid,
                 'page_uuid' => $pageUuid,
                 'target_url' => $targetUrl,
                 'source_url' => $pageUrl,
                 'updates' => 0,
-                'status' => WebmentionStatus::Pending->value,
+                'status' => WebmentionOutgoingStatus::Pending->value,
             ]
         );
     }
@@ -52,10 +57,10 @@ class Outbox
     /**
      * Get an array of all registered webmention target URLs for a single page
      *
-     * @param $pageUuid the uuid->id() of the page
+     * @param string $pageUuid the uuid->id() of the page
      * @return array
      */
-    public function getRegisteredWebmentionTargets(string $pageUuid, ?WebmentionStatus $statusFilter = null): array
+    public function getRegisteredWebmentionTargets(string $pageUuid, ?WebmentionOutgoingStatus $statusFilter = null): array
     {
         try {
             FlowDebug::step('sendWebmentions', $pageUuid, 'getRegisteredWebmentionTargets', 'info', '', $statusFilter);
@@ -86,7 +91,7 @@ class Outbox
     /**
      * Get an array of all registered and pending/failed webmention target URLs for a single page
      *
-     * @param $pageUuid the uuid->id() of the page
+     * @param string $pageUuid the uuid->id() of the page
      * @return array
      */
     public function getPendingWebmentionTargets(string $pageUuid): array
@@ -96,8 +101,8 @@ class Outbox
             $opt_maxRetries = $this->options->get('send.maxRetries', 3);
 
             [$in, $statusBindings] = $this->indieDb->inClause('status', [
-                WebmentionStatus::Pending,
-                WebmentionStatus::Failed,
+                WebmentionOutgoingStatus::Pending,
+                WebmentionOutgoingStatus::Failed,
             ]);
 
             $registeredUrls = $this->indieDb->select(
@@ -125,12 +130,12 @@ class Outbox
      * Updates a webmention target status
      *
      * Set a status, each change will automatically increase the update count
-     * @param $pageUuid the uuid->id() of the page
-     * @param $targetUrl the full URL of the target
-     * @param $newStatus WebmentionStatus
+     * @param string $pageUuid the uuid->id() of the page
+     * @param string $targetUrl the full URL of the target
+     * @param WebmentionOutgoingStatus $newStatus
      * @return void
      */
-    public function updateWebmentionTargetStatus(string $pageUuid, string $targetUrl, WebmentionStatus $newStatus): void
+    public function updateWebmentionTargetStatus(string $pageUuid, string $targetUrl, WebmentionOutgoingStatus $newStatus): void
     {
         FlowDebug::step('sendWebmentions', $pageUuid, 'updateWebmentionTargetStatus', 'info', '', [$pageUuid, $targetUrl, $newStatus]);
 
@@ -145,6 +150,215 @@ class Outbox
                 'targetUrl' => $targetUrl
             ]
         );
+    }
+
+
+    /**
+     * Adds a received Webmention to the database
+     *
+     * Set a status (PENDING) will return the newly generated uuid of the webmention
+     * @param string $pageUuid the uuid->id() of the page
+     * @param string $pageUrl the full URL of the target
+     * @param string $sourceUrl the full URL of the source
+     * @return string|bool UUID of the webmention or false
+     */
+    public function addWebmentionSource(string $pageUuid, string $pageUrl, string $sourceUrl): string|bool
+    {
+        FlowDebug::step('receiveWebmentions', $pageUuid, 'outbox:addWebmentionSource', 'info', '', $sourceUrl);
+
+        $uuid = $this->createUuid();
+
+        $result = $this->indieDb->insert(
+            table: 'webmentions_received',
+            values: [
+                'id' => $uuid,
+                'page_uuid' => $pageUuid,
+                'target_url' => $pageUrl,
+                'source_url' => $sourceUrl,
+                'status' => WebmentionIncomingStatus::Pending->value
+            ]
+        );
+
+        if ($result === false) {
+            return false;
+        }
+
+        return $uuid;
+    }
+
+    /**
+     * Updates a webmention source status
+     *
+     * @param string $webmentionId
+     * @param WebmentionIncomingStatus $newStatus
+     * @return void
+     */
+    public function updateWebmentionSourceStatus(string $webmentionId, WebmentionIncomingStatus $newStatus): void
+    {
+        FlowDebug::step('outbox', $webmentionId, 'updateWebmentionSourceStatus', 'info', '', [$webmentionId, $newStatus]);
+
+        $this->indieDb->update(
+            table: 'webmentions_received',
+            values: [
+                'status' => $newStatus->value,
+            ],
+            where: 'id = :webmentionId',
+            bindings: [
+                'webmentionId' => $webmentionId
+            ]
+        );
+    }
+
+    /**
+     * Updates a webmention source status
+     *
+     * @param string $webmentionId
+     * @param array $updates
+     * @return void
+     */
+    public function updateWebmentionSource(string $webmentionId, array $updates): void
+    {
+        FlowDebug::step('outbox', $webmentionId, 'updateWebmentionSourceStatus', 'info', '', [$webmentionId, $updates]);
+
+        $this->indieDb->update(
+            table: 'webmentions_received',
+            values: $updates,
+            where: 'id = :webmentionId',
+            bindings: [
+                'webmentionId' => $webmentionId
+            ]
+        );
+    }
+
+    /**
+     * Get a single webmentions by its id
+     *
+     * @param string $webmentionId the id of the webmention
+     * @return mixed
+     */
+    public function getIncomingWebmentionById(string $webmentionId): mixed
+    {
+        try {
+            FlowDebug::step('outbox', $webmentionId, 'getIncomingWebmentionById', 'info', '');
+
+            $webmentions = $this->indieDb->select(
+                table: 'webmentions_received',
+                fields: ['*'],
+                where: "id = :uuid",
+                bindings: ['uuid' => $webmentionId],
+            );
+
+            if (!$webmentions) {
+                FlowDebug::step('outbox', $webmentionId, 'getIncomingWebmentionById', 'info', 'Webmention not found');
+                return null;
+            }
+
+            return $webmentions->first();
+        } catch (Throwable $_e) {
+            return null;
+        }
+    }
+
+    /**
+     * Gets all webmentions of a page
+     *
+     * @param string $pageUuid the uuid of the page
+     * @return Collection|null
+     */
+    public function getIncomingWebmentionsByPageUuid(string $pageUuid): Collection|null
+    {
+        try {
+            FlowDebug::step('outbox', $pageUuid, 'getIncomingWebmentionByPageUuid', 'info', '');
+
+            $webmentions = $this->indieDb->select(
+                table: 'webmentions_received',
+                fields: ['*'],
+                where: "page_uuid = :uuid",
+                bindings: ['uuid' => $pageUuid],
+            );
+
+            if (!$webmentions) {
+                FlowDebug::step('outbox', $pageUuid, 'getIncomingWebmentionByPageUuid', 'info', 'Webmention not found');
+                return null;
+            }
+
+            FlowDebug::step('outbox', $pageUuid, 'getIncomingWebmentionByPageUuid', 'info', 'Found webmentions', $webmentions->count());
+            return $webmentions;
+        } catch (Throwable $_e) {
+            return null;
+        }
+    }
+
+    /**
+     * Gets all source urls of all webmentions of a page
+     *
+     * @param string $pageUuid the uuid of the page
+     * @return array
+     */
+    public function getIncomingWebmentionSourceUrlsByPageUuid(string $pageUuid): array
+    {
+        try {
+            FlowDebug::step('outbox', $pageUuid, 'getIncomingWebmentionSourceUrlsByPageUuid', 'info', '');
+
+            $webmentions = $this->indieDb->select(
+                table: 'webmentions_received',
+                fields: ['*'],
+                where: "page_uuid = :uuid",
+                bindings: ['uuid' => $pageUuid],
+            );
+
+            if (!$webmentions) {
+                FlowDebug::step('outbox', $pageUuid, 'getIncomingWebmentionSourceUrlsByPageUuid', 'info', 'Webmention not found');
+                return [];
+            }
+
+            $registeredUrlsArray = array_column($webmentions->toArray(), 'source_url');
+            FlowDebug::step('outbox', $pageUuid, 'getIncomingWebmentionSourceUrlsByPageUuid', 'info', 'Found URLs', $registeredUrlsArray);
+
+            return $registeredUrlsArray;
+        } catch (Throwable $_e) {
+            return [];
+        }
+    }
+
+    /**
+     * Deletes a single webmentions by its id
+     *
+     * @param string $webmentionId the id of the webmention
+     * @return bool
+     */
+    public function deleteIncomingWebmentionById(string $webmentionId): bool
+    {
+        try {
+            FlowDebug::step('outbox', $webmentionId, 'deleteIncomingWebmentionById', 'info', '');
+
+            $deleted = $this->indieDb->delete(
+                table: 'webmentions_received',
+                where: ['id' => $webmentionId]
+            );
+
+            if (!$deleted) {
+                FlowDebug::step('outbox', $webmentionId, 'deleteIncomingWebmentionById', 'error', 'Could not delete webmention');
+            }
+
+            return $deleted;
+        } catch (Throwable $_e) {
+            return false;
+        }
+    }
+
+    /**
+     * Creates a UUID
+     *
+     * This is a wrapper for easier testing
+     * @return string UUID of the webmention or false
+     */
+    protected function createUuid(): string
+    {
+        $id = Uuid::generate();
+        FlowDebug::step('outbox', '', 'outbox:createUuid', 'info', 'created new uuid', $id);
+
+        return $id;
     }
 
     /* OLD VERSION */

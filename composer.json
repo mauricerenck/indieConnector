@@ -28,7 +28,7 @@
         "php": ">=8.2.0",
         "indieweb/mention-client": "^1.2",
         "ext-curl": "*",
-        "mf2/mf2": "^0.5.0",
+        "mf2/mf2": "^0.5",
         "cjrasmussen/bluesky-api": "^2.0"
     },
     "require-dev": {

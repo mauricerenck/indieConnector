@@ -4,11 +4,13 @@ namespace mauricerenck\IndieConnector;
 
 use Kirby\Cms\Page;
 use Kirby\Http\Remote;
+use Kirby\Http\Response;
+use Kirby\Http\Url;
 
 use Mf2;
 use Exception;
 
-enum WebmentionStatus: string
+enum WebmentionOutgoingStatus: string
 {
     case Pending = 'PENDING';
     case Sent = 'SENT';
@@ -16,7 +18,17 @@ enum WebmentionStatus: string
     case Aborted = 'ABORTED';
 }
 
-class WebmentionHandler extends Sender
+enum WebmentionIncomingStatus: string
+{
+    case Pending = 'PENDING';
+    case Processed = 'PROCESSED';
+    case Published = 'PUBLISHED';
+    case Deleted = 'DELETED';
+    case PublishedDeleted = 'PUBLISHED_AND_DELETED';
+    case Failed = 'FAILED';
+}
+
+class WebmentionHandler
 {
     protected OptionHandler $options;
     private PageHandler $pageHandler;
@@ -30,13 +42,14 @@ class WebmentionHandler extends Sender
         ?Outbox $outbox = null,
         ?UrlHandler $urlHandler = null,
     ) {
-        parent::__construct();
-
         $this->options = $options ?? new OptionHandler();
         $this->pageHandler = $pageHandler ?? new PageHandler();
         $this->outbox = $outbox ?? new Outbox();
         $this->urlHandler = $urlHandler ?? new UrlHandler();
     }
+
+
+    /** SENDING **/
 
     /**
      * Sends webmentions to all found and pending links on a page
@@ -101,7 +114,7 @@ class WebmentionHandler extends Sender
             $this->outbox->updateWebmentionTargetStatus(
                 pageUuid: $pageUuid,
                 targetUrl: $targetUrl,
-                newStatus: WebmentionStatus::Aborted
+                newStatus: WebmentionOutgoingStatus::Aborted
             );
 
             kirby()->trigger('indieConnector.webmention.sent.error', [
@@ -124,7 +137,7 @@ class WebmentionHandler extends Sender
                 $this->outbox->updateWebmentionTargetStatus(
                     pageUuid: $pageUuid,
                     targetUrl: $targetUrl,
-                    newStatus: WebmentionStatus::Failed
+                    newStatus: WebmentionOutgoingStatus::Failed
                 );
 
                 kirby()->trigger('indieConnector.webmention.sent.error', [
@@ -141,7 +154,7 @@ class WebmentionHandler extends Sender
                 $this->outbox->updateWebmentionTargetStatus(
                     pageUuid: $pageUuid,
                     targetUrl: $targetUrl,
-                    newStatus: WebmentionStatus::Aborted
+                    newStatus: WebmentionOutgoingStatus::Aborted
                 );
 
                 kirby()->trigger('indieConnector.webmention.sent.error', [
@@ -157,6 +170,7 @@ class WebmentionHandler extends Sender
                 'method'  => 'POST',
                 'timeout' => 10,
                 'headers' => [
+                    'User-Agent: IndieConnector',
                     'Content-Type: application/x-www-form-urlencoded',
                 ],
                 'data' => [
@@ -172,7 +186,7 @@ class WebmentionHandler extends Sender
                 $this->outbox->updateWebmentionTargetStatus(
                     pageUuid: $pageUuid,
                     targetUrl: $targetUrl,
-                    newStatus: WebmentionStatus::Failed
+                    newStatus: WebmentionOutgoingStatus::Failed
                 );
 
                 kirby()->trigger('indieConnector.webmention.sent.error', [
@@ -189,7 +203,7 @@ class WebmentionHandler extends Sender
             $this->outbox->updateWebmentionTargetStatus(
                 pageUuid: $pageUuid,
                 targetUrl: $targetUrl,
-                newStatus: WebmentionStatus::Sent
+                newStatus: WebmentionOutgoingStatus::Sent
             );
 
             // trigger hook
@@ -203,7 +217,7 @@ class WebmentionHandler extends Sender
             $this->outbox->updateWebmentionTargetStatus(
                 pageUuid: $pageUuid,
                 targetUrl: $targetUrl,
-                newStatus: WebmentionStatus::Failed
+                newStatus: WebmentionOutgoingStatus::Failed
             );
 
             kirby()->trigger('indieConnector.webmention.sent.error', [
@@ -220,7 +234,7 @@ class WebmentionHandler extends Sender
     /**
      * Searches for URLs on a page, registers and returns new ones
      *
-     * @param $page Kirby\Cms\Page as source
+     * @param Page $page as source
      * @return array of urls or empty array
      */
     public function registerPageUrls(Page $page): array
@@ -258,7 +272,7 @@ class WebmentionHandler extends Sender
     /**
      * Looks up a webmention endpoint of a site
      *
-     * @param $url string
+     * @param string $url
      * @return ?string endpoint url or null
      */
     public function discoverWebmentionEndpoint(string $url): ?string
@@ -345,6 +359,384 @@ class WebmentionHandler extends Sender
         }
 
         return null;
+    }
+
+
+    /** RECEIVING **/
+
+    /**
+     * Starts processing incoming webmentions
+     *
+     * Performs URL and page checks and returns a Response for the webmention endpoint route
+     * @param array $postData
+     * @return Response response for route
+     */
+    public function receiveWebmention(array $postData)
+    {
+        if ($this->options->get('receive.enabled', true) === false) {
+            FlowDebug::step('receiveWebmentions', '', 'receiveWebmention', 'info', 'Receiving disabled via options');
+            return new Response('Receiving Webmentions is disabled', 'text/plain', 410); // Gone
+        }
+
+        $urls = $this->getPostDataUrls($postData);
+        if ($urls === false) {
+            FlowDebug::step('receiveWebmentions', '', 'receiveWebmention', 'error', 'Invalid source/target URL');
+            return new Response('Receiving Webmentions is disabled', 'text/plain', 400); // Not Acceptable
+        }
+
+        $targetPage = $this->getPageFromUrl($urls['target']);
+        if ($targetPage === false) {
+            FlowDebug::step('receiveWebmentions', '', 'receiveWebmention', 'error', 'Target page not found');
+            return new Response('Target page not found', 'text/plain', 404);
+        }
+
+        if (!$this->pageHandler->pageHasNeededStatus($targetPage)) {
+            return new Response('Target page not found', 'text/plain', 404);
+        }
+
+
+        // check if this webmention is already registered, if not create it
+        // otherwise update it
+        $registeredWebmentions = $this->outbox->getIncomingWebmentionSourceUrlsByPageUuid($targetPage->uuid()->id());
+        if (!in_array($urls['source'], $registeredWebmentions)) {
+            FlowDebug::step('receiveWebmentions', '', 'receiveWebmention', 'info', 'creating new webmention');
+            $result = $this->createEmptyWebmention($targetPage->uuid()->id(), $urls['target'], $urls['source']);
+
+            if (!$result) {
+                return new Response('Could not store webmention', 'text/plain', 500);
+            }
+        } else {
+            FlowDebug::step('receiveWebmentions', '', 'receiveWebmention', 'info', 'Webmention already exists, updating');
+            $result = $this->updateExistingWebmention($targetPage->uuid()->id(), $urls['source']);
+
+            if (!$result) {
+                return new Response('Could not store webmention', 'text/plain', 500);
+            }
+        }
+
+        return new Response('Webmention received', 'text/plain', 202); // Accepted
+    }
+
+    /**
+     * Creates an empty webmention which then can be processed
+     *
+     * @param string $pageUuid
+     * @param string $targetUrl
+     * @param string $sourceUrl
+     * @return bool
+     */
+    public function createEmptyWebmention(string $pageUuid, string $targetUrl, string $sourceUrl): bool
+    {
+        try {
+            FlowDebug::step('receiveWebmentions', '', 'createEmptyWebmention', 'info', 'Creating empty webmention');
+            $result = $this->outbox->addWebmentionSource($pageUuid, $targetUrl, $sourceUrl);
+
+            if ($result === false) {
+                FlowDebug::step('receiveWebmentions', '', 'createEmptyWebmention', 'error', 'Webmention not stored');
+                return false;
+            }
+
+            // if  queue is enabled, do not process directly
+            if ($this->options->get('queue.webmentions.incoming', false) === true) {
+                FlowDebug::step('receiveWebmentions', $result, 'createEmptyWebmention', 'ok', 'Queue enabled stopping');
+                // TODO hook?
+            } else {
+                // TODO
+                $this->processIncomingWebmention($result);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            FlowDebug::step('receiveWebmentions', '', 'createEmptyWebmention', 'error', 'could not create empty webmention', [$e]);
+            return false;
+        }
+    }
+
+    /**
+     * Creates an an existing webmention which then can be processed
+     *
+     * @param string $pageUuid
+     * @param string $sourceUrl
+     * @return bool
+     */
+    public function updateExistingWebmention(string $pageUuid, string $sourceUrl): bool
+    {
+        try {
+            FlowDebug::step('receiveWebmentions', '', 'updateExistingWebmention', 'info', 'Updating existing webmention');
+
+            $result = $this->outbox->getIncomingWebmentionsByPageUuid($pageUuid);
+            if (is_null($result)) {
+                FlowDebug::step('receiveWebmentions', '', 'updateExistingWebmention', 'error', 'No Webmentions found', [$pageUuid, $result]);
+                return false;
+            }
+
+            $webmention = $result->filterBy('source_url', $sourceUrl)->first();
+            if (is_null($webmention)) {
+                FlowDebug::step('receiveWebmentions', '', 'updateExistingWebmention', 'error', 'Webmention not found');
+                return false;
+            }
+
+            // if  queue is enabled, do not process directly
+            if ($this->options->get('queue.webmentions.incoming', false) === true) {
+                FlowDebug::step('receiveWebmentions', $result, 'updateExistingWebmention', 'ok', 'Queue enabled stopping');
+                // TODO hook?
+            } else {
+                $this->processIncomingWebmention($webmention->id);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            FlowDebug::step('receiveWebmentions', '', 'createEmptyWebmention', 'error', 'could not create empty webmention', [$e]);
+            return false;
+        }
+    }
+
+    /**
+     * Processes and already stored webmention
+     *
+     * @param string $webmentionId
+     * @return void
+     */
+    public function processIncomingWebmention(string $webmentionId): void
+    {
+        FlowDebug::step('receiveWebmentions', $webmentionId, 'processIncomingWebmention', 'info', 'Processing single webmention');
+
+        $webmention = $this->outbox->getIncomingWebmentionById($webmentionId);
+        $currentStatus = $webmention->status();
+
+        if (is_null($webmention)) {
+            FlowDebug::step('receiveWebmentions', $webmentionId, 'processIncomingWebmention', 'error', 'Webmention not found, aborting');
+            return;
+        }
+
+        // get the html of the webmention source page
+        $response = $this->getDataFromSource($webmention->source_url());
+
+        // The webmention was deleted, flag as deleted or delete
+        // then quit processing
+        if ($response['code'] === 410 || $response['code'] === 404) {
+            FlowDebug::step('receiveWebmentions', $webmentionId, 'processIncomingWebmention', 'info', 'Webmention was deleted');
+
+            $this->handleDeletedWebmention($webmention);
+            return;
+        }
+
+        // no content received, mark as failed then quit processing
+        // but only on pending state, otherwise we are updating and already have the data
+        if ($response['code'] !== 200 && $currentStatus == WebmentionIncomingStatus::Pending) {
+            FlowDebug::step('receiveWebmentions', $webmentionId, 'processIncomingWebmention', 'warn', 'Source returned no content');
+
+            $this->outbox->updateWebmentionSourceStatus($webmentionId, WebmentionIncomingStatus::Failed);
+            return;
+        }
+
+        $wmData = $this->transformSourceContent($response['html'], $webmention->source_url(), $webmention->target_url());
+
+        // no microformats could be parsed, mark as failed then quit processing
+        // but only on pending state, otherwise we are updating and already have the data
+        if (is_null($wmData) && $currentStatus == WebmentionIncomingStatus::Pending) {
+            FlowDebug::step('receiveWebmentions', $webmentionId, 'processIncomingWebmention', 'warn', 'No microformats available');
+
+            $this->outbox->updateWebmentionSourceStatus($webmentionId, WebmentionIncomingStatus::Failed);
+            return;
+        }
+
+        // if autopublish set status to published
+        // otherwise to processed
+        $newStatus = ($this->options->get('webmentions.receive.autoPublish', true))
+            ? WebmentionIncomingStatus::Published
+            : WebmentionIncomingStatus::Processed;
+
+        // this is fine, updating
+        $this->outbox->updateWebmentionSource(
+            $webmentionId,
+            [
+                'source_name' => $wmData['author']['name'],
+                'source_avatar' => $wmData['author']['photo'],
+                'source_profile_url' => $wmData['author']['url'],
+                'mention_type' => implode(',', $wmData['types']),
+                'mention_content' => $wmData['content'],
+                'mention_service' => $wmData['service'],
+                'status' => $newStatus->value
+            ]
+        );
+    }
+
+    /**
+     * Open the source URL and tries to fetch its html body
+     *
+     * returns an array with the status code and the html or an empty string
+     * @param string $sourceUrl
+     * @return array
+     */
+    public function getDataFromSource(string $sourceUrl): array
+    {
+        try {
+            FlowDebug::step('receiveWebmentions', $sourceUrl, 'getDataFromSource', 'info', 'Trying to fetch source HTML', [$sourceUrl]);
+            $response = Remote::request($sourceUrl, [
+                'method'  => 'GET',
+                'headers' => [
+                    'User-Agent: IndieConnector',
+                    'Content-Type: application/x-www-form-urlencoded',
+                ]
+            ]);
+
+            return [
+                'code' => $response->code(),
+                'html' => $response->content() ?? ''
+            ];
+        } catch (Exception $e) {
+            FlowDebug::step('receiveWebmentions', $sourceUrl, 'getDataFromSource', 'warn', 'Request failed', [$sourceUrl, $e]);
+
+            return [
+                'code' => 501,
+                'html' => ''
+            ];
+        }
+    }
+
+    /**
+     * Transforms microformats2 into an array suitable for further processing
+     *
+     * @param string $sourceHtml
+     * @param string $sourceUrl
+     * @param string $targetUrl
+     * @return array|null
+     */
+    public function transformSourceContent(string $sourceHtml, string $sourceUrl, string $targetUrl): array|null
+    {
+        try {
+            FlowDebug::step('receiveWebmentions', $sourceUrl, 'transformSourceContent', 'info', 'transforming');
+            $mf = Mf2\parse($sourceHtml, $sourceUrl);
+
+            if (empty($mf['items'])) {
+                FlowDebug::step('receiveWebmentions', $sourceUrl, 'transformSourceContent', 'info', 'no items in microformats', [$mf]);
+                return null;
+            }
+
+            // TODO der handler muss überarbeitet werden
+            $mf2 = new Microformats($targetUrl);
+            $data = [
+                'types' => $mf2->getTypes($mf),
+                'content' => $mf2->getSummaryOrContent($mf),
+                'published' => $mf2->getPublishDate($mf),
+                'author' => $mf2->getAuthor($mf),
+                'title' => $mf2->getTitle($mf),
+                'service' => $mf2->getService($mf),
+            ];
+
+            return $data;
+        } catch (Exception $e) {
+            FlowDebug::step('receiveWebmentions', $sourceUrl, 'transformSourceContent', 'error', 'parsing microformats failed', [$e]);
+            return null;
+        }
+    }
+
+
+    /**
+     * Handles deleted webmentions
+     *
+     * If a webmention was deleted after it was sent, handle it appropriately
+     * The webmention can be flagged as delete or be deleted
+     * @param mixed $webmention
+     * @return void
+     */
+    public function handleDeletedWebmention(mixed $webmention)
+    {
+        if ($this->options->get('webmentions.receive.delete', false) === true) {
+            // always delete webmentions from db if source is gone
+            $this->outbox->deleteIncomingWebmentionById($webmention->id);
+            return;
+        }
+
+        // delete if no data was processed until now
+        if ($webmention->status == WebmentionIncomingStatus::Pending) {
+            $this->outbox->deleteIncomingWebmentionById($webmention->id);
+            return;
+        }
+
+        // mark as deleted
+        $newStatus = $webmention->status == WebmentionIncomingStatus::Published
+            ? WebmentionIncomingStatus::PublishedDeleted
+            : WebmentionIncomingStatus::Deleted;
+
+        $this->outbox->updateWebmentionSourceStatus($webmention->id, $newStatus);
+
+        kirby()->trigger('indieConnector.webmention.deleted', [
+            'targetUrl' => $webmention->target_url,
+            'sourceUrl' => $webmention->source_url,
+        ]);
+    }
+
+
+    /**
+     * Checks the target and source URLs of an incoming Webmention
+     *
+     * @param array $postData
+     * @return array|bool array of URLs or false
+     */
+    public function getPostDataUrls(array $postData): array|bool
+    {
+        if (!isset($postData['source'])) {
+            FlowDebug::step('receiveWebmentions', '', 'getPostDataUrls', 'error', 'Source URL not set');
+            return false;
+        }
+
+        if (!isset($postData['target'])) {
+            FlowDebug::step('receiveWebmentions', '', 'getPostDataUrls', 'error', 'Target URL not set');
+            return false;
+        }
+
+        if (!$this->urlHandler->urlIsValid($postData['source'])) {
+            FlowDebug::step('receiveWebmentions', '', 'getPostDataUrls', 'warn', 'Invalid source URL');
+            return false;
+        }
+
+        if (!$this->urlHandler->urlIsValid($postData['target'])) {
+            FlowDebug::step('receiveWebmentions', '', 'getPostDataUrls', 'warn', 'Invalid target URL');
+            return false;
+        }
+
+        if ($this->urlHandler->isBlockedSource($postData['source'])) {
+            FlowDebug::step('receiveWebmentions', '', 'getPostDataUrls', 'info', 'Source is blocked');
+            return false;
+        }
+
+        return [
+            'source' => $postData['source'],
+            'target' => $postData['target'],
+        ];
+    }
+
+    /**
+     * Tries to find the kirby page matching the target URL
+     *
+     * @param string $url
+     * @return Page|bool Kirby page or false
+     */
+    protected function getPageFromUrl(string $url): Page|bool
+    {
+        $path = Url::path($url);
+
+        if ($path == '') {
+            $page = page(site()->homePageId());
+        } elseif (!($page = page($path))) {
+            $page = kirby()->router()->call($path, 'GET');
+
+            if (!$page) {
+                return false;
+            }
+
+            if ($page->isHomeOrErrorPage()) {
+                return false;
+            }
+        }
+
+        if (is_null($page)) {
+            return false;
+        }
+
+        return $page;
     }
 
     /**

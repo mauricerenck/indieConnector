@@ -12,85 +12,85 @@ class Receiver
         $this->receiveWebmention = $receiveWebmention ?? option('mauricerenck.indieConnector.receive.enabled', true);
     }
 
-    public function processIncomingWebmention($data)
-    {
-        $urlHandler = new UrlHandler();
-        $pageChecks = new PageChecks();
-
-        if (!$this->receiveWebmention) {
-            return new Response('Webmention receiving is disabled', 'text/plain', 405); // Method Not Allowed
-        }
-
-        $urls = $this->getPostDataUrls($data);
-        if (!$urlHandler->urlIsValid($urls['source'])) {
-            return new Response('Source URL is not valid', 'text/plain', 400); // Not Acceptable
-        }
-
-        if (!$urlHandler->urlIsValid($urls['target'])) {
-            return new Response('Target URL is not valid', 'text/plain', 400); // Not Acceptable
-        }
-
-        if ($urlHandler->isBlockedSource($urls['source'])) {
-            return new Response('Source URL is blocked', 'text/plain', 400); // Not Acceptable
-        }
-
-        $page = $this->getPageFromUrl($urls['target']);
-
-        if (!$page) {
-            return new Response('Target page not found', 'text/plain', 404);
-        }
-
-        if (!$pageChecks->pageHasNeededStatus($page)) {
-            return new Response('Target page not found', 'text/plain', 404);
-        }
-
-        return [
-            'status' => 'success',
-            'urls' => $urls,
-        ];
-    }
+    //     public function processIncomingWebmention($data)
+    //     {
+    //         $urlHandler = new UrlHandler();
+    //         $pageChecks = new PageChecks();
+    //
+    //         if (!$this->receiveWebmention) {
+    //             return new Response('Webmention receiving is disabled', 'text/plain', 405); // Method Not Allowed
+    //         }
+    //
+    //         $urls = $this->getPostDataUrls($data);
+    //         if (!$urlHandler->urlIsValid($urls['source'])) {
+    //             return new Response('Source URL is not valid', 'text/plain', 400); // Not Acceptable
+    //         }
+    //
+    //         if (!$urlHandler->urlIsValid($urls['target'])) {
+    //             return new Response('Target URL is not valid', 'text/plain', 400); // Not Acceptable
+    //         }
+    //
+    //         if ($urlHandler->isBlockedSource($urls['source'])) {
+    //             return new Response('Source URL is blocked', 'text/plain', 400); // Not Acceptable
+    //         }
+    //
+    //         $page = $this->getPageFromUrl($urls['target']);
+    //
+    //         if (!$page) {
+    //             return new Response('Target page not found', 'text/plain', 404);
+    //         }
+    //
+    //         if (!$pageChecks->pageHasNeededStatus($page)) {
+    //             return new Response('Target page not found', 'text/plain', 404);
+    //         }
+    //
+    //         return [
+    //             'status' => 'success',
+    //             'urls' => $urls,
+    //         ];
+    //     }
 
     public function hasValidSecret($postBody)
     {
         return isset($postBody['secret']) && $postBody['secret'] === option('mauricerenck.indieConnector.secret', '') && $postBody['secret'] !== '';
     }
 
-    public function getPostDataUrls($postBody): array|bool
-    {
-        if (isset($postBody['source']) && isset($postBody['target'])) {
-            return [
-                'source' => $postBody['source'],
-                'target' => $postBody['target'],
-            ];
-        }
+    //     public function getPostDataUrls($postBody): array|bool
+    //     {
+    //         if (isset($postBody['source']) && isset($postBody['target'])) {
+    //             return [
+    //                 'source' => $postBody['source'],
+    //                 'target' => $postBody['target'],
+    //             ];
+    //         }
+    //
+    //         return false;
+    //     }
 
-        return false;
-    }
-
-    public function getPageFromUrl(string $url): bool|object
-    {
-        $path = Url::path($url);
-
-        if ($path == '') {
-            $page = page(site()->homePageId());
-        } elseif (!($page = page($path))) {
-            $page = kirby()->router()->call($path, 'GET');
-
-            if (!$page) {
-                return false;
-            }
-
-            if ($page->isHomeOrErrorPage()) {
-                return false;
-            }
-        }
-
-        if (is_null($page)) {
-            return false;
-        }
-
-        return $page;
-    }
+    //     public function getPageFromUrl(string $url): bool|object
+    //     {
+    //         $path = Url::path($url);
+    //
+    //         if ($path == '') {
+    //             $page = page(site()->homePageId());
+    //         } elseif (!($page = page($path))) {
+    //             $page = kirby()->router()->call($path, 'GET');
+    //
+    //             if (!$page) {
+    //                 return false;
+    //             }
+    //
+    //             if ($page->isHomeOrErrorPage()) {
+    //                 return false;
+    //             }
+    //         }
+    //
+    //         if (is_null($page)) {
+    //             return false;
+    //         }
+    //
+    //         return $page;
+    //     }
 
     public function convertToHookData($data, array $urls)
     {

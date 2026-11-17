@@ -81,7 +81,7 @@ class IndieConnectorDatabase
             $result = $this->db->query($query, $values);
 
             if ($result === false) {
-                FlowDebug::step('indieDB', 'indieDB', 'update', 'error', '', [$this->db->lastError()]);
+                FlowDebug::step('indieDB', 'indieDB', 'insert', 'error', '', [$this->db->lastError()]);
                 return false;
             }
 
@@ -172,7 +172,7 @@ class IndieConnectorDatabase
             $result = $this->db->query($query, $values);
 
             if ($result === false) {
-                FlowDebug::step('indieDB', 'indieDB', 'update', 'error', '', [$this->db->lastError()]);
+                FlowDebug::step('indieDB', 'indieDB', 'upsert', 'error', '', [$this->db->lastError()]);
             }
 
             return true;
@@ -240,8 +240,8 @@ class IndieConnectorDatabase
                 $where,
             );
 
-            $result = $this->db->query($query, $bindings);
 
+            $result = $this->db->query($query, $bindings);
             if ($result === false) {
                 FlowDebug::step('indieDB', 'indieDB', 'update', 'error', '', [$this->db->lastError()]);
             }
@@ -298,7 +298,7 @@ class IndieConnectorDatabase
             $result =  $this->db->query($query, $bindings);
 
             if ($result === false) {
-                FlowDebug::step('indieDB', 'indieDB', 'update', 'error', '', [$this->db->lastError()]);
+                FlowDebug::step('indieDB', 'indieDB', 'select', 'error', '', [$this->db->lastError()]);
             }
 
             return $result;
@@ -351,7 +351,7 @@ class IndieConnectorDatabase
             $result = $this->db->query($query, $bindings);
 
             if ($result === false) {
-                FlowDebug::step('indieDB', 'indieDB', 'update', 'error', '', [$this->db->lastError()]);
+                FlowDebug::step('indieDB', 'indieDB', 'delete', 'error', '', [$this->db->lastError()]);
             }
 
             return true;
@@ -371,7 +371,7 @@ class IndieConnectorDatabase
             $result = $this->db->query("DELETE FROM {$table}");
 
             if ($result === false) {
-                FlowDebug::step('indieDB', 'indieDB', 'update', 'error', '', [$this->db->lastError()]);
+                FlowDebug::step('indieDB', 'indieDB', 'truncate', 'error', '', [$this->db->lastError()]);
             }
 
             return true;
