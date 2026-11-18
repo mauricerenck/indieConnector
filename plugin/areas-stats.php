@@ -7,15 +7,37 @@ return function () {
         'label' => 'IndieConnector',
         'icon' => 'live',
         'menu' => true,
-        'link' => 'webmentions',
+        'link' => 'indieconnector',
         'views' => [
             [
-                'pattern' => ['webmentions', 'webmentions/(:any)/(:any)'],
+                'pattern' => ['indieconnector', 'indieconnector/(:any)/(:any)'],
                 'action' => function ($year = null, $month = null) {
+                    $panelHandler = new PanelHandler();
 
-                    $queueHandler = new QueueHandler();
-                    $queuedItems = $queueHandler->getQueuedItems(limit: 0, includeFailed: true);
-                    $itemsInQueue = $queuedItems->count();
+                    if (is_null($year) || is_null($month)) {
+                        $timestamp = time();
+                        $year = date('Y', $timestamp);
+                        $month = date('m', $timestamp);
+                    }
+
+                    $defaultProps = [
+                        'year' => $year,
+                        'month' => $month,
+
+                        'summary' => [],
+                        'targets' => [],
+                        'sources' => [],
+                        'sent' => [],
+                        'itemsInQueue' => $itemsInQueue ?? 0
+                    ];
+
+                    $computedProps = $panelHandler->getWebmentionProps($year, $month);
+
+                    return [
+                        'component' => 'k-webmentions-view',
+                        'title' => 'Webmentions',
+                        'props' => array_merge($defaultProps, $computedProps),
+                    ];
 
                     if (is_null($year) || is_null($month)) {
                         $timestamp = time();
@@ -88,7 +110,7 @@ return function () {
                 },
             ],
             [
-                'pattern' => ['webmentions/queue'],
+                'pattern' => ['indieconnector/queue'],
                 'action' => function () {
                     $responseCollector = new ResponseCollector();
                     $queueHandler = new QueueHandler();
@@ -120,7 +142,7 @@ return function () {
                 }
             ],
             [
-                'pattern' => ['webmentions/status'],
+                'pattern' => ['indieconnector/status'],
                 'action' => function () {
                     return [
                         'component' => 'k-webmentions-status-view',

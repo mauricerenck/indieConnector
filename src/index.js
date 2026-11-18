@@ -12,14 +12,14 @@ import PluginStatus from './components/PluginStatus.vue'
 panel.plugin('mauricerenck/indieConnector', {
     components: {
         'k-webmentions-view': View,
+        'k-webmentions-queue-view': Queue,
+        'k-webmentions-status-view': PluginStatus,
         Targets: Targets,
         DetailsByMonth: DetailsByMonth,
         Sources: Sources,
         Sent: Sent,
-        'k-webmentions-queue-view': Queue,
         QueueList: QueueList,
         ResponseList: ResponseList,
-        'k-webmentions-status-view': PluginStatus,
     },
     fields: {
         icPostStatus: ExternalPostField,

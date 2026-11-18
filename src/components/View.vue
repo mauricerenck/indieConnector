@@ -18,12 +18,12 @@
                 <button class="k-link k-button" v-on:click="goToNextMonth"><k-icon type="angle-right" /></button>
             </div>
 
-            <DetailsByMonth :summary="summary" />
-            <Sources :sources="sources" :authors="authors" />
+            <!-- <DetailsByMonth :summary="summary" /> -->
+            <Sources :sources="sources" />
 
             <k-grid style="gap: 2rem; --columns: 2">
-                <Sent :outbox="sent" />
-                <Targets :targets="targets" />
+                <!-- <Sent :outbox="sent" /> -->
+                <!-- <Targets :targets="targets" /> -->
             </k-grid>
         </div>
     </k-panel-inside>
@@ -32,28 +32,37 @@
 <script>
 export default {
     props: {
-        year: Number,
-        month: Number,
-        nextYear: Number,
-        nextMonth: Number,
-        prevYear: Number,
-        prevMonth: Number,
+        year: String,
+        month: String,
+
         summary: Object,
         targets: { type: Array, default: [] },
-        sources: Array,
+        sources: Object,
         authors: Array,
         sent: Array,
         itemsInQueue: Number,
     },
-
+    data() {
+        return {
+            pagination: {
+                page: 1,
+                limit: 10,
+                total: 0,
+            },
+            processIndex: 0,
+            processRunning: false,
+        }
+    },
     methods: {
         goToPrevMonth() {
-            const panelPath = window.location.pathname.split('webmentions')
-            window.location.pathname = `${panelPath[0]}webmentions/${this.prevYear}/${this.prevMonth}`
+            const panelPath = window.location.pathname.split('indieconnector')
+            const newDate = this.$library.dayjs(`${this.year}-${this.month}-01`).subtract(1, 'month')
+            window.location.pathname = `${panelPath[0]}indieconnector/${newDate.format('YYYY/MM')}`
         },
         goToNextMonth() {
-            const panelPath = window.location.pathname.split('webmentions')
-            window.location.pathname = `${panelPath[0]}webmentions/${this.nextYear}/${this.nextMonth}`
+            const panelPath = window.location.pathname.split('indieconnector')
+            const newDate = this.$library.dayjs(`${this.year}-${this.month}-01`).add(1, 'month')
+            window.location.pathname = `${panelPath[0]}indieconnector/${newDate.format('YYYY/MM')}`
         },
     },
 }
