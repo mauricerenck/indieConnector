@@ -135,13 +135,22 @@ class UrlHandler
         return $blockedSourceUrl || $blockedSourceHost;
     }
 
+    /**
+     * Blocks a URL or a hostname
+     *
+     * @param string $url
+     * @param string $direction incoming or outgoing
+     * @param bool $hostOnly
+     * @return bool
+     */
     public function blockUrl(string $url, string $direction, bool $hostOnly): bool
     {
-        $url = $hostOnly ? Url::stripPath($url) : $url;
+        $url = $hostOnly ? Url::base($url) : $url;
 
         $dbResult = $this->indieDb->insert(
             table: 'blocked_urls',
-            values: ['url' => $url, 'direction' => $direction]
+            values: ['url' => $url, 'direction' => $direction],
+            ignoreDuplicates: true
         );
 
         return $dbResult;

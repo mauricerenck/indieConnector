@@ -5,6 +5,7 @@ namespace mauricerenck\IndieConnector;
 use Kirby\Toolkit\Collection;
 use Kirby\Data\Json;
 use Kirby\Uuid\Uuid;
+use Kirby\Http\Url;
 
 use Throwable;
 
@@ -25,7 +26,6 @@ class Outbox
         $this->outboxFilename =
             $outboxFilename ?? option('mauricerenck.indieConnector.send.outboxFilename', 'indieConnector.json');
     }
-
 
     /**
      * Adds one URL as target to the outbox
@@ -342,6 +342,57 @@ class Outbox
             }
 
             return $deleted;
+        } catch (Throwable $_e) {
+            return false;
+        }
+    }
+
+    /**
+     * Marks all webmentions matching the URL as blocked
+     *
+     * @param string $url the full URL
+     * @param string $direction incoming / outgoing
+     * @param bool $hostOnly only the host or the URL with path
+     * @return bool
+     */
+    public function markWebmentionAsBlocked(string $url, string $direction, bool $hostOnly): bool
+    {
+        try {
+            FlowDebug::step('outbox', $url, 'markWebmentionAsBlocked', 'info', '');
+            $table = $direction === 'incoming' ? 'webmentions_received' : 'webmentions_sent';
+            $urlField = $direction === 'incoming' ? 'source_url' : 'target_url';
+
+            if ($hostOnly) {
+                $base = Url::base($url);
+                if (empty($base)) {
+                    return false;
+                }
+
+                // LIKE-Wildcards escapen, '!' als Escape-Zeichen
+                $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $base);
+
+                $where = "({$urlField} = :base"
+                    . " OR {$urlField} LIKE :path ESCAPE '!'"
+                    . " OR {$urlField} LIKE :query ESCAPE '!'"
+                    . " OR {$urlField} LIKE :hash ESCAPE '!')";
+
+                $bindings = [
+                    'base'  => $base,
+                    'path'  => $escaped . '/%',
+                    'query' => $escaped . '?%',
+                    'hash'  => $escaped . '#%',
+                ];
+            } else {
+                $where    = "{$urlField} = :url";
+                $bindings = ['url' => $url];
+            }
+
+            return $this->indieDb->update(
+                table: $table,
+                values: ['status' => WebmentionIncomingStatus::Blocked->value],
+                where: $where,
+                bindings: $bindings
+            );
         } catch (Throwable $_e) {
             return false;
         }

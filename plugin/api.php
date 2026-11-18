@@ -80,12 +80,15 @@ return [
                 $postBody = kirby()->request()->data();
 
                 $urlHandler = new UrlHandler();
-                $urlHandler->blockUrl($postBody['url'], $postBody['direction'], $postBody['hostOnly']);
+                $result = $urlHandler->blockUrl($postBody['url'], $postBody['direction'], $postBody['hostOnly']);
 
-                $webmentionStats = new WebmentionStats();
-                $webmentionStats->updateOutboxStatus($postBody['id'], 'blocked');
+                kirby()->trigger('indieConnector.url.blocked', [
+                    'url' => $postBody['url'],
+                    'direction' => $postBody['direction'],
+                    'hostOnly' => $postBody['hostOnly'],
+                ]);
 
-                return new Response(json_encode([]), 'application/json');
+                return new Response(json_encode(['success' => $result]), 'application/json');
             },
         ],
     ],
