@@ -38,7 +38,7 @@ class IndieConnectorDatabase
         }
     }
 
-    public function insert(string $table, array $values): bool
+    public function insert(string $table, array $values, bool $ignoreDuplicates = false): bool
     {
         /*
         EXAMPLE:
@@ -71,13 +71,14 @@ class IndieConnectorDatabase
                 )
             );
 
+            $baseQuery = $ignoreDuplicates ? 'INSERT OR IGNORE INTO %s (%s) VALUES (%s)' : 'INSERT INTO %s (%s) VALUES (%s)';
             $query = sprintf(
-                'INSERT INTO %s (%s) VALUES (%s)',
+                $baseQuery,
                 $table,
                 $columns,
                 $placeholders
             );
-
+            FlowDebug::step('indieDB', 'indieDB', 'insert', 'info', '', [$query, $values]);
             $result = $this->db->query($query, $values);
 
             if ($result === false) {
@@ -90,7 +91,6 @@ class IndieConnectorDatabase
             return false;
         }
     }
-
 
     public function upsert(
         string $table,
@@ -240,6 +240,7 @@ class IndieConnectorDatabase
                 $where,
             );
 
+            FlowDebug::step('db', '', 'update', 'info', '', [$query, $bindings]);
 
             $result = $this->db->query($query, $bindings);
             if ($result === false) {
