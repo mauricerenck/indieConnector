@@ -1,6 +1,6 @@
 {
     "name": "mauricerenck/indieconnector",
-    "version": "2.15.8",
+    "version": "3.0.0",
     "description": "A Kirby IndieWeb plugin",
     "type": "kirby-plugin",
     "license": "MIT",
@@ -14,6 +14,11 @@
     "support": {
         "docs": "https://github.com/mauricerenck/indieConnector/blob/main/README.md",
         "source": "https://github.com/mauricerenck/indieConnector"
+    },
+    "extra": {
+        "kirby": {
+            "compatible": "^6.0"
+        }
     },
     "autoload": {
         "psr-4": {
@@ -32,16 +37,11 @@
         "cjrasmussen/bluesky-api": "^2.0"
     },
     "require-dev": {
-        "getkirby/cms": "^5",
+        "getkirby/cms": "^6",
         "phpunit/phpunit": "^12",
         "mockery/mockery": "^1.6"
     },
-    "replace": {
-        "mauricerenck/tratschtante": "*"
-    },
-    "suggests": {
-        "mauricerenck/komments": "2.0.5"
-    },
+    "minimum-stability": "beta",
     "config": {
         "optimize-autoloader": true,
         "allow-plugins": {
