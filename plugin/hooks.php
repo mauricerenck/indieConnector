@@ -159,6 +159,16 @@ return [
         //     $this->webmentionStats->trackOutgoingWebmentions($mergedUrls, $page);
         // }
     },
+    'indieConnector.url.blocked' => function (string $url, string $direction, string $hostOnly) {
+        /*
+        $url: the full url
+        $direction: incoming or outgoing
+        $hostOnly: true or false
+        */
+
+        $outbox = new Outbox();
+        $outbox->markWebmentionAsBlocked($url, $direction, $hostOnly);
+    },
 
 
 ];
