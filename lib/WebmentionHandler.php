@@ -26,6 +26,7 @@ enum WebmentionIncomingStatus: string
     case Deleted = 'DELETED';
     case PublishedDeleted = 'PUBLISHED_AND_DELETED';
     case Failed = 'FAILED';
+    case Blocked = 'BLOCKED';
 }
 
 class WebmentionHandler
@@ -523,7 +524,7 @@ class WebmentionHandler
 
         // no content received, mark as failed then quit processing
         // but only on pending state, otherwise we are updating and already have the data
-        if ($response['code'] !== 200 && $currentStatus == WebmentionIncomingStatus::Pending) {
+        if ($response['code'] !== 200 && $currentStatus === WebmentionIncomingStatus::Pending->value) {
             FlowDebug::step('receiveWebmentions', $webmentionId, 'processIncomingWebmention', 'warn', 'Source returned no content');
 
             $this->outbox->updateWebmentionSourceStatus($webmentionId, WebmentionIncomingStatus::Failed);
@@ -534,7 +535,7 @@ class WebmentionHandler
 
         // no microformats could be parsed, mark as failed then quit processing
         // but only on pending state, otherwise we are updating and already have the data
-        if (is_null($wmData) && $currentStatus == WebmentionIncomingStatus::Pending) {
+        if (is_null($wmData) && $currentStatus === WebmentionIncomingStatus::Pending->value) {
             FlowDebug::step('receiveWebmentions', $webmentionId, 'processIncomingWebmention', 'warn', 'No microformats available');
 
             $this->outbox->updateWebmentionSourceStatus($webmentionId, WebmentionIncomingStatus::Failed);
@@ -667,7 +668,6 @@ class WebmentionHandler
             'sourceUrl' => $webmention->source_url,
         ]);
     }
-
 
     /**
      * Checks the target and source URLs of an incoming Webmention
