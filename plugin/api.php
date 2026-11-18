@@ -91,5 +91,23 @@ return [
                 return new Response(json_encode(['success' => $result]), 'application/json');
             },
         ],
+        [
+            'pattern' => 'indieconnector/unblock/url',
+            'method' => 'POST',
+            'action' => function () {
+                $postBody = kirby()->request()->data();
+
+                $urlHandler = new UrlHandler();
+                $result = $urlHandler->unblockUrl($postBody['url'], $postBody['direction'], $postBody['hostOnly']);
+
+                kirby()->trigger('indieConnector.url.unblocked', [
+                    'url' => $postBody['url'],
+                    'direction' => $postBody['direction'],
+                    'hostOnly' => $postBody['hostOnly'],
+                ]);
+
+                return new Response(json_encode(['success' => $result]), 'application/json');
+            },
+        ],
     ],
 ];

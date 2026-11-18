@@ -169,6 +169,16 @@ return [
         $outbox = new Outbox();
         $outbox->markWebmentionAsBlocked($url, $direction, $hostOnly);
     },
+    'indieConnector.url.unblocked' => function (string $url, string $direction, string $hostOnly) {
+        /*
+        $url: the full url
+        $direction: incoming or outgoing
+        $hostOnly: true or false
+        */
+
+        $outbox = new Outbox();
+        $outbox->markWebmentionAsUnblocked($url, $direction, $hostOnly);
+    },
 
 
 ];

@@ -4,6 +4,7 @@
 
         <k-grid style="gap: 2rem; --columns: 3">
             <k-table
+                empty="No incoming webmentions yet"
                 :columns="{
                     icon: { label: '', type: 'html', width: '40px', align: 'center' },
                     source: { label: 'Website', type: 'html' },
@@ -81,9 +82,20 @@ export default {
         printNumberValue,
         renderIcon,
         blockEntry(row) {
-            console.log(row)
             panel.api
                 .post(`indieconnector/block/url`, {
+                    id: row.id,
+                    url: row.url,
+                    direction: 'incoming',
+                    hostOnly: true,
+                })
+                .then(_response => {
+                    row.icon = this.renderIcon('blocked')
+                })
+        },
+        unblockEntry(row) {
+            panel.api
+                .post(`indieconnector/unblock/url`, {
                     id: row.id,
                     url: row.url,
                     direction: 'incoming',
@@ -99,18 +111,29 @@ export default {
                 return
             }
 
-            return [
-                {
-                    label: 'Block Host',
-                    icon: 'protected',
-                    click: () => this.blockEntry(row, true),
-                },
+            const entries = [
                 {
                     label: 'Visit User',
                     icon: 'url',
                     click: () => window.open(row.url, '_blank'),
                 },
             ]
+
+            if (!row.blocked) {
+                entries.push({
+                    label: 'Block Host',
+                    icon: 'protected',
+                    click: () => this.blockEntry(row),
+                })
+            } else {
+                entries.push({
+                    label: 'Unblock Host',
+                    icon: 'protected',
+                    click: () => this.unblockEntry(row),
+                })
+            }
+
+            return entries
         },
     },
     computed: {
@@ -144,6 +167,7 @@ export default {
                     bookmarks: this.printNumberValue(source.bookmarks),
                     url: source.source_url,
                     id: id,
+                    blocked: source.blocked,
                 }
 
                 this.pagination.total++

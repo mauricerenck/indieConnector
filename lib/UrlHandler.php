@@ -155,4 +155,24 @@ class UrlHandler
 
         return $dbResult;
     }
+
+    /**
+     * Blocks a URL or a hostname
+     *
+     * @param string $url
+     * @param string $direction incoming or outgoing
+     * @param bool $hostOnly
+     * @return bool
+     */
+    public function unblockUrl(string $url, string $direction, bool $hostOnly): bool
+    {
+        $url = $hostOnly ? Url::base($url) : $url;
+
+        $dbResult = $this->indieDb->delete(
+            table: 'blocked_urls',
+            where: ['url' => $url, 'direction' => $direction]
+        );
+
+        return $dbResult;
+    }
 }
