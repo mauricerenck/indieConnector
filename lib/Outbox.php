@@ -2,6 +2,7 @@
 
 namespace mauricerenck\IndieConnector;
 
+use Exception;
 use Kirby\Toolkit\Collection;
 use Kirby\Data\Json;
 use Kirby\Uuid\Uuid;
@@ -469,6 +470,65 @@ class Outbox
             );
         } catch (Throwable $_e) {
             return false;
+        }
+    }
+
+
+    /**
+     * Adds a post to the outbox
+     *
+     * @param string $pageUuid the uuid->id() of the page
+     * @param string $postContent the text of the post
+     * @param string $postUrl the full URL of the post
+     * @param string $postService mastodon or bluesky
+     * @param PostOutgoingStatus $status
+     * @return void
+     */
+    public function addPost(string $pageUuid, string $postContent, string $postUrl, string $postService, PostOutgoingStatus $status): void
+    {
+        FlowDebug::step('posts', $pageUuid, 'addPost', 'info', '', $postUrl);
+
+        $uuid = $this->createUuid();
+        $this->indieDb->insert(
+            table: 'posts_sent',
+            values: [
+                'id' => $uuid,
+                'page_uuid' => $pageUuid,
+                'post_content' => $postContent,
+                'post_service' => $postService,
+                'post_url' => $postUrl,
+                'active' => 1,
+                'last_fetched' => $pageUuid,
+                'status' => $status->value,
+            ]
+        );
+    }
+
+    /**
+     * Gets all posts of a page
+     *
+     * @param string $pageUuid the uuid->id() of the page
+     * @return mixed
+     */
+    public function getPosts(string $pageUuid): mixed
+    {
+        try {
+            FlowDebug::step('posts', $pageUuid, 'getPosts', 'info');
+
+            $posts = $this->indieDb->select(
+                table: 'posts_sent',
+                fields: ['*'],
+                where: 'page_uuid = :pageUuid',
+                bindings: [
+                    'pageUuid' => $pageUuid
+                ]
+            );
+
+            FlowDebug::step('outbox', $pageUuid, 'getPosts', 'info', 'posts', $posts);
+            return $posts;
+        } catch (Exception $e) {
+            FlowDebug::step('outbox', $pageUuid, 'getPosts', 'error', '', $e);
+            return null;
         }
     }
 

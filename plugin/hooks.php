@@ -41,8 +41,18 @@ return [
     },
 
     'page.changeStatus:after' => function (Page $newPage, Page $oldPage) {
-        $webmentions = new WebmentionHandler();
-        $webmentions->sendWebmentions($newPage);
+        if (!$newPage->isDraft() && $oldPage->isDraft()) {
+            if (PluginOptions::get('webmentions.send.automatically', true) === true) {
+                $webmentions = new WebmentionHandler();
+                $webmentions->sendWebmentions($newPage);
+            }
+
+            if (PluginOptions::get('post.automatically', true) === true) {
+
+                $postHandler = new PostHandler();
+                $postHandler->createPosts($newPage);
+            }
+        }
 
         return; // FIXME
 
@@ -74,6 +84,7 @@ return [
     },
 
     'page.delete:after' => function ($page) {
+        // FIXME
         $webmentions = new WebmentionSender();
         if ($webmentions->markPageAsDeleted($page)) {
             $webmentions->sendWebmentions($page);
@@ -81,11 +92,13 @@ return [
     },
 
     'page.create:after' => function ($page) {
+        // FIXME
         $webmentions = new WebmentionSender();
         $webmentions->removePageFromDeleted($page);
     },
 
     'page.changeSlug:after' => function ($newPage) {
+        // FIXME
         $webmentions = new WebmentionSender();
         $webmentions->removePageFromDeleted($newPage);
     },
@@ -96,6 +109,7 @@ return [
     },
 
     'indieConnector.webmention.queue' => function ($targetUrl, $sourceUrl) {
+        // FIXME
         $queueHandler = new QueueHandler();
 
         if ($queueHandler->queueEnabled()) {
@@ -109,6 +123,7 @@ return [
     },
 
     'indieConnector.webmention.processQueue' => function ($limit) {
+        // FIXME
         $queueHandler = new QueueHandler();
 
         if ($queueHandler->queueEnabled()) {
@@ -120,6 +135,7 @@ return [
     },
 
     'indieConnector.webmention.received' => function ($webmention, $targetPage) {
+        // FIXME
         if (option('mauricerenck.indieConnector.stats.enabled', false)) {
             $stats = new WebmentionStats();
             $page = page($targetPage);
@@ -138,6 +154,7 @@ return [
     },
 
     'indieConnector.webmention.send' => function (Page $page, $targetUrl, $sourceUrl) {
+        // FIXME
         if (option('mauricerenck.indieConnector.send.hook.enabled', false)) {
             $webmentions = new WebmentionSender();
             $webmentions->sendWebmentionFromHook($page, $targetUrl, $sourceUrl);
