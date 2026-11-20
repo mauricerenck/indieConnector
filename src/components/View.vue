@@ -18,7 +18,7 @@
                 <button class="k-link k-button" v-on:click="goToNextMonth"><k-icon type="angle-right" /></button>
             </div>
 
-            <!-- <DetailsByMonth :summary="summary" /> -->
+            <WebmentionSummary :summary="summary" />
             <Sources :sources="sources" />
             <Targets :targets="targets" />
 

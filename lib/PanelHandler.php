@@ -31,9 +31,71 @@ class PanelHandler
         return [
             'year' => $year,
             'month' => $month,
+            'summary' => $this->getWebmentionSummary($year, $month),
             'sources' => $this->getWebmentionSources($year, $month),
             'targets' => $this->getWebmentionTargets($year, $month),
         ];
+    }
+
+    /**
+     * Get a webmention summary for a year and month
+     *
+     * @param string $year
+     * @param string $month
+     * @return array
+     */
+    public function getWebmentionSummary(string $year, string $month): array
+    {
+        FlowDebug::step('PanelHandler', '', 'getWebmentionSummary', 'info', '');
+
+        try {
+            [$in, $statusBindings] = $this->indieDb->inClause('status', [
+                WebmentionIncomingStatus::Published,
+                WebmentionIncomingStatus::PublishedDeleted,
+                WebmentionIncomingStatus::Blocked,
+            ]);
+
+            $result = $this->indieDb->select(
+                table: 'webmentions_received',
+                fields: ['*'],
+                where: "created_at LIKE :datestring AND status IN ({$in}) ORDER BY updated_at DESC",
+                bindings: ['datestring' => $year . '-' . $month . '-%'] + $statusBindings,
+            );
+
+            if (is_null($result)) {
+                FlowDebug::step('PanelHandler', '', 'getWebmentionSummary', 'info', 'No Results');
+                return [
+                    'summary' => 0,
+                    'likes' => 0,
+                    'replies' => 0,
+                    'reposts' => 0,
+                    'mentions' => 0,
+                    'bookmarks' => 0,
+                ];
+            }
+
+            $data = [
+                'summary' => $result->count() ?? 0,
+                'likes' => $result->filterBy('mention_type', 'like-of')->count() ?? 0,
+                'replies' => $result->filterBy('mention_type', 'in-reply-to')->count() ?? 0,
+                'reposts' => $result->filterBy('mention_type', 'repost-of')->count() ?? 0,
+                'mentions' => $result->filterBy('mention_type', 'mention-of')->count() ?? 0,
+                'bookmarks' => $result->filterBy('mention_type', 'bookmark-of')->count() ?? 0,
+            ];
+
+            FlowDebug::step('PanelHandler', '', 'getWebmentionSummary', 'info', 'summary', $data);
+            return $data;
+        } catch (Exception $e) {
+            FlowDebug::step('PanelHandler', '', 'getWebmentionSummary', 'error', 'summary', $e);
+            return [
+                'summary' => 0,
+                'likes' => 0,
+                'replies' => 0,
+                'reposts' => 0,
+                'mentions' => 0,
+                'bookmarks' => 0,
+            ];
+        }
     }
 
 
@@ -111,6 +173,7 @@ class PanelHandler
             return [];
         }
     }
+
     /**
      * Get all sent webmention for a year and month
      *

@@ -1,5 +1,5 @@
 import View from './components/View.vue'
-import DetailsByMonth from './components/DetailsByMonth.vue'
+import WebmentionSummary from './components/WebmentionSummary.vue'
 import Targets from './components/Targets.vue'
 import Sources from './components/Sources.vue'
 import Sent from './components/Sent.vue'
@@ -15,8 +15,8 @@ panel.plugin('mauricerenck/indieConnector', {
         'k-webmentions-queue-view': Queue,
         'k-webmentions-status-view': PluginStatus,
 
+        WebmentionSummary: WebmentionSummary,
         Targets: Targets,
-        DetailsByMonth: DetailsByMonth,
         Sources: Sources,
         Sent: Sent,
         QueueList: QueueList,

@@ -49,6 +49,7 @@
 </template>
 
 <script>
+import { printNumberValue } from '../helpers.js'
 export default {
     props: {
         summary: {
@@ -61,10 +62,7 @@ export default {
         },
     },
     methods: {
-        printNumberValue(value) {
-            const className = value === 0 ? 'muted' : ''
-            return `<span class="${className}">${value}</span>`
-        },
+        printNumberValue,
     },
     computed: {
         targetList() {
