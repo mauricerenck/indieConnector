@@ -3,6 +3,7 @@
 namespace mauricerenck\IndieConnector;
 
 use Kirby\Http\Url;
+use Kirby\Toolkit\Str;
 
 class Microformats
 {
@@ -106,7 +107,7 @@ class Microformats
                     if (in_array($property, $this->urlTypes)) {
                         $urls = $this->extractUrlsFromProperty($values);
 
-                        if($this->includesPageUrl($urls)) {
+                        if ($this->includesPageUrl($urls)) {
                             $types[] = $property;
                         }
                     }
@@ -159,9 +160,9 @@ class Microformats
             $url = null;
 
             if (isset($invitee['value'])) {
-                $url = $invitee['value'];
+                $url = Str::unhtml($invitee['value']);
             } elseif (isset($invitee['properties']['url'])) {
-                $url = $invitee['properties']['url'];
+                $url = Str::unhtml($invitee['properties']['url']);
             }
 
             if (is_null($url)) {
@@ -220,7 +221,7 @@ class Microformats
             $values = $this->returnArraySave($values);
             foreach ($values as $value) {
                 if (!is_null($value)) {
-                    $authorInfos[$key] = $value;
+                    $authorInfos[$key] = Str::unhtml($value);
                 }
             }
         }
@@ -236,7 +237,7 @@ class Microformats
 
         $name = $this->returnArraySave($hCard['properties']['name']);
 
-        return !isset($name[0]) ? null : $name[0];
+        return !isset($name[0]) ? null : Str::unhtml($name[0]);
     }
 
     public function getAuthorUrl(array $hCard): string|null
@@ -247,7 +248,7 @@ class Microformats
 
         $url = $this->returnArraySave($hCard['properties']['url']);
 
-        return !isset($url[0]) ? null : $url[0];
+        return !isset($url[0]) ? null : Str::unhtml($url[0]);
     }
 
     public function getAuthorPhoto(array $hCard): string|null
@@ -258,7 +259,7 @@ class Microformats
 
         $photo = $this->returnArraySave($hCard['properties']['photo']);
 
-        return !isset($photo[0]['value']) ? null : $photo[0]['value'];
+        return !isset($photo[0]['value']) ? null : Str::unhtml($photo[0]['value']);
     }
 
     public function getAuthorNote(array $hCard): string|null
@@ -269,7 +270,7 @@ class Microformats
 
         $note = $this->returnArraySave($hCard['properties']['note']);
 
-        return !isset($note[0]) ? null : $note[0];
+        return !isset($note[0]) ? null : Str::unhtml($note[0]);
     }
 
     public function getAuthorFromHCard(array $hCard)
@@ -317,7 +318,7 @@ class Microformats
             }
         }
 
-        return $summary ?? $content;
+        return Str::unhtml($summary) ?? $content;
     }
 
     public function getTitle(array $microformats)
@@ -330,7 +331,7 @@ class Microformats
             if (in_array('h-entry', $item['type'])) {
                 if (isset($item['properties'])) {
                     if (isset($item['properties']['name'])) {
-                        return $item['properties']['name'][0];
+                        return Str::unhtml($item['properties']['name'][0]);
                     }
                 }
             }
@@ -374,7 +375,7 @@ class Microformats
             if (in_array('h-entry', $item['type'])) {
                 if (isset($item['properties'])) {
                     if (isset($item['properties']['published'])) {
-                        return $item['properties']['published'][0];
+                        return Str::unhtml($item['properties']['published'][0]);
                     }
                 }
             }
