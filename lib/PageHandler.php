@@ -82,7 +82,7 @@ class PageHandler
     {
         $opt_blockedTemplates = $type === 'post'
             ? $this->options->get('post.blockedTemplates', [])
-            : $this->options->get('send.blockedTemplates', []);
+            : $this->options->get('webmentions.send.blockedTemplates', []);
 
         return in_array($template, $opt_blockedTemplates);
     }
@@ -98,7 +98,7 @@ class PageHandler
     {
         $opt_allowedTemplates = $type === 'post'
             ? $this->options->get('post.allowedTemplates', [])
-            : $this->options->get('send.allowedTemplates', []);
+            : $this->options->get('webmentions.send.allowedTemplates', []);
 
         return in_array($template, $opt_allowedTemplates);
     }
@@ -124,7 +124,7 @@ class PageHandler
     public function findUrls(Page $page)
     {
         FlowDebug::step('sendWebmentions', $page->uuid()->id(), 'PageHandler:findUrls', 'info');
-        $opt_fieldsToParseUrls = $this->options->get('send.urlFields', ['text:text', 'description:text', 'intro:text']);
+        $opt_fieldsToParseUrls = $this->options->get('webmentions.send.urlFields', ['text:text', 'description:text', 'intro:text']);
         FlowDebug::step('sendWebmentions', $page->uuid()->id(), 'PageHandler:findUrls', 'info', 'fields to parse', $opt_fieldsToParseUrls);
 
         $htmlParts = [];

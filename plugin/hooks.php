@@ -8,21 +8,20 @@ return [
     'page.update:before' => function (Page $page) {
         FlowDebug::step('sendWebmentions', $page->uuid()->id(), 'page.update:before', 'info');
 
-        $webmentions = new WebmentionHandler();
-        $webmentions->registerPageUrls($page);
+        if (PluginOptions::get('webmentions.send.automatically', true) === true) {
+            $webmentions = new WebmentionHandler();
+            $webmentions->registerPageUrls($page);
+        }
     },
 
     'page.update:after' => function ($newPage, $oldPage) {
-        $webmentions = new WebmentionHandler();
-        $webmentions->sendWebmentions($newPage);
+        if (PluginOptions::get('webmentions.send.automatically', true) === true) {
+            $webmentions = new WebmentionHandler();
+            $webmentions->sendWebmentions($newPage);
+        }
 
         return; //FIXME
         $responseCollector = new ResponseCollector();
-
-        if (option('mauricerenck.indieConnector.send.automatically', true)) {
-            $webmentions = new WebmentionSender();
-            $webmentions->sendWebmentions($newPage);
-        }
 
         if ($mastodonUrl = $newPage->mastodonStatusUrl()) {
             if ($oldPage->mastodonStatusUrl() === $mastodonUrl || $mastodonUrl->isEmpty()) {

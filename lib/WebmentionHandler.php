@@ -64,7 +64,7 @@ class WebmentionHandler
         $this->correlationId = $page->uuid()->id();
         FlowDebug::step('sendWebmentions', $this->correlationId, 'sendWebmentions', 'info');
 
-        if ($this->options->get('send.enabled', true) === false) {
+        if ($this->options->get('webmentions.send.enabled', true) === false) {
             FlowDebug::step('sendWebmentions', $this->correlationId, 'sendWebmentions', 'info', 'Sending disabled via options');
             return;
         }
@@ -389,7 +389,7 @@ class WebmentionHandler
      */
     public function receiveWebmention(array $postData)
     {
-        if ($this->options->get('receive.enabled', true) === false) {
+        if ($this->options->get('webmentions.receive.enabled', true) === false) {
             FlowDebug::step('receiveWebmentions', '', 'receiveWebmention', 'info', 'Receiving disabled via options');
             return new Response('Receiving Webmentions is disabled', 'text/plain', 410); // Gone
         }
