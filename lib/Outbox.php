@@ -152,6 +152,29 @@ class Outbox
         );
     }
 
+    /**
+     * Updates a webmention target
+     *
+     * @param string $pageUuid
+     * @param string $targetUrl
+     * @param array $updates
+     * @return void
+     */
+    public function updateWebmentionTarget(string $pageUuid, string $targetUrl, array $updates): void
+    {
+        FlowDebug::step('outbox', $pageUuid, 'updateWebmentionTarget', 'info', '', [$targetUrl, $updates]);
+
+        $this->indieDb->update(
+            table: 'webmentions_sent',
+            values: $updates,
+            where: 'page_uuid = :pageUuid AND target_url = :targetUrl',
+            bindings: [
+                'pageUuid' => $pageUuid,
+                'targetUrl' => $targetUrl
+            ]
+        );
+    }
+
 
     /**
      * Adds a received Webmention to the database
@@ -210,7 +233,7 @@ class Outbox
     }
 
     /**
-     * Updates a webmention source status
+     * Updates a webmention source
      *
      * @param string $webmentionId
      * @param array $updates
@@ -218,7 +241,7 @@ class Outbox
      */
     public function updateWebmentionSource(string $webmentionId, array $updates): void
     {
-        FlowDebug::step('outbox', $webmentionId, 'updateWebmentionSourceStatus', 'info', '', [$webmentionId, $updates]);
+        FlowDebug::step('outbox', $webmentionId, 'updateWebmentionSource', 'info', '', [$webmentionId, $updates]);
 
         $this->indieDb->update(
             table: 'webmentions_received',
@@ -389,7 +412,7 @@ class Outbox
 
             return $this->indieDb->update(
                 table: $table,
-                values: ['status' => WebmentionIncomingStatus::Blocked->value],
+                values: ['blocked' => 1],
                 where: $where,
                 bindings: $bindings
             );
@@ -440,7 +463,7 @@ class Outbox
 
             return $this->indieDb->update(
                 table: $table,
-                values: ['status' => WebmentionIncomingStatus::Pending->value],
+                values: ['blocked' => 0],
                 where: $where,
                 bindings: $bindings
             );

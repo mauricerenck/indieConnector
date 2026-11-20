@@ -47,6 +47,7 @@ class WebmentionHandler
         $this->pageHandler = $pageHandler ?? new PageHandler();
         $this->outbox = $outbox ?? new Outbox();
         $this->urlHandler = $urlHandler ?? new UrlHandler();
+        $this->correlationId = '';
     }
 
 
@@ -206,6 +207,20 @@ class WebmentionHandler
                 targetUrl: $targetUrl,
                 newStatus: WebmentionOutgoingStatus::Sent
             );
+
+            $response = $this->getDataFromSource($targetUrl);
+            if ($response['code'] === 200) {
+
+                $targetData = $this->transformSourceContent($response['html'], $targetUrl, $sourceUrl);
+                FlowDebug::step('receiveWebmentions', $sourceUrl, 'sendSingleWebmention', 'info', 'received target information', [$targetData]);
+
+                if (!is_null($targetData)) {
+                    $this->outbox->updateWebmentionTarget($pageUuid, $targetUrl, [
+                        'target_name' => $targetData['title'] ?? '',
+                        'target_avatar' => $targetData['author']['photo'] ?? '',
+                    ]);
+                }
+            }
 
             // trigger hook
             kirby()->trigger('indieConnector.webmention.sent:success', [
@@ -614,6 +629,7 @@ class WebmentionHandler
                 FlowDebug::step('receiveWebmentions', $sourceUrl, 'transformSourceContent', 'info', 'no items in microformats', [$mf]);
                 return null;
             }
+
 
             // TODO der handler muss überarbeitet werden
             $mf2 = new Microformats($targetUrl);

@@ -4,6 +4,7 @@ namespace mauricerenck\IndieConnector;
 
 $panelButtons = include_once __DIR__ . '/areas-buttons.php';
 $panelDialogs = include_once __DIR__ . '/areas-dialogs.php';
+$panelDrawers = include_once __DIR__ . '/areas-drawers.php';
 
 $panelStats = [];
 if (PluginOptions::get('panel.view.enabled', true) === true) {
@@ -14,6 +15,7 @@ return [
     'webmentions' => $panelStats,
     'site' => [
         'buttons' => $panelButtons,
-        // 'dialogs' => $panelDialogs,
+        'dialogs' => $panelDialogs,
+        'drawers' => $panelDrawers,
     ],
 ];

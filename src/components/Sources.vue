@@ -1,65 +1,65 @@
 <template>
     <div>
-        <k-headline tag="h2">Sources</k-headline>
+        <k-headline tag="h2">Received Webmentions</k-headline>
 
-        <k-grid style="gap: 2rem; --columns: 3">
-            <k-table
-                empty="No incoming webmentions yet"
-                :columns="{
-                    icon: { label: '', type: 'html', width: '40px', align: 'center' },
-                    source: { label: 'Website', type: 'html' },
-                    likes: { label: 'likes', type: 'html', width: '40px', align: 'center' },
-                    replies: { label: 'replies', type: 'html', width: '40px', align: 'center' },
-                    reposts: { label: 'reposts', type: 'html', width: '40px', align: 'center' },
-                    mentions: { label: 'mentions', type: 'html', width: '40px', align: 'center' },
-                    bookmarks: { label: 'bookmarks', type: 'html', width: '40px', align: 'center' },
-                }"
-                :index="false"
-                :rows="sourceList"
-                :pagination="{
-                    page: pagination.page,
-                    limit: pagination.limit,
-                    total: pagination.total,
-                    details: true,
-                }"
-                @paginate="pagination.page = $event.page"
-                style="--width: 2/3"
-            >
-                <template #header="{ columnIndex, label}">
-                    <span>
-                        <k-icon
-                            v-if="columnIndex === 'likes'"
-                            type="heart-filled"
-                            style="color: light-dark(var(--color-red-700),var(--color-red-300));"
-                        />
-                        <k-icon
-                            v-else-if="columnIndex === 'replies'"
-                            type="chat"
-                            style="color: light-dark(var(--color-yellow-700),var(--color-yellow-300));"
-                        />
-                        <k-icon
-                            v-else-if="columnIndex === 'reposts'"
-                            type="indie-repost"
-                            style="color: light-dark(var(--color-green-700),var(--color-green-300));"
-                        />
-                        <k-icon
-                            v-else-if="columnIndex === 'mentions'"
-                            type="indie-mention"
-                            style="color: light-dark(var(--color-blue-700),var(--color-blue-300));"
-                        />
-                        <k-icon
-                            v-else-if="columnIndex === 'bookmarks'"
-                            type="bookmark"
-                            style="color: light-dark(var(--color-purple-700),var(--color-purple-300));"
-                        />
-                        <span v-else>{{ label }}</span>
-                    </span>
-                </template>
-                <template #options="{ row }">
-                    <k-options-dropdown :options="dropdownOptions(row)" />
-                </template>
-            </k-table>
-        </k-grid>
+        <k-table
+            empty="No incoming webmentions yet"
+            :columns="{
+                icon: { label: '', type: 'html', width: '40px', align: 'center' },
+                source: { label: 'Source', type: 'html' },
+                target: { label: 'Target', type: 'html' },
+                updated_at: { label: 'Last update', align: 'right' },
+                likes: { label: 'likes', type: 'html', width: '40px', align: 'center' },
+                replies: { label: 'replies', type: 'html', width: '40px', align: 'center' },
+                reposts: { label: 'reposts', type: 'html', width: '40px', align: 'center' },
+                mentions: { label: 'mentions', type: 'html', width: '40px', align: 'center' },
+                bookmarks: { label: 'bookmarks', type: 'html', width: '40px', align: 'center' },
+            }"
+            :index="false"
+            :rows="sourceList"
+            :pagination="{
+                page: pagination.page,
+                limit: pagination.limit,
+                total: pagination.total,
+                details: true,
+            }"
+            @paginate="pagination.page = $event.page"
+            style="--width: 2/3"
+        >
+            <template #header="{ columnIndex, label}">
+                <span>
+                    <k-icon
+                        v-if="columnIndex === 'likes'"
+                        type="heart-filled"
+                        style="color: light-dark(var(--color-red-700),var(--color-red-300));"
+                    />
+                    <k-icon
+                        v-else-if="columnIndex === 'replies'"
+                        type="chat"
+                        style="color: light-dark(var(--color-yellow-700),var(--color-yellow-300));"
+                    />
+                    <k-icon
+                        v-else-if="columnIndex === 'reposts'"
+                        type="indie-repost"
+                        style="color: light-dark(var(--color-green-700),var(--color-green-300));"
+                    />
+                    <k-icon
+                        v-else-if="columnIndex === 'mentions'"
+                        type="indie-mention"
+                        style="color: light-dark(var(--color-blue-700),var(--color-blue-300));"
+                    />
+                    <k-icon
+                        v-else-if="columnIndex === 'bookmarks'"
+                        type="bookmark"
+                        style="color: light-dark(var(--color-purple-700),var(--color-purple-300));"
+                    />
+                    <span v-else>{{ label }}</span>
+                </span>
+            </template>
+            <template #options="{ row }">
+                <k-options-dropdown :options="dropdownOptions(row)" />
+            </template>
+        </k-table>
     </div>
 </template>
 
@@ -81,25 +81,25 @@ export default {
     methods: {
         printNumberValue,
         renderIcon,
-        blockEntry(row) {
+        blockEntry(row, hostOnly) {
             panel.api
                 .post(`indieconnector/block/url`, {
                     id: row.id,
-                    url: row.url,
+                    url: row.source_url,
                     direction: 'incoming',
-                    hostOnly: true,
+                    hostOnly: hostOnly,
                 })
                 .then(_response => {
                     row.icon = this.renderIcon('blocked')
                 })
         },
-        unblockEntry(row) {
+        unblockEntry(row, hostOnly) {
             panel.api
                 .post(`indieconnector/unblock/url`, {
                     id: row.id,
-                    url: row.url,
+                    url: row.source_url,
                     direction: 'incoming',
-                    hostOnly: true,
+                    hostOnly: hostOnly,
                 })
                 .then(_response => {
                     row.icon = this.renderIcon('blocked')
@@ -113,23 +113,56 @@ export default {
 
             const entries = [
                 {
-                    label: 'Visit User',
-                    icon: 'url',
-                    click: () => window.open(row.url, '_blank'),
+                    label: 'Open Page',
+                    icon: 'open',
+                    click: () => window.open(row.target_url, '_blank'),
                 },
+                {
+                    label: 'Open in panel',
+                    icon: 'kirby',
+                    link: row.target_panel_url,
+                },
+                '-',
+                {
+                    label: 'Visit Source Profile',
+                    icon: 'user',
+                    link: row.source_profile_url,
+                    target: '_blank',
+                },
+                {
+                    label: 'Visit Source Page',
+                    icon: 'open',
+                    link: row.source_url,
+                    target: '_blank',
+                },
+                '-',
             ]
 
             if (!row.blocked) {
                 entries.push({
                     label: 'Block Host',
                     icon: 'protected',
-                    click: () => this.blockEntry(row),
+                    theme: 'red',
+                    click: () => this.blockEntry(row, true),
+                })
+                entries.push({
+                    label: 'Block URL',
+                    icon: 'protected',
+                    theme: 'red',
+                    click: () => this.blockEntry(row, false),
                 })
             } else {
                 entries.push({
                     label: 'Unblock Host',
                     icon: 'protected',
-                    click: () => this.unblockEntry(row),
+                    theme: 'green',
+                    click: () => this.unblockEntry(row, true),
+                })
+                entries.push({
+                    label: 'Unblock URL',
+                    icon: 'protected',
+                    theme: 'green',
+                    click: () => this.unblockEntry(row, false),
                 })
             }
 
@@ -145,8 +178,8 @@ export default {
             this.pagination.total = 0
 
             Object.entries(this.sources).forEach(([id, source]) => {
-                let avatar = !source.source_profile_url
-                    ? `<img src="${source.source_profile_url}" alt="avatar" class="avatar>`
+                let avatar = !source.source_avatar
+                    ? `<img src="${source.source_avatar}" alt="avatar" class="avatar>`
                     : this.renderIcon('web', 'source-avatar-icon')
 
                 let isBlocked = ''
@@ -160,12 +193,21 @@ export default {
                     source: this.$h(
                         `<a href="${source.source_url}" class="source-entry">${source.source_name} ${isBlocked}</a>`
                     ),
+                    target: this.$h(
+                        `<a href="${source.target_panel_url}" class="source-entry">${source.target_name}</a>`
+                    ),
+
+                    updated_at: this.$library.dayjs(source.updated_at).format('YYYY-MM-DD HH:mm'),
                     likes: this.printNumberValue(source.likes),
                     replies: this.printNumberValue(source.replies),
                     reposts: this.printNumberValue(source.reposts),
                     mentions: this.printNumberValue(source.mentions),
                     bookmarks: this.printNumberValue(source.bookmarks),
-                    url: source.source_url,
+                    source_id: source.source_id,
+                    source_url: source.source_url,
+                    source_profile_url: source.source_profile_url,
+                    target_url: source.target_url,
+                    target_panel_url: source.target_panel_url,
                     id: id,
                     blocked: source.blocked,
                 }

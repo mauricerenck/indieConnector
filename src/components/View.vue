@@ -20,10 +20,10 @@
 
             <!-- <DetailsByMonth :summary="summary" /> -->
             <Sources :sources="sources" />
+            <Targets :targets="targets" />
 
             <k-grid style="gap: 2rem; --columns: 2">
                 <!-- <Sent :outbox="sent" /> -->
-                <!-- <Targets :targets="targets" /> -->
             </k-grid>
         </div>
     </k-panel-inside>
@@ -36,7 +36,7 @@ export default {
         month: String,
 
         summary: Object,
-        targets: { type: Array, default: [] },
+        targets: Object,
         sources: Object,
         authors: Array,
         sent: Array,

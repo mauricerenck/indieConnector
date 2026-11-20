@@ -14,6 +14,7 @@ panel.plugin('mauricerenck/indieConnector', {
         'k-webmentions-view': View,
         'k-webmentions-queue-view': Queue,
         'k-webmentions-status-view': PluginStatus,
+
         Targets: Targets,
         DetailsByMonth: DetailsByMonth,
         Sources: Sources,

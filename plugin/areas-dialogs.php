@@ -131,5 +131,5 @@ return [
                 return throw new Exception('Failed to send post to Mastodon: ' . $e->getMessage());
             }
         },
-    ]
+    ],
 ];
