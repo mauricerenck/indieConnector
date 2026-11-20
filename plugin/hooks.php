@@ -179,6 +179,4 @@ return [
         $outbox = new Outbox();
         $outbox->markWebmentionAsUnblocked($url, $direction, $hostOnly);
     },
-
-
 ];
