@@ -20,7 +20,7 @@
             :pagination="{
                 page: pagination.page,
                 limit: pagination.limit,
-                total: pagination.total,
+                total: sourceEntries.length,
                 details: true,
             }"
             @paginate="pagination.page = $event.page"
@@ -74,7 +74,6 @@ export default {
             pagination: {
                 page: 1,
                 limit: 10,
-                total: 0,
             },
         }
     },
@@ -174,8 +173,10 @@ export default {
             return (this.pagination.page - 1) * this.pagination.limit + 1
         },
         sourceList() {
+            return this.sourceEntries.slice(this.index - 1, this.pagination.limit * this.pagination.page)
+        },
+        sourceEntries() {
             const sources = []
-            this.pagination.total = 0
 
             Object.entries(this.sources).forEach(([id, source]) => {
                 let avatar = !source.source_avatar
@@ -212,11 +213,10 @@ export default {
                     blocked: source.blocked,
                 }
 
-                this.pagination.total++
                 sources.push(newSource)
             })
 
-            return sources.slice(this.index - 1, this.pagination.limit * this.pagination.page)
+            return sources
         },
     },
 }

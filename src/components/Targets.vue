@@ -16,7 +16,7 @@
             :pagination="{
                 page: pagination.page,
                 limit: pagination.limit,
-                total: pagination.total,
+                total: targetEntries.length,
                 details: true,
             }"
             @paginate="pagination.page = $event.page"
@@ -46,7 +46,6 @@ export default {
             pagination: {
                 page: 1,
                 limit: 10,
-                total: 0,
             },
         }
     },
@@ -139,8 +138,10 @@ export default {
             return (this.pagination.page - 1) * this.pagination.limit + 1
         },
         targetList() {
+            return this.targetEntries.slice(this.index - 1, this.pagination.limit * this.pagination.page)
+        },
+        targetEntries() {
             const targets = []
-            this.pagination.total = 0
 
             Object.entries(this.targets).forEach(([id, target]) => {
                 let avatar = !target.target_avatar
@@ -186,11 +187,10 @@ export default {
                     status: statusIcon,
                 }
 
-                this.pagination.total++
                 targets.push(newTarget)
             })
 
-            return targets.slice(this.index - 1, this.pagination.limit * this.pagination.page)
+            return targets
         },
     },
 }
