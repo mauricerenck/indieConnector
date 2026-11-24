@@ -1,6 +1,6 @@
 {
     "name": "indieconnector",
-    "version": "2.15.8",
+    "version": "2.15.9",
     "description": "A webmention plugin for Kirby",
     "main": "index.js",
     "author": "Maurice Renck",

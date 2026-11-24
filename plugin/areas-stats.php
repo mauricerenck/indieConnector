@@ -2,6 +2,9 @@
 
 namespace mauricerenck\IndieConnector;
 
+use Kirby\Toolkit\Escape;
+use Kirby\Toolkit\HtmlString;
+
 return function () {
     return [
         'label' => 'IndieConnector',
@@ -341,7 +344,7 @@ return function () {
                     return [
                         'component' => 'k-remove-dialog',
                         'props' => [
-                            'text' => 'This will delete all entries with the status <strong>' . $status . '</strong>. Do you really want to proceed?'
+                            'text' => new HtmlString('This will delete all entries with the status <strong>' . Escape::html($status) . '</strong>. Do you really want to proceed?')
                         ]
                     ];
                 },

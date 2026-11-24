@@ -16,6 +16,7 @@ return array(
     'cjrasmussen\\BlueskyApi\\BlueskyApi' => $vendorDir . '/cjrasmussen/bluesky-api/src/BlueskyApi.php',
     'cjrasmussen\\BlueskyApi\\BlueskyApiSessionHelper' => $vendorDir . '/cjrasmussen/bluesky-api/src/BlueskyApiSessionHelper.php',
     'mauricerenck\\IndieConnector\\Bluesky' => $baseDir . '/lib/Bluesky.php',
+    'mauricerenck\\IndieConnector\\ExternalPostField' => $baseDir . '/lib/ExternalPostField.php',
     'mauricerenck\\IndieConnector\\ExternalPostSender' => $baseDir . '/lib/ExternalPostSender.php',
     'mauricerenck\\IndieConnector\\IndieConnectorDatabase' => $baseDir . '/lib/Database.php',
     'mauricerenck\\IndieConnector\\Mastodon' => $baseDir . '/lib/Mastodon.php',
