@@ -71,6 +71,7 @@ class ExternalPostSender extends Sender
             return false;
         }
 
+        // FIXME
         if ($this->alreadySentToTarget('bluesky', $page)) {
             return false;
         }
@@ -78,76 +79,76 @@ class ExternalPostSender extends Sender
         return true;
     }
 
-    public function getTextFieldContent($page): string
-    {
-        $pageOfLanguage = !$this->prefereLanguage ? null : $page->translation($this->prefereLanguage);
-        $content = !is_null($pageOfLanguage) ? $pageOfLanguage->content() : $page->content()->toArray();
+    //     public function getTextFieldContent($page): string
+    //     {
+    //         $pageOfLanguage = !$this->prefereLanguage ? null : $page->translation($this->prefereLanguage);
+    //         $content = !is_null($pageOfLanguage) ? $pageOfLanguage->content() : $page->content()->toArray();
+    //
+    //         if (is_array($this->textfields)) {
+    //             foreach ($this->textfields as $field) {
+    //                 $lowercaseField = strtolower($field);
+    //                 if (isset($content[$lowercaseField]) && !empty($content[$lowercaseField])) {
+    //                     return $content[$lowercaseField];
+    //                 }
+    //             }
+    //         }
+    //
+    //         $field = $this->textfields;
+    //         if (!is_array($this->textfields) && isset($content[$field]) && !empty($content[$field])) {
+    //             return $content[$field];
+    //         }
+    //
+    //         return isset($content['title']) ? $content['title'] : '';
+    //     }
 
-        if (is_array($this->textfields)) {
-            foreach ($this->textfields as $field) {
-                $lowercaseField = strtolower($field);
-                if (isset($content[$lowercaseField]) && !empty($content[$lowercaseField])) {
-                    return $content[$lowercaseField];
-                }
-            }
-        }
+    //     public function getPostTags($page): string
+    //     {
+    //         if (is_null($this->tagsField)) {
+    //             return '';
+    //         }
+    //
+    //         if (empty($this->tagsField)) {
+    //             return '';
+    //         }
+    //
+    //         $lowercaseTagField = strtolower($this->tagsField);
+    //
+    //         if ($page->{$lowercaseTagField}()->isEmpty()) {
+    //             return '';
+    //         }
+    //
+    //         $tags = $page->{$lowercaseTagField}()->split();
+    //
+    //         if (count($tags) > 0) {
+    //             return '#' . implode(' #', $tags);
+    //         }
+    //
+    //         return '';
+    //     }
 
-        $field = $this->textfields;
-        if (!is_array($this->textfields) && isset($content[$field]) && !empty($content[$field])) {
-            return $content[$field];
-        }
-
-        return isset($content['title']) ? $content['title'] : '';
-    }
-
-    public function getPostTags($page): string
-    {
-        if (is_null($this->tagsField)) {
-            return '';
-        }
-
-        if (empty($this->tagsField)) {
-            return '';
-        }
-
-        $lowercaseTagField = strtolower($this->tagsField);
-
-        if ($page->{$lowercaseTagField}()->isEmpty()) {
-            return '';
-        }
-
-        $tags = $page->{$lowercaseTagField}()->split();
-
-        if (count($tags) > 0) {
-            return '#' . implode(' #', $tags);
-        }
-
-        return '';
-    }
-
-    public function getPostUrl($page): string
-    {
-        if ($this->skipUrl) {
-            return '';
-        }
-
-        $normalizedIntendedTemplate = strtolower($page->intendedTemplate()->name());
-        if (in_array($normalizedIntendedTemplate, $this->skipUrlTemplates)) {
-            return '';
-        }
-
-        if (!is_null($page->icSkipUrl()) && $page->icSkipUrl()->isTrue()) {
-            return '';
-        }
-
-        $url = $page->url($this->prefereLanguage);
-
-        if ($this->usePermalinkUrl) {
-            $url = $page->permalink();
-        }
-
-        return $url;
-    }
+    //     public function getPostUrl($page): string
+    //     {
+    //         if ($this->skipUrl) {
+    //             return '';
+    //         }
+    //
+    //         $normalizedIntendedTemplate = strtolower($page->intendedTemplate()->name());
+    //         if (in_array($normalizedIntendedTemplate, $this->skipUrlTemplates)) {
+    //             return '';
+    //         }
+    //
+    //         if (!is_null($page->icSkipUrl()) && $page->icSkipUrl()->isTrue()) {
+    //             return '';
+    //         }
+    //
+    //         $url = $page->url($this->prefereLanguage);
+    //
+    //         if ($this->usePermalinkUrl) {
+    //             $url = $page->permalink();
+    //         }
+    //
+    //         return $url;
+    //     }
 
     public function calculatePostTextLength(string $url)
     {
@@ -155,80 +156,80 @@ class ExternalPostSender extends Sender
         return $this->maxPostLength - $urlLength - 2;
     }
 
-    public function getTrimmedFullMessage($page, string $service,  string | null $manualTextMessage = null): string
-    {
-        $maxLength = $service == 'mastodon' ? $this->maxPostLength : 300;
-        $appendix = '...';
+    //     public function getTrimmedFullMessage($page, string $service,  string | null $manualTextMessage = null): string
+    //     {
+    //         $maxLength = $service == 'mastodon' ? $this->maxPostLength : 300;
+    //         $appendix = '...';
+    //
+    //         $appendixLength = Str::length($appendix);
+    //         $linebreakLength = 1;
+    //         $metaTextLength = $appendixLength; // FIXME until kirby bug is not fixed @see https://github.com/getkirby/kirby/issues/7722
+    //
+    //         $url = $this->getPostUrl($page);
+    //         $tags = $this->getPostTags($page);
+    //         $text = is_null($manualTextMessage) ? $this->getTextFieldContent($page) : $manualTextMessage;
+    //         $message = $this->keepMarkdown ? $text : strip_tags(kirby()->kirbytext($text));
+    //
+    //         $urlLength = Str::length($url);
+    //         $tagsLength = Str::length($tags);
+    //
+    //         if ($urlLength > 0) {
+    //             $metaTextLength += $urlLength + $linebreakLength;
+    //         }
+    //
+    //         if ($this->neverTrimTags && $tagsLength > 0) {
+    //             $metaTextLength += $tagsLength + $linebreakLength * 2;
+    //         }
+    //
+    //         $maxLength -= $metaTextLength;
+    //         $fullMessage = Str::Short($message, $maxLength, $appendix);
+    //
+    //         if ($urlLength > 0) {
+    //             $fullMessage .= "\n" . $url;
+    //         }
+    //
+    //         if ($tagsLength > 0) {
+    //             $fullMessage .= "\n\n" . $tags;
+    //         }
+    //
+    //         return $fullMessage;
+    //     }
 
-        $appendixLength = Str::length($appendix);
-        $linebreakLength = 1;
-        $metaTextLength = $appendixLength; // FIXME until kirby bug is not fixed @see https://github.com/getkirby/kirby/issues/7722
-
-        $url = $this->getPostUrl($page);
-        $tags = $this->getPostTags($page);
-        $text = is_null($manualTextMessage) ? $this->getTextFieldContent($page) : $manualTextMessage;
-        $message = $this->keepMarkdown ? $text : strip_tags(kirby()->kirbytext($text));
-
-        $urlLength = Str::length($url);
-        $tagsLength = Str::length($tags);
-
-        if ($urlLength > 0) {
-            $metaTextLength += $urlLength + $linebreakLength;
-        }
-
-        if ($this->neverTrimTags && $tagsLength > 0) {
-            $metaTextLength += $tagsLength + $linebreakLength * 2;
-        }
-
-        $maxLength -= $metaTextLength;
-        $fullMessage = Str::Short($message, $maxLength, $appendix);
-
-        if ($urlLength > 0) {
-            $fullMessage .= "\n" . $url;
-        }
-
-        if ($tagsLength > 0) {
-            $fullMessage .= "\n\n" . $tags;
-        }
-
-        return $fullMessage;
-    }
-
-    public function getPreferedLanguage(): string
-    {
-        $language = 'en';
-
-        if ($defaultLanguage = kirby()->defaultLanguage()) {
-            $language = $defaultLanguage->code();
-        }
-
-        if ($this->prefereLanguage !== false && !empty($this->prefereLanguage)) {
-            $language = $this->prefereLanguage;
-        }
-
-        return $language;
-    }
+    //     public function getPreferedLanguage(): string
+    //     {
+    //         $language = 'en';
+    //
+    //         if ($defaultLanguage = kirby()->defaultLanguage()) {
+    //             $language = $defaultLanguage->code();
+    //         }
+    //
+    //         if ($this->prefereLanguage !== false && !empty($this->prefereLanguage)) {
+    //             $language = $this->prefereLanguage;
+    //         }
+    //
+    //         return $language;
+    //     }
 
     public function updatePosts($id, $url, $statusCode, $page, $target)
     {
         return $this->updateExternalPosts($id, $url, $statusCode, $target, $page);
     }
 
-    public function getImages($page)
-    {
-        if ($this->imagefield) {
-            $imagefield = $this->imagefield;
-            $images = $page->$imagefield();
-
-            if ($images->isEmpty()) {
-                return false;
-            }
-
-            return $images;
-        }
-
-        return false;
-    }
+    //     public function getImages($page)
+    //     {
+    //         if ($this->imagefield) {
+    //             $imagefield = $this->imagefield;
+    //             $images = $page->$imagefield();
+    //
+    //             if ($images->isEmpty()) {
+    //                 return false;
+    //             }
+    //
+    //             return $images;
+    //         }
+    //
+    //         return false;
+    //     }
 
     public function getActiveServices($page)
     {

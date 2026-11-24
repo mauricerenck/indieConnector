@@ -497,8 +497,7 @@ class Outbox
                 'post_content' => $postContent,
                 'post_service' => $postService,
                 'post_url' => $postUrl,
-                'active' => 1,
-                'last_fetched' => $pageUuid,
+                'active' => true,
                 'status' => $status->value,
             ]
         );

@@ -1,0 +1,37 @@
+CREATE TABLE "webmentions_sent" ("id" text NOT NULL,"page_uuid" text NOT NULL,"target_url" text NOT NULL,"source_url" text,"updates" int DEFAULT '1',"status" text,"created_at" text DEFAULT CURRENT_TIMESTAMP,"updated_at" text DEFAULT CURRENT_TIMESTAMP, "target_name" TEXT, "target_avatar" TEXT, PRIMARY KEY (id))
+
+
+CREATE TRIGGER wm_sent_increment_updates_after_update
+AFTER UPDATE ON webmentions_sent
+FOR EACH ROW
+WHEN NEW.updates = OLD.updates
+BEGIN
+    UPDATE webmentions_sent
+    SET updates = updates + 1
+    WHERE id = NEW.id;
+END;
+
+CREATE TABLE "webmentions_received" ("id" text NOT NULL,"page_uuid" text,"target_url" text NOT NULL,"target_language" text,"source_url" text NOT NULL,"source_name" text,"source_avatar" text,"source_profile_url" text,"mention_type" text,"mention_content" text,"mention_service" text,"mention_parent" text,"status" text NOT NULL,"created_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP,"updated_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP, "blocked" int, PRIMARY KEY ("id"))
+
+DELETE FROM blocked_urls
+WHERE rowid NOT IN (
+    SELECT MIN(rowid) FROM blocked_urls GROUP BY url, direction
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_blocked_urls_url_direction
+    ON blocked_urls (url, direction);
+
+CREATE TABLE "posts_sent" (
+"id" TEXT,
+"page_uuid" TEXT NOT NULL,
+"post_url" TEXT NOT NULL,
+"post_service" TEXT NOT NULL,
+"post_content" TEXT,
+"active" BOOLEAN NOT NULL CHECK (TRUE),
+"status" TEXT,
+"sent_date" TEXT DEFAULT CURRENT_TIMESTAMP,
+"schedule_date" TEXT,
+"last_fetched" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+"created_at" TEXT DEFAULT CURRENT_TIMESTAMP,
+"updated_at" TEXT DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY ("id"));

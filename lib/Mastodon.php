@@ -6,6 +6,9 @@ use Exception;
 use Kirby\Http\Remote;
 use Kirby\Filesystem\F;
 use Kirby\Toolkit\V;
+use Kirby\Cms\Page;
+use Kirby\Cms\Files;
+use Kirby\Content\Field;
 
 class Mastodon
 {
@@ -14,79 +17,53 @@ class Mastodon
     public function __construct(
         ?OptionHandler $options = null,
         private ?Outbox $outbox = null,
-        private ?ExternalPostSender $externalPostSender = null
     ) {
+        FlowDebug::step('mastodon', '', '__construct', 'info');
         $this->options = $options ?? new OptionHandler();
-        $this->outbox = $outbox ?? new Outbox();
-        $this->externalPostSender = $externalPostSender ?? new ExternalPostSender();
+        // $this->outbox = $outbox ?? new Outbox();
     }
 
-    public function sendPost($page, string | null $manualTextMessage = null): mixed
+    public function sendPost(string $postText, ?Field $images = null, ?string $language = null): mixed
     {
+        FlowDebug::step('mastodon', '', 'sendPost', 'info');
+
         $opt_enabled = $this->options->get('mastodon.enabled', false);
         $opt_token = $this->options->get('mastodon.bearer', false);
-        $opt_instanceUrl = $this->options->get('mastodon.instance-url', false);
-        $opt_resizeImages = $this->options->get('mastodon.resizeImages', 0);
+        $opt_instanceUrl = $this->options->get('mastodon.instanceUrl', false);
 
-        if (!$opt_enabled) {
+        if ($opt_enabled === false) {
+            FlowDebug::step('mastodon', '', 'opt_enabled', 'info', '$opt_enabled');
             return false;
         }
 
-        if (!$opt_token) {
+        if ($opt_token === false) {
+            FlowDebug::step('mastodon', '', 'opt_token', 'info', '$opt_token');
             throw new Exception('No Mastodon app password set');
         }
 
-        if (!$opt_instanceUrl) {
+        if ($opt_instanceUrl === false) {
+            FlowDebug::step('mastodon', '', 'opt_instanceUrl', 'info', '$opt_instanceUrl');
             throw new Exception('No Mastodon Instance set');
         }
 
-        if (!$this->externalPostSender->preconditionsMet($page)) {
-            return false;
-        }
-
         try {
-            $fullMessage = $this->externalPostSender->getTrimmedFullMessage(page: $page, manualTextMessage: $manualTextMessage, service: 'mastodon');
-            $language = $this->externalPostSender->getPreferedLanguage();
-            $altField = $this->externalPostSender->imageAltField;
-
-            $mediaIds = [];
-            if ($images = $this->externalPostSender->getImages($page)) {
-                foreach ($images->toFiles()->limit(4) as $image) {
-                    if (is_null($image)) {
-                        continue;
-                    }
-
-                    if ($opt_resizeImages !== 0) {
-                        $resizedImage = $image->resize($opt_resizeImages);
-                        $resizedImage->base64(); // this forces kirby to generate the image
-
-                        if (F::exists($resizedImage->root())) {
-                            $image = $resizedImage;
-                        }
-                    }
-
-                    $imagePath = $image->root();
-                    $imageAlt = $image->{$altField}()->isNotEmpty() ? $image->{$altField}()->value() : '';
-                    $mediaId = $this->uploadImage($imagePath, $imageAlt);
-
-                    if (!$mediaId) {
-                        continue;
-                    }
-
-                    $mediaIds[] = $mediaId;
-                }
-            }
-
             $requestBody = [
-                'status' => $fullMessage,
+                'status' => $postText,
                 'visibility' => 'public',
-                'language' => $language,
             ];
 
+            // if a prefered language is set, add it to payload
+            if (!is_null($language)) {
+                $requestBody['language'] = $language;
+            }
+
+            // prepare updload images
+            $mediaIds = $this->prepareAndUploadImages($images);
+
+            FlowDebug::step('mastodon', '', 'media', 'info', 'mediaIds', $mediaIds);
             if (count($mediaIds) > 0) {
                 $requestBody['media_ids'] = $mediaIds;
             }
-
 
             $response = Remote::request($opt_instanceUrl . '/api/v1/statuses', [
                 'method' => 'POST',
@@ -99,6 +76,7 @@ class Mastodon
             ]);
 
             $result = $response->json();
+            FlowDebug::step('mastodon', '', 'result', '$result');
 
             $url = $result['url'] ?? null;
             $id = $result['id'] ?? null;
@@ -106,17 +84,56 @@ class Mastodon
             return [
                 'id' => $id,
                 'uri' => $url,
+                'text' => $postText,
                 'status' => 200,
                 'target' => 'mastodon'
             ];
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            FlowDebug::step('mastodon', '', 'send', 'error', '', [$e, $postText, $language, $images]);
+            return false;
         }
     }
 
-    public function uploadImage($imagePath, $imageAlt)
+    public function prepareAndUploadImages(Field $images): array
     {
-        $opt_instanceUrl = $this->options->get('mastodon.instance-url', false);
+        FlowDebug::step('mastodon', '', 'prepareAndUploadImages', 'info');
+        $opt_resizeImages = $this->options->get('mastodon.resizeImages', 0);
+        $opt_altField = $this->options->get('mastodon.post.imagealtfield', 'alt');
+
+        $mediaIds = [];
+        foreach ($images->toFiles()->limit(4) as $image) {
+            FlowDebug::step('mastodon', '', 'prepareAndUploadImages', 'info', 'image', $image);
+            if (is_null($image)) {
+                continue;
+            }
+
+            if ($opt_resizeImages !== 0) {
+                $resizedImage = $image->resize($opt_resizeImages);
+                $resizedImage->base64(); // this forces kirby to generate the image
+
+                if (F::exists($resizedImage->root())) {
+                    $image = $resizedImage;
+                }
+            }
+
+            $imagePath = $image->root();
+            $imageAlt = $image->{$opt_altField}()->isNotEmpty() ? $image->{$opt_altField}()->value() : '';
+            $mediaId = $this->uploadImage($imagePath, $imageAlt);
+
+            if (!$mediaId) {
+                continue;
+            }
+
+            $mediaIds[] = $mediaId;
+        }
+
+        return $mediaIds;
+    }
+
+    public function uploadImage(string $imagePath, string $imageAlt)
+    {
+        FlowDebug::step('mastodon', '', 'uploadImage', 'info');
+        $opt_instanceUrl = $this->options->get('mastodon.instanceUrl', false);
         $opt_token = $this->options->get('mastodon.bearer', false);
 
         try {

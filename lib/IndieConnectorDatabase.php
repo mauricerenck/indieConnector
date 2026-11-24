@@ -260,15 +260,7 @@ class IndieConnectorDatabase
         ?int $limit = null,
         array $bindings = []
     ): mixed {
-        /*
-       EXAMPLE
-       $this->indieDb->select(
-           'table',
-           ['id', 'fieldname'],
-           'WHERE id = :id',
-           ['id' => $id]
-       )
-       */
+
         try {
             $this->assertIdentifier($table, 'table');
 
@@ -299,7 +291,7 @@ class IndieConnectorDatabase
             $result =  $this->db->query($query, $bindings);
 
             if ($result === false) {
-                FlowDebug::step('indieDB', 'indieDB', 'select', 'error', '', [$this->db->lastError()]);
+                FlowDebug::step('indieDB', 'indieDB', 'select', 'error', '', [$query, $bindings, $this->db->lastError()]);
             }
 
             return $result;

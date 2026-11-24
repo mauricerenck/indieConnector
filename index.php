@@ -9,6 +9,7 @@ use Kirby\Cms\App as Kirby;
 
 
 Kirby::plugin('mauricerenck/indieConnector', [
+    'options' => require_once __DIR__ . '/plugin/options.php',
     'api' => require_once __DIR__ . '/plugin/api.php',
     'hooks' => require_once __DIR__ . '/plugin/hooks.php',
     'areas' => require_once __DIR__ . '/plugin/areas.php',
